@@ -26,7 +26,7 @@ def capDenominator (m : ℕ) : ℝ :=
 lemma capNumerator_recurrence (m : ℕ) :
     capNumerator (m + 2) =
       ((m + 1 : ℝ) / (m + 2)) * capNumerator m -
-        s3 / ((m + 2 : ℝ) * 2 ^ (m + 2)) := by
+        (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2) := by
   rw [capNumerator, capNumerator, integral_sin_pow]
   simp [Real.sin_pi_div_six, Real.cos_pi_div_six]
   ring
@@ -47,21 +47,23 @@ lemma capDenominator_zero : capDenominator 0 = Real.pi := by
   simp [capDenominator]
 
 lemma capNumerator_one : capNumerator 1 = 1 - s3 / 2 := by
-  simp [capNumerator, integral_sin]
+  norm_num [capNumerator, integral_sin]
 
 lemma capDenominator_one : capDenominator 1 = 2 := by
-  simp [capDenominator, integral_sin]
+  norm_num [capDenominator, integral_sin]
 
 lemma capNumerator_three : capNumerator 3 = (2 : ℝ) / 3 - 3 * s3 / 8 := by
-  rw [show (3 : ℕ) = 1 + 2 by norm_num, capNumerator_recurrence]
-  rw [capNumerator_one]
-  norm_num
-  ring
+  have h := capNumerator_recurrence 1
+  norm_num at h ⊢
+  rw [capNumerator_one] at h
+  nlinarith
 
 lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
-  rw [show (3 : ℕ) = 1 + 2 by norm_num, capDenominator_recurrence]
-  rw [capDenominator_one]
-  norm_num
+  have h := capDenominator_recurrence 1
+  norm_num at h ⊢
+  rw [capDenominator_one] at h
+  norm_num at h ⊢
+  exact h
 
 end
 
