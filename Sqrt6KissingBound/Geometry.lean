@@ -64,11 +64,13 @@ lemma strictCone_disjoint {x z : E}
   let p : E := x - a • u
   let q : E := z - b • u
   have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
-    rw [p, norm_sub_sq_real, norm_smul, hx, hu, abs_of_nonneg ha0]
+    dsimp [p]
+    rw [norm_sub_sq_real, norm_smul, hx, hu, abs_of_nonneg ha0]
     change 1 ^ 2 - 2 * (a * a) + a ^ 2 * 1 ^ 2 = 1 - a ^ 2
     ring
   have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
-    rw [q, norm_sub_sq_real, norm_smul, hz, hu, abs_of_nonneg hb0]
+    dsimp [q]
+    rw [norm_sub_sq_real, norm_smul, hz, hu, abs_of_nonneg hb0]
     change 1 ^ 2 - 2 * (b * b) + b ^ 2 * 1 ^ 2 = 1 - b ^ 2
     ring
   have ha_sq : (3 : ℝ) / 4 < a ^ 2 := by
@@ -106,7 +108,6 @@ lemma strictCone_disjoint {x z : E}
       real_inner_smul_right, real_inner_self_eq_norm_sq, hu, one_pow]
     have huz : inner ℝ u z = b := by
       rw [real_inner_comm]
-      rfl
     have hxu : inner ℝ x u = a := rfl
     rw [huz, hxu]
     ring
