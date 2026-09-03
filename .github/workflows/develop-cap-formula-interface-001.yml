@@ -1,0 +1,107 @@
+name: Develop cap formula interface 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-cap-formula-interface-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Isolate the exact remaining geometric-measure statement
+        shell: bash
+        run: |
+          test -f .ci/current-infrastructure.ok
+          cat > Sqrt6KissingBound/CapFormulaInterface.lean <<'LEAN'
+          import Sqrt6KissingBound.AnalysisCapData
+          import Sqrt6KissingBound.CapCancellation
+
+          /-!
+          # Interface for the spherical-cap measure formula
+
+          All packing, cancellation, and one-dimensional analytic estimates have
+          already been proved.  The predicate below isolates the remaining theorem:
+          identification of the cap measure with the sine-integral ratio.
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+            [FiniteDimensional ℝ E]
+
+          lemma capNumerator_pos (m : ℕ) : 0 < capNumerator m := by
+            have hlower := capNumerator_lower m
+            have hpositive : 0 < 3 * s3 / (10 * (m + 1) * 2 ^ m) := by
+              positivity
+            linarith
+
+          lemma capFraction_pos (m : ℕ) : 0 < capFraction m :=
+            div_pos (capNumerator_pos m) (capDenominator_pos m)
+
+          lemma capFraction_one :
+              capFraction 1 = ((2 : ℝ) - s3) / 4 := by
+            rw [capFraction, capNumerator_one, capDenominator_one]
+            ring
+
+          /-- Exact cap-volume identity needed to connect analysis with geometry. -/
+          def HasSineCapFormula (E : Type*) [NormedAddCommGroup E]
+              [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] : Prop :=
+            ∀ x : E, ‖x‖ = 1 →
+              (volume : Measure E).toSphere (sphereCap x) =
+                ENNReal.ofReal (capFraction (Module.finrank ℝ E - 2)) *
+                  (volume : Measure E).toSphere Set.univ
+
+          /-- The exact cap formula implies the normalized cap-packing inequality. -/
+          lemma normalized_cap_pack_of_formula [Nontrivial E]
+              {X : Finset E} (hX : IsKissingConfiguration X)
+              (hformula : HasSineCapFormula E) :
+              (X.card : ℝ) * capFraction (Module.finrank ℝ E - 2) ≤ 1 := by
+            let μ : Measure (Metric.sphere (0 : E) 1) := (volume : Measure E).toSphere
+            have hμ0 : μ Set.univ ≠ 0 := by
+              intro hzero
+              have hmeasure : μ = 0 := by
+                rw [← measure_univ_eq_zero]
+                exact hzero
+              exact (Measure.toSphere_ne_zero (volume : Measure E)) hmeasure
+            apply real_card_mul_le_one_of_cap_lower μ hX
+              (capFraction_pos (Module.finrank ℝ E - 2)).le hμ0
+            intro x hx
+            exact le_of_eq (hformula x (hX.1 x hx)).symm
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean Sqrt6KissingBound/CapFormulaInterface.lean 2>&1 | tee .ci/cap-formula-interface.log
+          root=Sqrt6KissingBound.lean
+          if ! grep -q '^import Sqrt6KissingBound.CapFormulaInterface$' "$root"; then
+            printf '\nimport Sqrt6KissingBound.CapFormulaInterface\n' >> "$root"
+          fi
+          lake build
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/CapFormulaInterface.lean Sqrt6KissingBound.lean .ci/cap-formula-interface.log
+          git commit -m 'Isolate the remaining spherical-cap measure formula' || true
+          git push origin HEAD:gpt-pro/full-lean-certificate
