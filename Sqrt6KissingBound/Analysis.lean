@@ -3,8 +3,9 @@ import Sqrt6KissingBound.Core
 /-!
 # One-dimensional estimates for the square-root-of-six kissing bound
 
-This file formalizes the sine-integral part of the spherical-cap proof. No
-geometric or analytic statement in this file is assumed.
+This file begins the formalization of the sine-integral part of the
+spherical-cap proof.  The exact recurrences and base values are proved here;
+the quantitative chord estimate is developed in a subsequent module.
 -/
 
 namespace Sqrt6KissingBound
@@ -54,99 +55,6 @@ lemma capNumerator_one : capNumerator 1 = 1 - s3 / 2 := by
 
 lemma capDenominator_one : capDenominator 1 = 2 := by
   norm_num [capDenominator, integral_sin]
-
-/-- The chord from `(0,0)` to `(π/6,1/2)` lies below sine. -/
-lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6) :
-    3 * t / Real.pi ≤ Real.sin t := by
-  let x : ℝ := 6 * t / Real.pi
-  have hx0 : 0 ≤ x := by
-    dsimp [x]
-    positivity
-  have hx1 : x ≤ 1 := by
-    dsimp [x]
-    rw [div_le_one Real.pi_pos]
-    linarith
-  have hcap : Real.pi / 6 ∈ Set.Icc (0 : ℝ) Real.pi := by
-    constructor
-    · positivity
-    · nlinarith [Real.pi_pos]
-  have h := strictConcaveOn_sin_Icc.concaveOn.2
-    (show (0 : ℝ) ∈ Set.Icc (0 : ℝ) Real.pi by simp [Real.pi_pos.le]) hcap
-    (sub_nonneg.2 hx1) hx0
-  have h' := h (by ring)
-  dsimp [x] at h'
-  simp only [Real.sin_zero, mul_zero, zero_add, Real.sin_pi_div_six] at h'
-  have harg : 6 * t / Real.pi * (Real.pi / 6) = t := by
-    field_simp [Real.pi_ne_zero]
-  rw [harg] at h'
-  calc
-    3 * t / Real.pi = 6 * t / Real.pi * ((1 : ℝ) / 2) := by ring
-    _ ≤ Real.sin t := h'
-
-/-- The chord estimate integrated after taking a natural power. -/
-lemma chord_integral_le_capNumerator (m : ℕ) :
-    (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) ≤ capNumerator m := by
-  rw [capNumerator]
-  apply intervalIntegral.integral_mono_on (by positivity)
-  · exact Continuous.intervalIntegrable (by fun_prop) _ _
-  · exact Continuous.intervalIntegrable (by fun_prop) _ _
-  · intro t ht
-    have hnonneg : 0 ≤ 3 * t / Real.pi := by
-      have : 0 ≤ t := ht.1
-      positivity
-    exact pow_le_pow_left₀ hnonneg (three_mul_div_pi_le_sin ht.1 ht.2) m
-
-/-- Evaluation of the elementary integral appearing in the chord estimate. -/
-lemma chord_integral (m : ℕ) :
-    (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
-      Real.pi / (6 * (m + 1) * 2 ^ m) := by
-  have hpi : Real.pi ≠ 0 := Real.pi_ne_zero
-  have hfun : (fun t : ℝ => (3 * t / Real.pi) ^ m) =
-      fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
-    funext t
-    ring
-  have hbase : ((3 : ℝ) / Real.pi) * (Real.pi / 6) * 2 = 1 := by
-    field_simp [hpi]
-    ring
-  have hpow : ((3 : ℝ) / Real.pi) ^ m * (Real.pi / 6) ^ m * 2 ^ m = 1 := by
-    rw [← mul_pow, ← mul_pow, hbase, one_pow]
-  rw [hfun, intervalIntegral.integral_const_mul, integral_pow]
-  simp
-  field_simp [hpi]
-  rw [pow_succ]
-  calc
-    ((3 : ℝ) / Real.pi) ^ m * 6 *
-        ((Real.pi / 6) ^ m * (Real.pi / 6)) * 2 ^ m
-        = (((3 : ℝ) / Real.pi) ^ m * (Real.pi / 6) ^ m * 2 ^ m) *
-            (6 * (Real.pi / 6)) := by ring
-    _ = Real.pi := by
-      rw [hpow]
-      field_simp [hpi]
-
-lemma pi_div_six_gt_three_sqrt3_div_ten :
-    3 * s3 / 10 < Real.pi / 6 := by
-  have hpi := Real.pi_gt_d2
-  norm_num at hpi
-  have hs3 : s3 < (26 : ℝ) / 15 := sqrt3_lt_26_div_15
-  nlinarith
-
-/-- The quantitative lower estimate that drives the two-step cap recurrence. -/
-lemma capNumerator_lower (m : ℕ) :
-    3 * s3 / (10 * (m + 1) * 2 ^ m) < capNumerator m := by
-  have hD : 0 < (m + 1 : ℝ) * 2 ^ m := by positivity
-  have hDne : (m + 1 : ℝ) * 2 ^ m ≠ 0 := ne_of_gt hD
-  have hconst := pi_div_six_gt_three_sqrt3_div_ten
-  calc
-    3 * s3 / (10 * (m + 1) * 2 ^ m)
-        = (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by
-          field_simp [hDne]
-    _ < (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) :=
-      div_lt_div_of_pos_right hconst hD
-    _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
-      field_simp [hDne]
-    _ = (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) :=
-      (chord_integral m).symm
-    _ ≤ capNumerator m := chord_integral_le_capNumerator m
 
 end
 
