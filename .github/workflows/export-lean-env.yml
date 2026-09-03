@@ -1,0 +1,42 @@
+name: Export Lean environment
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/export-lean-env.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Package cached workspace
+        shell: bash
+        run: |
+          tar --zstd -cf /tmp/sqrt6-lean-workspace.tar.zst \
+            --exclude=.git \
+            --exclude=.ci \
+            --exclude=manuscript \
+            .
+          ls -lh /tmp/sqrt6-lean-workspace.tar.zst
+      - name: Upload cached workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: sqrt6-lean-workspace
+          path: /tmp/sqrt6-lean-workspace.tar.zst
+          compression-level: 0
+          retention-days: 1
