@@ -1,0 +1,98 @@
+name: Develop spherical caps 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-spherical-caps-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Formalize cap disjointness on the unit sphere
+        shell: bash
+        run: |
+          test -f .ci/stage1.ok
+          cat > Sqrt6KissingBound/SphericalCaps.lean <<'LEAN'
+          import Sqrt6KissingBound.Geometry
+          import Mathlib.MeasureTheory.Constructions.HaarToSphere
+
+          /-!
+          # Spherical caps attached to a kissing configuration
+
+          This file passes from the ambient cone-separation lemma to pairwise
+          disjoint caps on the unit sphere.
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+          /-- The open spherical cap of angular radius `π/6` about `x`. -/
+          def sphereCap (x : E) : Set (Metric.sphere (0 : E) 1) :=
+            {u | s3 / 2 < inner ℝ x (u : E)}
+
+          lemma sphereCap_measurable (x : E) : MeasurableSet (sphereCap x) := by
+            apply IsOpen.measurableSet
+            change IsOpen ((fun u : Metric.sphere (0 : E) 1 => inner ℝ x (u : E)) ⁻¹'
+              Set.Ioi (s3 / 2))
+            apply IsOpen.preimage isOpen_Ioi
+            fun_prop
+
+          /-- Caps about distinct vectors of a kissing configuration are disjoint. -/
+          lemma sphereCap_disjoint {x z : E}
+              (hx : ‖x‖ = 1) (hz : ‖z‖ = 1)
+              (hxz : inner ℝ x z ≤ (1 : ℝ) / 2) :
+              Disjoint (sphereCap x) (sphereCap z) := by
+            rw [Set.disjoint_left]
+            intro u hux huz
+            change s3 / 2 < inner ℝ x (u : E) at hux
+            change s3 / 2 < inner ℝ z (u : E) at huz
+            have hu : ‖(u : E)‖ = 1 := by
+              simpa only [Metric.mem_sphere, dist_zero_right] using u.property
+            have hcx : (u : E) ∈ strictCone x := by
+              change s3 / 2 * ‖(u : E)‖ < inner ℝ x (u : E)
+              simpa [hu] using hux
+            have hcz : (u : E) ∈ strictCone z := by
+              change s3 / 2 * ‖(u : E)‖ < inner ℝ z (u : E)
+              simpa [hu] using huz
+            exact Set.disjoint_left.1 (strictCone_disjoint hx hz hxz) hcx hcz
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+
+          lake env lean Sqrt6KissingBound/SphericalCaps.lean 2>&1 | tee .ci/spherical-caps.log
+          root=Sqrt6KissingBound.lean
+          if ! grep -q '^import Sqrt6KissingBound.SphericalCaps$' "$root"; then
+            sed -i '/^import Sqrt6KissingBound.Geometry$/a import Sqrt6KissingBound.SphericalCaps' "$root"
+          fi
+          lake build
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/SphericalCaps.lean Sqrt6KissingBound.lean .ci/spherical-caps.log
+          git commit -m 'Formalize disjoint spherical caps'
+          git push origin HEAD:gpt-pro/full-lean-certificate
