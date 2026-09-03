@@ -1,25 +1,24 @@
-✖ [8707/8710] Building Sqrt6KissingBound.Analysis (9.3s)
+✖ [8707/8710] Building Sqrt6KissingBound.Analysis (5.2s)
 trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/Analysis.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.setup.json --json
-error: Sqrt6KissingBound/Analysis.lean:73:13: Unknown constant `Real.strictConcaveOn_sin_Icc`
-error: Sqrt6KissingBound/Analysis.lean:60:36: unsolved goals
-t : ℝ
-ht0 : 0 ≤ t
-ht1 : t ≤ π / 6
-x : ℝ := 6 * t / π
-hx0 : 0 ≤ x
-hx1 : x ≤ 1
-hcap : π / 6 ∈ Icc 0 π
-⊢ 3 * t / π ≤ Real.sin t
-error: Sqrt6KissingBound/Analysis.lean:101:49: Unknown constant `intervalIntegral.integral_pow`
+error: Sqrt6KissingBound/Analysis.lean:77:2: Type mismatch: After simplification, term
+  h
+ has type
+  6 * t / π * 2⁻¹ ≤ Real.sin (6 * t / π * (π / 6))
+but is expected to have type
+  3 * t / π ≤ Real.sin t
+info: Sqrt6KissingBound/Analysis.lean:104:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
 error: Sqrt6KissingBound/Analysis.lean:95:41: unsolved goals
 m : ℕ
 hpi : π ≠ 0
 hfun : (fun t => (3 * t / π) ^ m) = fun t => (3 / π) ^ m * t ^ m
-⊢ (3 / π) ^ m * ∫ (x : ℝ) in 0..π / 6, x ^ m = π / (6 * (↑m + 1) * 2 ^ m)
-error: Sqrt6KissingBound/Analysis.lean:123:10: No goals to be solved
-error: Sqrt6KissingBound/Analysis.lean:128:6: No goals to be solved
+⊢ π * π ^ m * π⁻¹ ^ m * (1 / 6) ^ m * 2 ^ m * 3 ^ m = π
 error: Lean exited with code 1
-✔ [8708/8710] Built Sqrt6KissingBound.Geometry (14s)
+✔ [8708/8710] Built Sqrt6KissingBound.Geometry (11s)
 Some required targets logged failures:
 - Sqrt6KissingBound.Analysis
 error: build failed
