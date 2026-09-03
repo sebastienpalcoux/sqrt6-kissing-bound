@@ -65,13 +65,15 @@ lemma strictCone_disjoint {x z : E}
   let q : E := z - b • u
   have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
     dsimp [p]
-    rw [norm_sub_sq_real, norm_smul, hx, hu, abs_of_nonneg ha0]
-    change 1 ^ 2 - 2 * (a * a) + a ^ 2 * 1 ^ 2 = 1 - a ^ 2
+    rw [norm_sub_sq_real, norm_smul, hx, hu, Real.norm_eq_abs,
+      abs_of_nonneg ha0, real_inner_smul_right]
+    change 1 ^ 2 - 2 * (a * a) + (a * 1) ^ 2 = 1 - a ^ 2
     ring
   have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
     dsimp [q]
-    rw [norm_sub_sq_real, norm_smul, hz, hu, abs_of_nonneg hb0]
-    change 1 ^ 2 - 2 * (b * b) + b ^ 2 * 1 ^ 2 = 1 - b ^ 2
+    rw [norm_sub_sq_real, norm_smul, hz, hu, Real.norm_eq_abs,
+      abs_of_nonneg hb0, real_inner_smul_right]
+    change 1 ^ 2 - 2 * (b * b) + (b * 1) ^ 2 = 1 - b ^ 2
     ring
   have ha_sq : (3 : ℝ) / 4 < a ^ 2 := by
     have hpow : (s3 / 2) ^ 2 < a ^ 2 := (sq_lt_sq₀ hc0 ha0).2 ha
