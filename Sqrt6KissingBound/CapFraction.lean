@@ -24,11 +24,13 @@ lemma capNumerator_three :
   ring
 
 lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
-  rw [show (3 : ℕ) = 1 + 2 by norm_num, capDenominator_recurrence, capDenominator_one]
-  norm_num
+  have h := capDenominator_recurrence 1
+  norm_num [capDenominator_one] at h
+  exact h
 
 lemma capFraction_two : capFraction 2 = (1 : ℝ) / 6 := by
-  simp [capFraction, capNumerator_zero, capDenominator_zero, Real.pi_ne_zero]
+  simp only [capFraction, Nat.reduceSub, capNumerator_zero, capDenominator_zero]
+  field_simp [Real.pi_ne_zero]
 
 lemma capFraction_five :
     capFraction 5 = (1 : ℝ) / 2 - 9 * s3 / 32 := by
@@ -40,8 +42,12 @@ private lemma six_boundary_eq_scaled_lower (m : ℕ) :
       (5 * (m + 1 : ℝ)) *
         (3 * s3 / (10 * (m + 1) * 2 ^ m)) := by
   have hm : (m + 1 : ℝ) ≠ 0 := by positivity
+  have hpow : ((1 : ℝ) / 2) ^ m * 2 ^ m = 1 := by
+    rw [← mul_pow]
+    norm_num
   rw [pow_succ]
-  field_simp [hm] <;> ring
+  field_simp [hm]
+  rw [hpow]
 
 private lemma boundary_term_lt (m : ℕ) :
     6 * (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) <
@@ -58,13 +64,13 @@ lemma capNumerator_step (m : ℕ) :
   have hleft :
       (((m + 1 : ℝ) / (m + 2)) / 6) * capNumerator m =
         (((m + 1 : ℝ) * capNumerator m / 6) / (m + 2)) := by
-    field_simp [hm2.ne'] <;> ring
+    field_simp [hm2.ne']
   have hright :
       ((m + 1 : ℝ) / (m + 2)) * capNumerator m -
           (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2) =
         (((m + 1 : ℝ) * capNumerator m -
           ((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2)) := by
-    field_simp [hm2.ne'] <;> ring
+    field_simp [hm2.ne']
   rw [hleft, hright, div_lt_div_iff_of_pos_right hm2]
   have hboundary := boundary_term_lt m
   nlinarith
@@ -84,7 +90,7 @@ lemma capFraction_step_aux (m : ℕ) :
       capNumerator m / capDenominator m / 6 =
         ((((m + 1 : ℝ) / (m + 2)) / 6) * capNumerator m) /
           (((m + 1 : ℝ) / (m + 2)) * capDenominator m) := by
-    field_simp [hm1, hm2, hJ.ne'] <;> ring
+    field_simp [hm1, hm2, hJ.ne']
   rw [hleft, div_lt_div_iff_of_pos_right hden]
   exact capNumerator_step m
 
