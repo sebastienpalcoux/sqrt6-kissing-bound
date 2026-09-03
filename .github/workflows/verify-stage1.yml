@@ -1,0 +1,44 @@
+name: Verify Lean stage 1
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/verify-stage1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Verify the current stage
+        shell: bash
+        run: |
+          test -f Sqrt6KissingBound/AnalysisChord.lean
+          test -f Sqrt6KissingBound/AnalysisEstimate.lean
+          test -f Sqrt6KissingBound/AnalysisCapData.lean
+          lake build
+          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
+          if grep -R -n -E "$pattern" --include='*.lean' Sqrt6KissingBound Sqrt6KissingBound.lean; then
+            exit 1
+          fi
+          mkdir -p .ci
+          printf 'stage 1 verified\n' > .ci/stage1.ok
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/stage1.ok
+          git commit -m 'Record successful analytic and cone-separation verification'
+          git push origin HEAD:gpt-pro/full-lean-certificate
