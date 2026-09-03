@@ -77,7 +77,7 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht6 : t ≤ Real.pi / 6
     dsimp [x]
     apply (div_le_one hpi).2
     nlinarith
-  have h := Real.strictConcaveOn_sin_Icc.concaveOn.2
+  have h := strictConcaveOn_sin_Icc.concaveOn.2
     (show (0 : ℝ) ∈ Set.Icc 0 Real.pi by exact ⟨le_rfl, hpi.le⟩)
     (show Real.pi / 6 ∈ Set.Icc 0 Real.pi by constructor <;> nlinarith)
     (sub_nonneg.2 hx1) hx0
