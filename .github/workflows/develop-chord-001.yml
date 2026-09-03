@@ -1,0 +1,134 @@
+name: Develop chord lemma 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-chord-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Select a kernel-checked concavity proof
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          header = r'''import Sqrt6KissingBound.Analysis
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set
+          open scoped Interval Real
+
+          /-- The chord from `(0,0)` to `(π/6,1/2)` lies below sine. -/
+          lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6) :
+              3 * t / Real.pi ≤ Real.sin t := by
+            let x : ℝ := 6 * t / Real.pi
+            have hx0 : 0 ≤ x := by
+              dsimp [x]
+              positivity
+            have hx1 : x ≤ 1 := by
+              dsimp [x]
+              rw [div_le_one Real.pi_pos]
+              linarith
+            have hzero : (0 : ℝ) ∈ Set.Icc (0 : ℝ) Real.pi := by
+              simp [Real.pi_pos.le]
+            have hcap : Real.pi / 6 ∈ Set.Icc (0 : ℝ) Real.pi := by
+              constructor
+              · positivity
+              · nlinarith [Real.pi_pos]
+          '''
+
+          tail = r'''
+            have hxt : x * (Real.pi / 6) = t := by
+              dsimp [x]
+              field_simp [Real.pi_ne_zero]
+              <;> ring
+            have hhalf : x * ((1 : ℝ) / 2) = 3 * t / Real.pi := by
+              dsimp [x]
+              ring
+            simpa only [smul_eq_mul, Real.sin_zero, Real.sin_pi_div_six, mul_zero,
+              zero_add, hxt, hhalf] using h
+
+          end
+
+          end Sqrt6KissingBound
+          '''
+
+          bodies = [
+          r'''  have hstrict := Real.strictConcaveOn_sin_Icc
+            have hconc := hstrict.concaveOn
+            have h := hconc.2 hzero hcap (sub_nonneg.2 hx1) hx0 (by ring)
+          ''',
+          r'''  have hstrict := Real.strictConcaveOn_sin_Icc
+            have hconc : ConcaveOn ℝ (Set.Icc (0 : ℝ) Real.pi) Real.sin :=
+              StrictConcaveOn.concaveOn hstrict
+            have h := hconc.2 hzero hcap (sub_nonneg.2 hx1) hx0 (by ring)
+          ''',
+          r'''  have hstrict := Real.strictConcaveOn_sin_Icc
+            have hconc := hstrict.concaveOn (convex_Icc (0 : ℝ) Real.pi)
+            have h := hconc.2 hzero hcap (sub_nonneg.2 hx1) hx0 (by ring)
+          ''',
+          r'''  have hstrict := Real.strictConcaveOn_sin_Icc
+            have hconc : ConcaveOn ℝ (Set.Icc (0 : ℝ) Real.pi) Real.sin :=
+              StrictConcaveOn.concaveOn hstrict (convex_Icc (0 : ℝ) Real.pi)
+            have h := hconc.2 hzero hcap (sub_nonneg.2 hx1) hx0 (by ring)
+          ''',
+          ]
+
+          target = Path('Sqrt6KissingBound/AnalysisChord.lean')
+          logs = []
+          selected = None
+          for i, body in enumerate(bodies, 1):
+              text = header + body + tail
+              target.write_text(text)
+              proc = subprocess.run(
+                  ['lake', 'env', 'lean', str(target)],
+                  text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              logs.append(f'===== candidate {i} (exit {proc.returncode}) =====\n{proc.stdout}')
+              if proc.returncode == 0:
+                  selected = text
+                  break
+
+          Path('.ci').mkdir(exist_ok=True)
+          Path('.ci/chord-candidates.log').write_text('\n'.join(logs))
+          if selected is None:
+              target.unlink(missing_ok=True)
+              raise SystemExit(1)
+
+          target.write_text(selected)
+          root = Path('Sqrt6KissingBound.lean')
+          r = root.read_text()
+          imp = 'import Sqrt6KissingBound.AnalysisChord\n'
+          if imp not in r:
+              anchor = 'import Sqrt6KissingBound.Analysis\n'
+              r = r.replace(anchor, anchor + imp)
+              root.write_text(r)
+          PY
+
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/AnalysisChord.lean Sqrt6KissingBound.lean .ci/chord-candidates.log
+          git commit -m 'Formalize the sine chord inequality'
+          git push origin HEAD:gpt-pro/full-lean-certificate
