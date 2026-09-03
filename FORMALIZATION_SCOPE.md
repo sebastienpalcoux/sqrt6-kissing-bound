@@ -23,14 +23,15 @@ The Lean project verifies, from its explicitly stated inputs:
 6. the exceptional dimension-three numerical deduction: from the supplied cap-packing inequality with cap fraction \((2-\sqrt3)/4\), one obtains \(N\le14<(\sqrt6)^3\);
 7. the optimality implication
    \[
-   6\le\alpha^2,\\ \alpha\ge0 \Longrightarrow \sqrt6\le\alpha.
+   6\le\alpha^2,\quad \alpha\ge0
+   \Longrightarrow \sqrt6\le\alpha.
    \]
 
 The source has no `sorry`, `admit`, project-defined `axiom`, or `native_decide`. The successful axiom audit found only Mathlib's standard foundational axioms `propext`, `Classical.choice`, and `Quot.sound`.
 
 ## What is not yet Lean-certified
 
-The current project does **not** define kissing configurations or the kissing number \(\tau_n\). In particular, it does not yet formalize the following bridge from geometry and analysis to the abstract inputs used by `Core.lean`.
+The current project does **not** define kissing configurations or the kissing number \(\tau_n\). In particular, it does not yet formalize the bridge from geometry and analysis to the abstract inputs used by `Core.lean`.
 
 ### Spherical geometry and measure
 
@@ -47,7 +48,7 @@ The current project does **not** define kissing configurations or the kissing nu
         {\int_0^\pi\sin^{n-2}t\,dt}.
    \]
 
-### Sine-integral estimates
+### Integral recurrence and lower estimate
 
 With
 \[
@@ -55,7 +56,7 @@ I_m=\int_0^{\pi/6}\sin^m t\,dt,
 \qquad
 J_m=\int_0^\pi\sin^m t\,dt,
 \]
-the following steps remain outside the certificate:
+the following steps in the manuscript remain outside the certificate:
 
 1. the integration-by-parts identities
    \[
@@ -65,12 +66,16 @@ the following steps remain outside the certificate:
    J_{m+2}=\frac{m+1}{m+2}J_m;
    \]
 2. the resulting exact recurrence for the actual cap fractions;
-3. concavity of sine on the relevant interval and the chord bound
+3. the substitution \(u=\sin t\) and the identity
    \[
-   \sin t\ge \frac{3t}{\pi}
-   \qquad(0\le t\le\pi/6);
+   I_m=\int_0^{1/2}\frac{u^m}{\sqrt{1-u^2}}\,du;
    \]
-4. integration of that bound, positivity of \(J_m\), and the deduction
+4. the elementary estimate
+   \[
+   \frac1{\sqrt{1-u^2}}\ge 1+\frac{u^2}{2}
+   \qquad(0\le u\le1/2),
+   \]
+   its integration, positivity of \(J_m\), and the deduction
    \[
    c_{n+2}>c_n/6;
    \]
