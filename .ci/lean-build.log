@@ -1,30 +1,9 @@
-✖ [8707/8710] Building Sqrt6KissingBound.Analysis (5.5s)
+✖ [8707/8710] Building Sqrt6KissingBound.Analysis (5.4s)
 trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/Analysis.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.setup.json --json
-info: Sqrt6KissingBound/Analysis.lean:77:57: Try this:
-  [apply] ring_nf
-  
-  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
-    
-  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-error: Sqrt6KissingBound/Analysis.lean:60:36: unsolved goals
-t : ℝ
-ht0 : 0 ≤ t
-ht1 : t ≤ π / 6
-x : ℝ := 6 * t / π
-hx0 : 0 ≤ x
-hx1 : x ≤ 1
-hcap : π / 6 ∈ Icc 0 π
-h :
-  1 - 6 * t / π + 6 * t / π = 1 →
-    (1 - 6 * t / π) * Real.sin 0 + 6 * t / π * Real.sin (π / 6) ≤ Real.sin ((1 - 6 * t / π) * 0 + 6 * t / π * (π / 6))
-⊢ t * 3 ≤ π * Real.sin t ↔
-    True → -(t * Real.sin 0 * 6) + t * Real.sin (π * (1 / 6)) * 6 + π * Real.sin 0 ≤ π * Real.sin (t * π * π⁻¹)
-error: Sqrt6KissingBound/Analysis.lean:110:4: invalid 'calc' step, left-hand side is
-  π * π ^ m * π⁻¹ ^ m * (1 / 6) ^ m * 2 ^ m * 3 ^ m : ℝ
-but is expected to be
-  (3 / π) ^ m * 6 * (π / 6) ^ (m + 1) * 2 ^ m : ℝ
+error: Sqrt6KissingBound/Analysis.lean:81:4: No goals to be solved
+error: Sqrt6KissingBound/Analysis.lean:83:25: `ring_nf` made no progress on the goal
 error: Lean exited with code 1
-✔ [8708/8710] Built Sqrt6KissingBound.Geometry (9.0s)
+✔ [8708/8710] Built Sqrt6KissingBound.Geometry (12s)
 Some required targets logged failures:
 - Sqrt6KissingBound.Analysis
 error: build failed
