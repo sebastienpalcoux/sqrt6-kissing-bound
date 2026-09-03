@@ -103,7 +103,7 @@ lemma card_mul_cap_le_one_of_equal_measure [Nontrivial E]
       _ = ∑ x ∈ X, ((volume : Measure E).toSphere).real (sphericalCap x) := hsum.symm
       _ ≤ T := by simpa [T] using hpack
       _ = 1 * T := by ring
-  exact (mul_le_mul_right hT).mp hmul
+  exact le_of_mul_le_mul_right hmul hT
 
 end
 
