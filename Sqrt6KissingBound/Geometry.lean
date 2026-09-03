@@ -3,8 +3,8 @@ import Mathlib
 /-!
 # Cone separation for spherical codes
 
-This file develops the geometric disjointness argument used in the fully formalized
-volume-packing proof.
+This file develops the geometric disjointness argument used in the ambient-volume
+packing proof.
 -/
 
 namespace Sqrt6KissingBound
@@ -13,7 +13,6 @@ noncomputable section
 
 open Set
 open NormedSpace
-open scoped RealInnerProductSpace
 
 private abbrev s3 : ℝ := Real.sqrt 3
 
@@ -21,7 +20,7 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
 /-- The open circular cone of half-angle `π/6`, written without trigonometric functions. -/
 def strictCone (x : E) : Set E :=
-  {y | (s3 / 2) * ‖y‖ < ⟪x, y⟫_ℝ}
+  {y | (s3 / 2) * ‖y‖ < inner ℝ x y}
 
 lemma sqrt3_sq_geom : s3 ^ 2 = 3 := by
   norm_num [s3]
@@ -30,57 +29,52 @@ lemma sqrt3_pos_geom : 0 < s3 := Real.sqrt_pos.2 (by norm_num)
 
 /-- Two `π/6` cones about unit vectors with inner product at most `1/2` are disjoint. -/
 lemma strictCone_disjoint {x z : E}
-    (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) (hxz : ⟪x, z⟫_ℝ ≤ (1 : ℝ) / 2) :
+    (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) (hxz : inner ℝ x z ≤ (1 : ℝ) / 2) :
     Disjoint (strictCone x) (strictCone z) := by
   rw [Set.disjoint_left]
   intro y hyx hyz
-  change (s3 / 2) * ‖y‖ < ⟪x, y⟫_ℝ at hyx
-  change (s3 / 2) * ‖y‖ < ⟪z, y⟫_ℝ at hyz
+  change (s3 / 2) * ‖y‖ < inner ℝ x y at hyx
+  change (s3 / 2) * ‖y‖ < inner ℝ z y at hyz
   have hy0 : y ≠ 0 := by
     intro h
     subst y
     simp at hyx
+  have hny : 0 < ‖y‖ := norm_pos_iff.mpr hy0
   let u : E := normalize y
   have hu : ‖u‖ = 1 := by
     dsimp [u]
-    exact norm_normalize_eq_one_iff.mpr hy0
-  have hny : 0 < ‖y‖ := norm_pos_iff.mpr hy0
-  let a : ℝ := ⟪x, u⟫_ℝ
-  let b : ℝ := ⟪z, u⟫_ℝ
+    exact norm_normalize hy0
+  let a : ℝ := inner ℝ x u
+  let b : ℝ := inner ℝ z u
   have ha : s3 / 2 < a := by
-    dsimp [a, u, normalize]
-    rw [real_inner_smul_right]
-    rw [← div_eq_inv_mul]
-    exact (lt_div_iff₀ hny).2 (by simpa [mul_comm] using hyx)
+    have hdiv : s3 / 2 < inner ℝ x y / ‖y‖ :=
+      (lt_div_iff₀ hny).2 hyx
+    simpa [a, u, normalize, div_eq_mul_inv, real_inner_smul_right,
+      mul_comm, mul_left_comm, mul_assoc] using hdiv
   have hb : s3 / 2 < b := by
-    dsimp [b, u, normalize]
-    rw [real_inner_smul_right]
-    rw [← div_eq_inv_mul]
-    exact (lt_div_iff₀ hny).2 (by simpa [mul_comm] using hyz)
+    have hdiv : s3 / 2 < inner ℝ z y / ‖y‖ :=
+      (lt_div_iff₀ hny).2 hyz
+    simpa [b, u, normalize, div_eq_mul_inv, real_inner_smul_right,
+      mul_comm, mul_left_comm, mul_assoc] using hdiv
   let p : E := x - a • u
   let q : E := z - b • u
   have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
     rw [← real_inner_self_eq_norm_sq]
-    simp only [p, inner_sub_left, inner_sub_right, real_inner_smul_left,
-      real_inner_smul_right, real_inner_self_eq_norm_sq, hx, hu, one_pow]
-    dsimp [a]
-    rw [real_inner_comm u x]
+    simp [p, a, hx, hu, real_inner_self_eq_norm_sq, real_inner_comm]
     ring
   have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
     rw [← real_inner_self_eq_norm_sq]
-    simp only [q, inner_sub_left, inner_sub_right, real_inner_smul_left,
-      real_inner_smul_right, real_inner_self_eq_norm_sq, hz, hu, one_pow]
-    dsimp [b]
-    rw [real_inner_comm u z]
+    simp [q, b, hz, hu, real_inner_self_eq_norm_sq, real_inner_comm]
     ring
+  have hc0 : 0 ≤ s3 / 2 := by positivity
+  have ha0 : 0 ≤ a := hc0.trans ha.le
+  have hb0 : 0 ≤ b := hc0.trans hb.le
   have ha_sq : (3 : ℝ) / 4 < a ^ 2 := by
-    have hs := sqrt3_pos_geom
-    have hs2 := sqrt3_sq_geom
-    nlinarith
+    have hpow : (s3 / 2) ^ 2 < a ^ 2 := (sq_lt_sq₀ hc0 ha0).2 ha
+    nlinarith [sqrt3_sq_geom]
   have hb_sq : (3 : ℝ) / 4 < b ^ 2 := by
-    have hs := sqrt3_pos_geom
-    have hs2 := sqrt3_sq_geom
-    nlinarith
+    have hpow : (s3 / 2) ^ 2 < b ^ 2 := (sq_lt_sq₀ hc0 hb0).2 hb
+    nlinarith [sqrt3_sq_geom]
   have hp : ‖p‖ < (1 : ℝ) / 2 := by
     have hn : 0 ≤ ‖p‖ := norm_nonneg p
     nlinarith
@@ -88,33 +82,25 @@ lemma strictCone_disjoint {x z : E}
     have hn : 0 ≤ ‖q‖ := norm_nonneg q
     nlinarith
   have hab : (3 : ℝ) / 4 < a * b := by
-    have hs := sqrt3_pos_geom
-    have hs2 := sqrt3_sq_geom
-    nlinarith
-  have hpq : -(1 : ℝ) / 4 < ⟪p, q⟫_ℝ := by
-    have habs := abs_real_inner_le_norm p q
-    have hpn : 0 ≤ ‖p‖ := norm_nonneg p
-    have hqn : 0 ≤ ‖q‖ := norm_nonneg q
-    have hprod : ‖p‖ * ‖q‖ < (1 : ℝ) / 4 := by nlinarith
-    have hlower : -(‖p‖ * ‖q‖) ≤ ⟪p, q⟫_ℝ := by
-      exact (neg_le.mp (neg_le_abs ⟪p, q⟫_ℝ)).trans (by
-        simpa [neg_le_neg_iff] using neg_le_neg habs)
+    have hc : 0 < s3 / 2 := by positivity
+    have h₁ : (s3 / 2) * (s3 / 2) < a * (s3 / 2) :=
+      mul_lt_mul_of_pos_right ha hc
+    have h₂ : a * (s3 / 2) < a * b :=
+      mul_lt_mul_of_pos_left hb (hc.trans ha)
+    nlinarith [sqrt3_sq_geom]
+  have hprod : ‖p‖ * ‖q‖ < (1 : ℝ) / 4 := by
+    calc
+      ‖p‖ * ‖q‖ ≤ ‖p‖ * ((1 : ℝ) / 2) :=
+        mul_le_mul_of_nonneg_left hq.le (norm_nonneg p)
+      _ < ((1 : ℝ) / 2) * ((1 : ℝ) / 2) :=
+        mul_lt_mul_of_pos_right hp (by norm_num)
+      _ = (1 : ℝ) / 4 := by norm_num
+  have hpq : -(1 : ℝ) / 4 < inner ℝ p q := by
+    have habs : |inner ℝ p q| ≤ ‖p‖ * ‖q‖ := abs_real_inner_le_norm p q
+    have hlower : -(‖p‖ * ‖q‖) ≤ inner ℝ p q := (abs_le.mp habs).1
     linarith
-  have hdecomp : ⟪x, z⟫_ℝ = a * b + ⟪p, q⟫_ℝ := by
-    have hxrepr : x = p + a • u := by simp [p]
-    have hzrepr : z = q + b • u := by simp [q]
-    rw [hxrepr, hzrepr]
-    simp only [inner_add_left, inner_add_right, real_inner_smul_left,
-      real_inner_smul_right, hu, one_pow]
-    have hpu : ⟪p, u⟫_ℝ = 0 := by
-      simp only [p, inner_sub_left, real_inner_smul_left, hu, one_pow]
-      dsimp [a]
-      ring
-    have huq : ⟪u, q⟫_ℝ = 0 := by
-      simp only [q, inner_sub_right, real_inner_smul_right, hu, one_pow]
-      dsimp [b]
-      ring
-    rw [hpu, huq]
+  have hdecomp : inner ℝ x z = a * b + inner ℝ p q := by
+    simp [p, q, a, b, hu, real_inner_self_eq_norm_sq, real_inner_comm]
     ring
   rw [hdecomp] at hxz
   linarith
