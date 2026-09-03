@@ -1,0 +1,145 @@
+name: Develop finite cap packing rerun
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-cap-packing-002.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Verify or develop finite cap packing
+        shell: bash
+        run: |
+          test -f .ci/stage2-caps.ok
+          if test -f Sqrt6KissingBound/CapPacking.lean && lake env lean Sqrt6KissingBound/CapPacking.lean; then
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          preamble = r'''import Sqrt6KissingBound.SphericalCaps
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+          def IsKissingConfiguration (X : Finset E) : Prop :=
+            (∀ x ∈ X, ‖x‖ = 1) ∧
+              ∀ x ∈ X, ∀ z ∈ X, x ≠ z → inner ℝ x z ≤ (1 : ℝ) / 2
+
+          lemma kissing_caps_pairwiseDisjoint {X : Finset E}
+              (hX : IsKissingConfiguration X) :
+              (X : Set E).PairwiseDisjoint sphereCap := by
+            rintro x hx z hz hxz
+            exact sphereCap_disjoint (hX.1 x hx) (hX.1 z hz)
+              (hX.2 x hx z hz hxz)
+          '''
+          ending = r'''
+
+          end
+
+          end Sqrt6KissingBound
+          '''
+          bodies = [
+          r'''lemma measure_iUnion_sphereCap_eq_sum (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) :
+              μ (⋃ x ∈ X, sphereCap x) = ∑ x ∈ X, μ (sphereCap x) := by
+            exact measure_biUnion_finset
+              (fun x _ => sphereCap_measurable x)
+              (kissing_caps_pairwiseDisjoint hX)
+
+          lemma sum_measure_sphereCap_le_univ (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) :
+              (∑ x ∈ X, μ (sphereCap x)) ≤ μ Set.univ := by
+            rw [← measure_iUnion_sphereCap_eq_sum μ hX]
+            exact measure_mono (Set.subset_univ _)
+
+          lemma card_mul_capMeasure_le_univ (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) {q : ℝ≥0∞}
+              (hq : ∀ x ∈ X, q ≤ μ (sphereCap x)) :
+              (X.card : ℝ≥0∞) * q ≤ μ Set.univ := by
+            calc
+              (X.card : ℝ≥0∞) * q = ∑ x ∈ X, q := by simp
+              _ ≤ ∑ x ∈ X, μ (sphereCap x) := by
+                exact Finset.sum_le_sum fun x hx => hq x hx
+              _ ≤ μ Set.univ := sum_measure_sphereCap_le_univ μ hX
+          ''',
+          r'''lemma measure_iUnion_sphereCap_eq_sum (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) :
+              μ (⋃ x ∈ X, sphereCap x) = ∑ x ∈ X, μ (sphereCap x) := by
+            rw [measure_biUnion_finset]
+            · exact kissing_caps_pairwiseDisjoint hX
+            · intro x hx
+              exact sphereCap_measurable x
+
+          lemma sum_measure_sphereCap_le_univ (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) :
+              (∑ x ∈ X, μ (sphereCap x)) ≤ μ Set.univ := by
+            rw [← measure_iUnion_sphereCap_eq_sum μ hX]
+            exact measure_mono (Set.subset_univ _)
+
+          lemma card_mul_capMeasure_le_univ (μ : Measure (Metric.sphere (0 : E) 1))
+              {X : Finset E} (hX : IsKissingConfiguration X) {q : ℝ≥0∞}
+              (hq : ∀ x ∈ X, q ≤ μ (sphereCap x)) :
+              (X.card : ℝ≥0∞) * q ≤ μ Set.univ := by
+            calc
+              (X.card : ℝ≥0∞) * q = ∑ x ∈ X, q := by simp
+              _ ≤ ∑ x ∈ X, μ (sphereCap x) :=
+                Finset.sum_le_sum fun x hx => hq x hx
+              _ ≤ μ Set.univ := sum_measure_sphereCap_le_univ μ hX
+          ''',
+          ]
+          target = Path('Sqrt6KissingBound/CapPacking.lean')
+          logs = []
+          selected = None
+          for i, body in enumerate(bodies, 1):
+              text = preamble + '\n' + body + ending
+              target.write_text(text)
+              proc = subprocess.run(['lake','env','lean',str(target)], text=True,
+                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              logs.append(f'===== candidate {i} (exit {proc.returncode}) =====\n{proc.stdout}')
+              if proc.returncode == 0:
+                  selected = text
+                  break
+          Path('.ci').mkdir(exist_ok=True)
+          Path('.ci/cap-packing-rerun.log').write_text('\n'.join(logs))
+          if selected is None:
+              target.unlink(missing_ok=True)
+              raise SystemExit(1)
+          target.write_text(selected)
+          root = Path('Sqrt6KissingBound.lean')
+          r = root.read_text()
+          imp = 'import Sqrt6KissingBound.CapPacking\n'
+          if imp not in r:
+              anchor = 'import Sqrt6KissingBound.SphericalCaps\n'
+              r = r.replace(anchor, anchor + imp)
+              root.write_text(r)
+          PY
+          lake build
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/CapPacking.lean Sqrt6KissingBound.lean .ci/cap-packing-rerun.log
+          git commit -m 'Install verified finite cap packing' || true
+          git push origin HEAD:gpt-pro/full-lean-certificate
