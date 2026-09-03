@@ -24,7 +24,7 @@ jobs:
           lint: false
           axiom-audit: false
           use-mathlib-cache: true
-      - name: Package cached workspace
+      - name: Package cached workspace and toolchain
         shell: bash
         run: |
           tar --zstd -cf /tmp/sqrt6-lean-workspace.tar.zst \
@@ -32,11 +32,77 @@ jobs:
             --exclude=.ci \
             --exclude=manuscript \
             .
-          ls -lh /tmp/sqrt6-lean-workspace.tar.zst
-      - name: Upload cached workspace
+          tar --zstd -cf /tmp/lean-4.33.1-toolchain.tar.zst \
+            -C "$HOME/.elan/toolchains" leanprover--lean4---v4.33.1
+          split -b 400M -d -a 2 /tmp/sqrt6-lean-workspace.tar.zst /tmp/workspace.part-
+          split -b 400M -d -a 2 /tmp/lean-4.33.1-toolchain.tar.zst /tmp/toolchain.part-
+          for i in 00 01 02 03 04 05; do
+            test -e "/tmp/workspace.part-$i" || : > "/tmp/workspace.part-$i"
+          done
+          for i in 00 01 02; do
+            test -e "/tmp/toolchain.part-$i" || : > "/tmp/toolchain.part-$i"
+          done
+          ls -lh /tmp/workspace.part-* /tmp/toolchain.part-*
+      - name: Upload workspace part 00
         uses: actions/upload-artifact@v4
         with:
-          name: sqrt6-lean-workspace
-          path: /tmp/sqrt6-lean-workspace.tar.zst
+          name: workspace-part-00
+          path: /tmp/workspace.part-00
+          compression-level: 0
+          retention-days: 1
+      - name: Upload workspace part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-part-01
+          path: /tmp/workspace.part-01
+          compression-level: 0
+          retention-days: 1
+      - name: Upload workspace part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-part-02
+          path: /tmp/workspace.part-02
+          compression-level: 0
+          retention-days: 1
+      - name: Upload workspace part 03
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-part-03
+          path: /tmp/workspace.part-03
+          compression-level: 0
+          retention-days: 1
+      - name: Upload workspace part 04
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-part-04
+          path: /tmp/workspace.part-04
+          compression-level: 0
+          retention-days: 1
+      - name: Upload workspace part 05
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-part-05
+          path: /tmp/workspace.part-05
+          compression-level: 0
+          retention-days: 1
+      - name: Upload toolchain part 00
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-part-00
+          path: /tmp/toolchain.part-00
+          compression-level: 0
+          retention-days: 1
+      - name: Upload toolchain part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-part-01
+          path: /tmp/toolchain.part-01
+          compression-level: 0
+          retention-days: 1
+      - name: Upload toolchain part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-part-02
+          path: /tmp/toolchain.part-02
           compression-level: 0
           retention-days: 1
