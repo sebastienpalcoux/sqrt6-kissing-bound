@@ -1,0 +1,234 @@
+name: Develop cap data 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-capdata-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Develop the concrete cap data
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          if not Path('Sqrt6KissingBound/AnalysisEstimate.lean').exists():
+              raise SystemExit('AnalysisEstimate.lean is not yet available')
+
+          preamble = r'''import Sqrt6KissingBound.AnalysisEstimate
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+
+          /-- The normalized sine-integral cap fraction with exponent `m`. -/
+          def capFraction (m : ℕ) : ℝ := capNumerator m / capDenominator m
+          '''
+          ending = r'''
+
+          end
+
+          end Sqrt6KissingBound
+          '''
+          target = Path('Sqrt6KissingBound/AnalysisCapData.lean')
+          logs = []
+          text = preamble
+
+          def try_stage(name, candidates):
+              global text
+              for i, candidate in enumerate(candidates, 1):
+                  trial = text + '\n' + candidate + ending
+                  target.write_text(trial)
+                  proc = subprocess.run(
+                      ['lake', 'env', 'lean', str(target)],
+                      text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                  logs.append(f'===== {name}, candidate {i} (exit {proc.returncode}) =====\n{proc.stdout}')
+                  if proc.returncode == 0:
+                      text += '\n' + candidate
+                      return
+              Path('.ci').mkdir(exist_ok=True)
+              Path('.ci/capdata-candidates.log').write_text('\n'.join(logs))
+              target.unlink(missing_ok=True)
+              raise SystemExit(f'no candidate compiled for {name}')
+
+          try_stage('base fraction', [
+          r'''lemma capFraction_zero : capFraction 0 = (1 : ℝ) / 6 := by
+            rw [capFraction, capNumerator_zero, capDenominator_zero]
+            field_simp [Real.pi_ne_zero]
+            <;> ring
+          ''',
+          ])
+
+          try_stage('exponent-three values', [
+          r'''lemma capNumerator_three : capNumerator 3 = (2 : ℝ) / 3 - 3 * s3 / 8 := by
+            have h := capNumerator_recurrence 1
+            norm_num [capNumerator_one] at h
+            nlinarith
+
+          lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
+            have h := capDenominator_recurrence 1
+            norm_num [capDenominator_one] at h
+            nlinarith
+
+          lemma capFraction_three :
+              capFraction 3 = (1 : ℝ) / 2 - 9 * s3 / 32 := by
+            rw [capFraction, capNumerator_three, capDenominator_three]
+            ring
+          ''',
+          r'''lemma capNumerator_three : capNumerator 3 = (2 : ℝ) / 3 - 3 * s3 / 8 := by
+            convert capNumerator_recurrence 1 using 1 <;>
+              norm_num [capNumerator_one] <;> ring
+
+          lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
+            convert capDenominator_recurrence 1 using 1 <;>
+              norm_num [capDenominator_one]
+
+          lemma capFraction_three :
+              capFraction 3 = (1 : ℝ) / 2 - 9 * s3 / 32 := by
+            rw [capFraction, capNumerator_three, capDenominator_three]
+            ring
+          ''',
+          ])
+
+          try_stage('two-step fraction inequality', [
+          r'''lemma capFraction_step (m : ℕ) :
+              capFraction m / 6 ≤ capFraction (m + 2) := by
+            let a : ℝ := (m + 1 : ℝ) / (m + 2)
+            let e : ℝ := (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2)
+            have ha : 0 < a := by
+              dsimp [a]
+              positivity
+            have hJ : 0 < capDenominator m := capDenominator_pos m
+            have hJ2 : 0 < capDenominator (m + 2) := capDenominator_pos (m + 2)
+            have hm1 : (m + 1 : ℝ) ≠ 0 := by positivity
+            have hm2 : (m + 2 : ℝ) ≠ 0 := by positivity
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            have hscaled := mul_lt_mul_of_pos_left (capNumerator_lower m)
+              (mul_pos (by norm_num : (0 : ℝ) < 5 / 6) ha)
+            have hid :
+                (5 / 6 : ℝ) * a *
+                    (3 * s3 / (10 * (m + 1) * 2 ^ m)) = e := by
+              dsimp [a, e]
+              simp only [div_pow, one_pow, pow_succ]
+              field_simp [hm1, hm2, htwo]
+              <;> ring
+            have he : e < (5 / 6 : ℝ) * a * capNumerator m := by
+              rw [← hid]
+              simpa [mul_assoc] using hscaled
+            have hscalar :
+                a * capNumerator m / 6 < a * capNumerator m - e := by
+              nlinarith
+            have hmul := mul_lt_mul_of_pos_right hscalar hJ
+            have hleft : capFraction m / 6 =
+                (capNumerator m / 6) / capDenominator m := by
+              rw [capFraction]
+              ring
+            rw [hleft, capFraction]
+            apply (div_le_div_iff₀ hJ hJ2).2
+            rw [capNumerator_recurrence, capDenominator_recurrence]
+            change (capNumerator m / 6) * (a * capDenominator m) ≤
+              (a * capNumerator m - e) * capDenominator m
+            nlinarith
+          ''',
+          r'''lemma capFraction_step (m : ℕ) :
+              capFraction m / 6 ≤ capFraction (m + 2) := by
+            let a : ℝ := (m + 1 : ℝ) / (m + 2)
+            let e : ℝ := (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2)
+            have ha : 0 < a := by dsimp [a]; positivity
+            have hJ : 0 < capDenominator m := capDenominator_pos m
+            have hJ2 : 0 < capDenominator (m + 2) := capDenominator_pos (m + 2)
+            have hm1 : (m + 1 : ℝ) ≠ 0 := by positivity
+            have hm2 : (m + 2 : ℝ) ≠ 0 := by positivity
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            have hid :
+                e / ((5 / 6 : ℝ) * a) =
+                  3 * s3 / (10 * (m + 1) * 2 ^ m) := by
+              dsimp [a, e]
+              simp only [div_pow, one_pow, pow_succ]
+              field_simp [hm1, hm2, htwo]
+              <;> ring
+            have he : e < (5 / 6 : ℝ) * a * capNumerator m := by
+              have hpos : 0 < (5 / 6 : ℝ) * a := mul_pos (by norm_num) ha
+              rw [← (div_lt_iff₀ hpos)]
+              rw [hid]
+              exact capNumerator_lower m
+            have hscalar : a * capNumerator m / 6 < a * capNumerator m - e := by
+              nlinarith
+            have hmul := mul_lt_mul_of_pos_right hscalar hJ
+            have hleft : capFraction m / 6 =
+                (capNumerator m / 6) / capDenominator m := by
+              rw [capFraction]
+              ring
+            rw [hleft, capFraction]
+            apply (div_le_div_iff₀ hJ hJ2).2
+            rw [capNumerator_recurrence, capDenominator_recurrence]
+            change (capNumerator m / 6) * (a * capDenominator m) ≤
+              (a * capNumerator m - e) * capDenominator m
+            nlinarith
+          ''',
+          ])
+
+          try_stage('concrete CapData', [
+          r'''/-- The abstract cap data of `Core.lean`, now constructed from the sine integrals. -/
+          def sineCapData : CapData where
+            cap n := capFraction (n - 2)
+            cap_two := by
+              simpa using capFraction_zero
+            cap_five := by
+              simpa using capFraction_three
+            step n hn := by
+              have h := capFraction_step (n - 2)
+              simpa [Nat.sub_add_cancel hn] using h
+          ''',
+          r'''/-- The abstract cap data of `Core.lean`, now constructed from the sine integrals. -/
+          def sineCapData : CapData where
+            cap n := capFraction (n - 2)
+            cap_two := by norm_num [capFraction_zero]
+            cap_five := by norm_num [capFraction_three]
+            step n hn := by
+              have h := capFraction_step (n - 2)
+              have h₁ : n - 2 + 2 = n := Nat.sub_add_cancel hn
+              have h₂ : n + 2 - 2 = n := by omega
+              simpa [h₁, h₂] using h
+          ''',
+          ])
+
+          target.write_text(text + ending)
+          Path('.ci').mkdir(exist_ok=True)
+          Path('.ci/capdata-candidates.log').write_text('\n'.join(logs))
+          root = Path('Sqrt6KissingBound.lean')
+          r = root.read_text()
+          imp = 'import Sqrt6KissingBound.AnalysisCapData\n'
+          if imp not in r:
+              anchor = 'import Sqrt6KissingBound.AnalysisEstimate\n'
+              r = r.replace(anchor, anchor + imp)
+              root.write_text(r)
+          PY
+
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/AnalysisCapData.lean Sqrt6KissingBound.lean .ci/capdata-candidates.log
+          git commit -m 'Construct the cap data from sine integrals'
+          git push origin HEAD:gpt-pro/full-lean-certificate
