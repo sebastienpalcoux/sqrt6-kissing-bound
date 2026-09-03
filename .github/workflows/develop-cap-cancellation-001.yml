@@ -1,0 +1,137 @@
+name: Develop cap cancellation 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-cap-cancellation-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Pass from ENNReal cap packing to the real normalized inequality
+        shell: bash
+        run: |
+          test -f Sqrt6KissingBound/CapPacking.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          preamble = r'''import Sqrt6KissingBound.CapPacking
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+          '''
+          ending = r'''
+
+          end
+
+          end Sqrt6KissingBound
+          '''
+          candidates = [
+          r'''lemma real_card_mul_le_one_of_cap_lower
+              (μ : Measure (Metric.sphere (0 : E) 1)) [IsFiniteMeasure μ]
+              {X : Finset E} (hX : IsKissingConfiguration X) {c : ℝ} (hc : 0 ≤ c)
+              (hμ0 : μ Set.univ ≠ 0)
+              (hcap : ∀ x ∈ X, ENNReal.ofReal c * μ Set.univ ≤ μ (sphereCap x)) :
+              (X.card : ℝ) * c ≤ 1 := by
+            have hpack := card_mul_capMeasure_le_univ μ hX hcap
+            have htop : μ Set.univ ≠ ∞ := measure_ne_top μ Set.univ
+            have hreal := ENNReal.toReal_mono htop hpack
+            simp only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hc,
+              ENNReal.toReal_natCast] at hreal
+            have hμpos : 0 < (μ Set.univ).toReal :=
+              (ENNReal.toReal_pos).2 ⟨hμ0, htop⟩
+            nlinarith
+          ''',
+          r'''lemma real_card_mul_le_one_of_cap_lower
+              (μ : Measure (Metric.sphere (0 : E) 1)) [IsFiniteMeasure μ]
+              {X : Finset E} (hX : IsKissingConfiguration X) {c : ℝ} (hc : 0 ≤ c)
+              (hμ0 : μ Set.univ ≠ 0)
+              (hcap : ∀ x ∈ X, ENNReal.ofReal c * μ Set.univ ≤ μ (sphereCap x)) :
+              (X.card : ℝ) * c ≤ 1 := by
+            have hpack := card_mul_capMeasure_le_univ μ hX hcap
+            have htop : μ Set.univ ≠ ∞ := measure_ne_top μ Set.univ
+            have hreal :
+                ((X.card : ℝ≥0∞) * (ENNReal.ofReal c * μ Set.univ)).toReal ≤
+                  (μ Set.univ).toReal := ENNReal.toReal_mono htop hpack
+            rw [ENNReal.toReal_mul, ENNReal.toReal_mul,
+              ENNReal.toReal_ofReal hc] at hreal
+            norm_num at hreal
+            have hμpos : 0 < (μ Set.univ).toReal :=
+              (ENNReal.toReal_pos).2 ⟨hμ0, htop⟩
+            nlinarith
+          ''',
+          r'''lemma real_card_mul_le_one_of_cap_lower
+              (μ : Measure (Metric.sphere (0 : E) 1)) [IsFiniteMeasure μ]
+              {X : Finset E} (hX : IsKissingConfiguration X) {c : ℝ} (hc : 0 ≤ c)
+              (hμ0 : μ Set.univ ≠ 0)
+              (hcap : ∀ x ∈ X, ENNReal.ofReal c * μ Set.univ ≤ μ (sphereCap x)) :
+              (X.card : ℝ) * c ≤ 1 := by
+            have hpack := card_mul_capMeasure_le_univ μ hX hcap
+            have htop : μ Set.univ ≠ ∞ := measure_ne_top μ Set.univ
+            have hreal := ENNReal.toReal_mono htop hpack
+            have hμpos : 0 < (μ Set.univ).toReal := by
+              rw [ENNReal.toReal_pos]
+              exact ⟨hμ0, htop⟩
+            norm_num [ENNReal.toReal_mul, ENNReal.toReal_ofReal hc] at hreal
+            nlinarith
+          ''',
+          ]
+
+          target = Path('Sqrt6KissingBound/CapCancellation.lean')
+          logs = []
+          selected = None
+          for i, body in enumerate(candidates, 1):
+              text = preamble + body + ending
+              target.write_text(text)
+              proc = subprocess.run(
+                  ['lake', 'env', 'lean', str(target)],
+                  text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              logs.append(f'===== candidate {i} (exit {proc.returncode}) =====\n{proc.stdout}')
+              if proc.returncode == 0:
+                  selected = text
+                  break
+          Path('.ci').mkdir(exist_ok=True)
+          Path('.ci/cap-cancellation-candidates.log').write_text('\n'.join(logs))
+          if selected is None:
+              target.unlink(missing_ok=True)
+              raise SystemExit(1)
+          target.write_text(selected)
+          root = Path('Sqrt6KissingBound.lean')
+          r = root.read_text()
+          imp = 'import Sqrt6KissingBound.CapCancellation\n'
+          if imp not in r:
+              anchor = 'import Sqrt6KissingBound.CapPacking\n'
+              r = r.replace(anchor, anchor + imp)
+              root.write_text(r)
+          PY
+
+          lake build
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/CapCancellation.lean Sqrt6KissingBound.lean .ci/cap-cancellation-candidates.log
+          git commit -m 'Normalize and cancel the total sphere measure'
+          git push origin HEAD:gpt-pro/full-lean-certificate
