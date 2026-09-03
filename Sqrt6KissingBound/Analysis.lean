@@ -73,8 +73,14 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6
   have h := strictConcaveOn_sin_Icc.concaveOn.2
     (show (0 : ℝ) ∈ Set.Icc (0 : ℝ) Real.pi by simp [Real.pi_pos.le]) hcap
     (sub_nonneg.2 hx1) hx0
-  dsimp [x] at h
-  convert h using 1 <;> field_simp [Real.pi_ne_zero] <;> ring
+  have h' := h (by ring)
+  dsimp [x] at h'
+  simp only [Real.sin_zero, mul_zero, zero_add, Real.sin_pi_div_six] at h'
+  have harg : 6 * t / Real.pi * (Real.pi / 6) = t := by
+    field_simp [Real.pi_ne_zero]
+    ring
+  rw [harg] at h'
+  convert h' using 1 <;> ring
 
 /-- The chord estimate integrated after taking a natural power. -/
 lemma chord_integral_le_capNumerator (m : ℕ) :
@@ -98,19 +104,23 @@ lemma chord_integral (m : ℕ) :
       fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
     funext t
     ring
-  have hpipow : Real.pi ^ m * Real.pi⁻¹ ^ m = 1 := by
-    rw [← mul_pow, mul_inv_cancel₀ hpi, one_pow]
-  have hsixpow : ((1 : ℝ) / 6) ^ m * 2 ^ m * 3 ^ m = 1 := by
-    rw [← mul_pow, ← mul_pow]
-    norm_num
+  have hbase : ((3 : ℝ) / Real.pi) * (Real.pi / 6) * 2 = 1 := by
+    field_simp [hpi]
+    ring
+  have hpow : ((3 : ℝ) / Real.pi) ^ m * (Real.pi / 6) ^ m * 2 ^ m = 1 := by
+    rw [← mul_pow, ← mul_pow, hbase, one_pow]
   rw [hfun, intervalIntegral.integral_const_mul, integral_pow]
   simp
-  field_simp
+  field_simp [hpi]
+  rw [pow_succ]
   calc
-    Real.pi * Real.pi ^ m * Real.pi⁻¹ ^ m * (1 / 6) ^ m * 2 ^ m * 3 ^ m
-        = Real.pi * (Real.pi ^ m * Real.pi⁻¹ ^ m) *
-            ((1 / 6) ^ m * 2 ^ m * 3 ^ m) := by ring
-    _ = Real.pi := by rw [hpipow, hsixpow]; ring
+    ((3 : ℝ) / Real.pi) ^ m * 6 *
+        ((Real.pi / 6) ^ m * (Real.pi / 6)) * 2 ^ m
+        = (((3 : ℝ) / Real.pi) ^ m * (Real.pi / 6) ^ m * 2 ^ m) *
+            (6 * (Real.pi / 6)) := by ring
+    _ = Real.pi := by
+      rw [hpow]
+      field_simp [hpi]
 
 lemma pi_div_six_gt_three_sqrt3_div_ten :
     3 * s3 / 10 < Real.pi / 6 := by
