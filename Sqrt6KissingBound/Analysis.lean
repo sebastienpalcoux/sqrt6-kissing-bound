@@ -3,9 +3,8 @@ import Mathlib
 /-!
 # One-dimensional estimates for the square-root-of-six kissing bound
 
-This file formalizes the sine-integral part of the original cap proof.  The final
-end-to-end formalization uses an ambient-volume argument, but these analytic lemmas
-are retained as independently checked supporting material.
+This file begins the end-to-end formalization of the sine-integral part of the
+spherical-cap proof.  No geometric or analytic statement in this file is assumed.
 -/
 
 namespace Sqrt6KissingBound
@@ -31,6 +30,7 @@ lemma capNumerator_recurrence (m : ℕ) :
         (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2) := by
   rw [capNumerator, capNumerator, integral_sin_pow]
   simp [Real.sin_pi_div_six, Real.cos_pi_div_six]
+  field_simp
   ring
 
 lemma capDenominator_recurrence (m : ℕ) :
@@ -53,19 +53,6 @@ lemma capNumerator_one : capNumerator 1 = 1 - s3 / 2 := by
 
 lemma capDenominator_one : capDenominator 1 = 2 := by
   norm_num [capDenominator, integral_sin]
-
-lemma capNumerator_three : capNumerator 3 = (2 : ℝ) / 3 - 3 * s3 / 8 := by
-  have h := capNumerator_recurrence 1
-  norm_num at h ⊢
-  rw [capNumerator_one] at h
-  nlinarith
-
-lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
-  have h := capDenominator_recurrence 1
-  norm_num at h ⊢
-  rw [capDenominator_one] at h
-  norm_num at h ⊢
-  exact h
 
 end
 
