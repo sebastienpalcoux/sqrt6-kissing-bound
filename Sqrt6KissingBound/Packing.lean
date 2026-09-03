@@ -17,6 +17,7 @@ open Set Metric MeasureTheory
 private abbrev s3 : ℝ := Real.sqrt 3
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+  [MeasurableSpace E] [BorelSpace E]
 
 /-- The open spherical cap of angular radius `π/6` centered at the unit vector `x`. -/
 def sphericalCap (x : E) : Set (sphere (0 : E) 1) :=
@@ -39,7 +40,7 @@ lemma sphericalCap_disjoint {x z : E}
     Disjoint (sphericalCap x) (sphericalCap z) := by
   rw [Set.disjoint_left]
   intro u hux huz
-  exact Set.disjoint_left.mp (strictCone_disjoint hx hz hxz) (u : E) hux huz
+  exact (Set.disjoint_left.mp (strictCone_disjoint hx hz hxz)) hux huz
 
 variable [FiniteDimensional ℝ E]
 
