@@ -70,7 +70,7 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6
     constructor
     · positivity
     · nlinarith [Real.pi_pos]
-  have h := Real.strictConcaveOn_sin_Icc.concaveOn.2
+  have h := (Real.strictConcaveOn_sin_Icc).concaveOn.2
     (show (0 : ℝ) ∈ Set.Icc (0 : ℝ) Real.pi by simp [Real.pi_pos.le]) hcap
     (sub_nonneg.2 hx1) hx0
   dsimp [x] at h
@@ -81,8 +81,8 @@ lemma chord_integral_le_capNumerator (m : ℕ) :
     (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) ≤ capNumerator m := by
   rw [capNumerator]
   apply intervalIntegral.integral_mono_on (by positivity)
-  · fun_prop
-  · fun_prop
+  · exact Continuous.intervalIntegrable (by fun_prop) _ _
+  · exact Continuous.intervalIntegrable (by fun_prop) _ _
   · intro t ht
     have hnonneg : 0 ≤ 3 * t / Real.pi := by
       have : 0 ≤ t := ht.1
@@ -94,18 +94,19 @@ lemma chord_integral (m : ℕ) :
     (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
       Real.pi / (6 * (m + 1) * 2 ^ m) := by
   have hpi : Real.pi ≠ 0 := Real.pi_ne_zero
-  simp_rw [show (3 * (t : ℝ) / Real.pi) ^ m =
-      ((3 : ℝ) / Real.pi) ^ m * t ^ m by ring]
-  rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_pow]
+  have hfun : (fun t : ℝ => (3 * t / Real.pi) ^ m) =
+      fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
+    funext t
+    ring
+  rw [hfun, intervalIntegral.integral_const_mul, intervalIntegral.integral_pow]
   simp
   field_simp
   ring
 
 lemma pi_div_six_gt_three_sqrt3_div_ten :
     3 * s3 / 10 < Real.pi / 6 := by
-  have hpi : (157 : ℝ) / 50 < Real.pi := by
-    norm_num at Real.pi_gt_d2 ⊢
-    exact Real.pi_gt_d2
+  have hpi := Real.pi_gt_d2
+  norm_num at hpi
   have hs3 : s3 < (26 : ℝ) / 15 := sqrt3_lt_26_div_15
   nlinarith
 
@@ -113,13 +114,18 @@ lemma pi_div_six_gt_three_sqrt3_div_ten :
 lemma capNumerator_lower (m : ℕ) :
     3 * s3 / (10 * (m + 1) * 2 ^ m) < capNumerator m := by
   have hD : 0 < (m + 1 : ℝ) * 2 ^ m := by positivity
+  have hDne : (m + 1 : ℝ) * 2 ^ m ≠ 0 := ne_of_gt hD
   have hconst := pi_div_six_gt_three_sqrt3_div_ten
   calc
     3 * s3 / (10 * (m + 1) * 2 ^ m)
-        = (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by ring
+        = (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by
+          field_simp [hDne]
+          ring
     _ < (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) :=
       div_lt_div_of_pos_right hconst hD
-    _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by ring
+    _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
+      field_simp [hDne]
+      ring
     _ = (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) :=
       (chord_integral m).symm
     _ ≤ capNumerator m := chord_integral_le_capNumerator m
