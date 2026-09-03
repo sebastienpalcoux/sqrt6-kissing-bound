@@ -1,0 +1,109 @@
+✖ [8707/8710] Building Sqrt6KissingBound.Analysis (5.4s)
+trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/Analysis.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Analysis.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Analysis.setup.json --json
+error: Sqrt6KissingBound/Analysis.lean:73:12: Unknown constant `Real.strictConcaveOn_sin_Icc.concaveOn`
+error: Sqrt6KissingBound/Analysis.lean:60:36: unsolved goals
+t : ℝ
+ht0 : 0 ≤ t
+ht1 : t ≤ π / 6
+x : ℝ := 6 * t / π
+hx0 : 0 ≤ x
+hx1 : x ≤ 1
+hcap : π / 6 ∈ Icc 0 π
+⊢ 3 * t / π ≤ Real.sin t
+error: Sqrt6KissingBound/Analysis.lean:84:4: `IntervalIntegrable (fun u => (3 * u / π) ^ m) MeasureTheory.volume 0
+  (π / 6)` is not a `fun_prop` goal! Consider marking `IntervalIntegrable` with `@[fun_prop]`.
+error: Sqrt6KissingBound/Analysis.lean:85:4: `IntervalIntegrable (fun u => Real.sin u ^ m) MeasureTheory.volume 0
+  (π / 6)` is not a `fun_prop` goal! Consider marking `IntervalIntegrable` with `@[fun_prop]`.
+error: Sqrt6KissingBound/Analysis.lean:97:22: Unknown identifier `t`
+error: Sqrt6KissingBound/Analysis.lean:98:32: Unknown identifier `t`
+error: Sqrt6KissingBound/Analysis.lean:97:11: `simp` made no progress
+error: Sqrt6KissingBound/Analysis.lean:107:16: Unexpected term `Real.pi_gt_d2`; expected single reference to variable
+info: Sqrt6KissingBound/Analysis.lean:119:54: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/Analysis.lean:119:51: unsolved goals
+m : ℕ
+hD : 0 < (↑m + 1) * 2 ^ m
+hconst : 3 * s3 / 10 < π / 6
+⊢ s3 * (↑m * 2 ^ m * 10 + 2 ^ m * 10)⁻¹ * 3 = s3 * (↑m * 2 ^ m + 2 ^ m)⁻¹ * (3 / 10)
+info: Sqrt6KissingBound/Analysis.lean:122:46: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/Analysis.lean:122:43: unsolved goals
+m : ℕ
+hD : 0 < (↑m + 1) * 2 ^ m
+hconst : 3 * s3 / 10 < π / 6
+⊢ π * (↑m * 2 ^ m + 2 ^ m)⁻¹ * (1 / 6) = π * (↑m * 2 ^ m * 6 + 2 ^ m * 6)⁻¹
+error: Lean exited with code 1
+✖ [8708/8710] Building Sqrt6KissingBound.Geometry (12s)
+trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/Geometry.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Geometry.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Geometry.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Geometry.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Geometry.setup.json --json
+error: Sqrt6KissingBound/Geometry.lean:68:45: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |a|
+in the target expression
+  1 ^ 2 - 2 * inner ℝ x (a • u) + (‖a‖ * 1) ^ 2 = 1 - a ^ 2
+
+E : Type u_1
+inst✝¹ : NormedAddCommGroup E
+inst✝ : InnerProductSpace ℝ E
+x z : E
+hx : ‖x‖ = 1
+hz : ‖z‖ = 1
+hxz : inner ℝ x z ≤ 1 / 2
+y : E
+hyx : s3 / 2 * ‖y‖ < inner ℝ x y
+hyz : s3 / 2 * ‖y‖ < inner ℝ z y
+hy0 : y ≠ 0
+hny : 0 < ‖y‖
+u : E := NormedSpace.normalize y
+hu : ‖u‖ = 1
+a : ℝ := inner ℝ x u
+b : ℝ := inner ℝ z u
+ha : s3 / 2 < a
+hb : s3 / 2 < b
+hc0 : 0 ≤ s3 / 2
+ha0 : 0 ≤ a
+hb0 : 0 ≤ b
+p : E := x - a • u
+q : E := z - b • u
+⊢ 1 ^ 2 - 2 * inner ℝ x (a • u) + (‖a‖ * 1) ^ 2 = 1 - a ^ 2
+error: Sqrt6KissingBound/Geometry.lean:73:45: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |b|
+in the target expression
+  1 ^ 2 - 2 * inner ℝ z (b • u) + (‖b‖ * 1) ^ 2 = 1 - b ^ 2
+
+E : Type u_1
+inst✝¹ : NormedAddCommGroup E
+inst✝ : InnerProductSpace ℝ E
+x z : E
+hx : ‖x‖ = 1
+hz : ‖z‖ = 1
+hxz : inner ℝ x z ≤ 1 / 2
+y : E
+hyx : s3 / 2 * ‖y‖ < inner ℝ x y
+hyz : s3 / 2 * ‖y‖ < inner ℝ z y
+hy0 : y ≠ 0
+hny : 0 < ‖y‖
+u : E := NormedSpace.normalize y
+hu : ‖u‖ = 1
+a : ℝ := inner ℝ x u
+b : ℝ := inner ℝ z u
+ha : s3 / 2 < a
+hb : s3 / 2 < b
+hc0 : 0 ≤ s3 / 2
+ha0 : 0 ≤ a
+hb0 : 0 ≤ b
+p : E := x - a • u
+q : E := z - b • u
+hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2
+⊢ 1 ^ 2 - 2 * inner ℝ z (b • u) + (‖b‖ * 1) ^ 2 = 1 - b ^ 2
+error: Lean exited with code 1
+Some required targets logged failures:
+- Sqrt6KissingBound.Analysis
+- Sqrt6KissingBound.Geometry
+error: build failed
