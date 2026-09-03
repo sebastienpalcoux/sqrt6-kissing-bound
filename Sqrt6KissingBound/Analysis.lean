@@ -65,6 +65,26 @@ lemma capDenominator_three : capDenominator 3 = (4 : ℝ) / 3 := by
   norm_num at h ⊢
   exact h
 
+/-- The chord from `(0,0)` to `(π/6,1/2)` lies below sine. -/
+lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht6 : t ≤ Real.pi / 6) :
+    3 * t / Real.pi ≤ Real.sin t := by
+  have hpi : 0 < Real.pi := Real.pi_pos
+  let x : ℝ := 6 * t / Real.pi
+  have hx0 : 0 ≤ x := by
+    dsimp [x]
+    positivity
+  have hx1 : x ≤ 1 := by
+    dsimp [x]
+    apply (div_le_one hpi).2
+    nlinarith
+  have h := Real.strictConcaveOn_sin_Icc.concaveOn.2
+    (show (0 : ℝ) ∈ Set.Icc 0 Real.pi by exact ⟨le_rfl, hpi.le⟩)
+    (show Real.pi / 6 ∈ Set.Icc 0 Real.pi by constructor <;> nlinarith)
+    (sub_nonneg.2 hx1) hx0
+  dsimp [x] at h
+  simp [Real.sin_pi_div_six, hpi.ne'] at h
+  convert h using 1 <;> field_simp [hpi.ne'] <;> ring
+
 end
 
 end Sqrt6KissingBound
