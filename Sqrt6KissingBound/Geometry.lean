@@ -58,29 +58,19 @@ lemma strictCone_disjoint {x z : E}
     change s3 / 2 < inner ℝ z (NormedSpace.normalize y)
     rw [NormedSpace.normalize, real_inner_smul_right]
     simpa [div_eq_mul_inv, mul_comm] using hdiv
-  let p : E := x - a • u
-  let q : E := z - b • u
-  have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
-    calc
-      ‖p‖ ^ 2 = inner ℝ p p := (real_inner_self_eq_norm_sq p).symm
-      _ = 1 - a ^ 2 := by
-        simp only [p, inner_sub_left, inner_sub_right, real_inner_smul_left,
-          real_inner_smul_right, real_inner_self_eq_norm_sq, hx, hu, one_pow]
-        rw [real_inner_comm u x]
-        dsimp [a]
-        ring
-  have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
-    calc
-      ‖q‖ ^ 2 = inner ℝ q q := (real_inner_self_eq_norm_sq q).symm
-      _ = 1 - b ^ 2 := by
-        simp only [q, inner_sub_left, inner_sub_right, real_inner_smul_left,
-          real_inner_smul_right, real_inner_self_eq_norm_sq, hz, hu, one_pow]
-        rw [real_inner_comm u z]
-        dsimp [b]
-        ring
   have hc0 : 0 ≤ s3 / 2 := by positivity
   have ha0 : 0 ≤ a := hc0.trans ha.le
   have hb0 : 0 ≤ b := hc0.trans hb.le
+  let p : E := x - a • u
+  let q : E := z - b • u
+  have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
+    rw [p, norm_sub_sq_real, norm_smul, hx, hu, abs_of_nonneg ha0]
+    change 1 ^ 2 - 2 * (a * a) + a ^ 2 * 1 ^ 2 = 1 - a ^ 2
+    ring
+  have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
+    rw [q, norm_sub_sq_real, norm_smul, hz, hu, abs_of_nonneg hb0]
+    change 1 ^ 2 - 2 * (b * b) + b ^ 2 * 1 ^ 2 = 1 - b ^ 2
+    ring
   have ha_sq : (3 : ℝ) / 4 < a ^ 2 := by
     have hpow : (s3 / 2) ^ 2 < a ^ 2 := (sq_lt_sq₀ hc0 ha0).2 ha
     nlinarith [sqrt3_sq_geom]
@@ -114,8 +104,11 @@ lemma strictCone_disjoint {x z : E}
   have hpq_eq : inner ℝ p q = inner ℝ x z - a * b := by
     simp only [p, q, inner_sub_left, inner_sub_right, real_inner_smul_left,
       real_inner_smul_right, real_inner_self_eq_norm_sq, hu, one_pow]
-    rw [real_inner_comm u z]
-    dsimp [a, b]
+    have huz : inner ℝ u z = b := by
+      rw [real_inner_comm]
+      rfl
+    have hxu : inner ℝ x u = a := rfl
+    rw [huz, hxu]
     ring
   have hdecomp : inner ℝ x z = a * b + inner ℝ p q := by
     rw [hpq_eq]
