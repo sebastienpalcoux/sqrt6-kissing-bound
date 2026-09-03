@@ -78,9 +78,10 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6
   simp only [Real.sin_zero, mul_zero, zero_add, Real.sin_pi_div_six] at h'
   have harg : 6 * t / Real.pi * (Real.pi / 6) = t := by
     field_simp [Real.pi_ne_zero]
-    ring
   rw [harg] at h'
-  convert h' using 1 <;> ring
+  calc
+    3 * t / Real.pi = 6 * t / Real.pi * ((1 : ℝ) / 2) := by ring
+    _ ≤ Real.sin t := h'
 
 /-- The chord estimate integrated after taking a natural power. -/
 lemma chord_integral_le_capNumerator (m : ℕ) :
