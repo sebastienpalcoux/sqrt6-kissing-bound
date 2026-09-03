@@ -1,0 +1,232 @@
+name: Develop cap estimate 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-estimate-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Develop and select the cap-estimate proofs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          if not Path('Sqrt6KissingBound/AnalysisChord.lean').exists():
+              raise SystemExit('AnalysisChord.lean is not yet available')
+
+          preamble = r'''import Sqrt6KissingBound.AnalysisChord
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set
+          open scoped Interval Real
+          open intervalIntegral
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+          '''
+          ending = r'''
+
+          end
+
+          end Sqrt6KissingBound
+          '''
+          target = Path('Sqrt6KissingBound/AnalysisEstimate.lean')
+          logs = []
+          text = preamble
+
+          def try_stage(name, candidates):
+              global text
+              for i, candidate in enumerate(candidates, 1):
+                  trial = text + '\n' + candidate + ending
+                  target.write_text(trial)
+                  proc = subprocess.run(
+                      ['lake', 'env', 'lean', str(target)],
+                      text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                  logs.append(f'===== {name}, candidate {i} (exit {proc.returncode}) =====\n{proc.stdout}')
+                  if proc.returncode == 0:
+                      text += '\n' + candidate
+                      return
+              Path('.ci').mkdir(exist_ok=True)
+              Path('.ci/estimate-candidates.log').write_text('\n'.join(logs))
+              target.unlink(missing_ok=True)
+              raise SystemExit(f'no candidate compiled for {name}')
+
+          try_stage('integral monotonicity', [
+          r'''/-- The chord estimate integrated after taking a natural power. -/
+          lemma chord_integral_le_capNumerator (m : ℕ) :
+              (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) ≤ capNumerator m := by
+            rw [capNumerator]
+            apply intervalIntegral.integral_mono_on (by positivity)
+            · exact (by
+                fun_prop : Continuous (fun t : ℝ => (3 * t / Real.pi) ^ m)).intervalIntegrable
+            · exact (by
+                fun_prop : Continuous (fun t : ℝ => Real.sin t ^ m)).intervalIntegrable
+            · intro t ht
+              have hnonneg : 0 ≤ 3 * t / Real.pi := by
+                have : 0 ≤ t := ht.1
+                positivity
+              exact pow_le_pow_left₀ hnonneg (three_mul_div_pi_le_sin ht.1 ht.2) m
+          ''',
+          r'''/-- The chord estimate integrated after taking a natural power. -/
+          lemma chord_integral_le_capNumerator (m : ℕ) :
+              (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) ≤ capNumerator m := by
+            rw [capNumerator]
+            apply intervalIntegral.integral_mono_on (by positivity)
+            · apply Continuous.intervalIntegrable
+              fun_prop
+            · apply Continuous.intervalIntegrable
+              fun_prop
+            · intro t ht
+              have hnonneg : 0 ≤ 3 * t / Real.pi := by positivity
+              exact pow_le_pow_left₀ hnonneg (three_mul_div_pi_le_sin ht.1 ht.2) m
+          ''',
+          ])
+
+          try_stage('elementary integral', [
+          r'''/-- Evaluation of the elementary integral appearing in the chord estimate. -/
+          lemma chord_integral (m : ℕ) :
+              (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
+                Real.pi / (6 * (m + 1) * 2 ^ m) := by
+            have hfun : (fun t : ℝ => (3 * t / Real.pi) ^ m) =
+                fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
+              funext t
+              ring
+            rw [hfun, intervalIntegral.integral_const_mul, intervalIntegral.integral_pow]
+            simp only [zero_pow (Nat.succ_ne_zero m), sub_zero]
+            rw [pow_succ]
+            have hpow : ((3 : ℝ) / Real.pi) ^ m * (Real.pi / 6) ^ m =
+                ((1 : ℝ) / 2) ^ m := by
+              rw [← mul_pow]
+              congr 1
+              field_simp [Real.pi_ne_zero]
+              <;> ring
+            rw [← mul_assoc, hpow]
+            have hm : (m + 1 : ℝ) ≠ 0 := by positivity
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            field_simp [hm, htwo]
+            <;> ring
+          ''',
+          r'''/-- Evaluation of the elementary integral appearing in the chord estimate. -/
+          lemma chord_integral (m : ℕ) :
+              (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
+                Real.pi / (6 * (m + 1) * 2 ^ m) := by
+            have hfun : (fun t : ℝ => (3 * t / Real.pi) ^ m) =
+                fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
+              funext t
+              ring
+            rw [hfun, intervalIntegral.integral_const_mul, intervalIntegral.integral_pow]
+            simp only [zero_pow (Nat.succ_ne_zero m), sub_zero]
+            rw [pow_succ]
+            have hbase : ((3 : ℝ) / Real.pi) * (Real.pi / 6) = (1 : ℝ) / 2 := by
+              field_simp [Real.pi_ne_zero]
+              <;> ring
+            rw [← mul_assoc, ← mul_pow, hbase]
+            have hm : (m + 1 : ℝ) ≠ 0 := by positivity
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            field_simp [hm, htwo]
+            <;> ring
+          ''',
+          ])
+
+          try_stage('numerical constant', [
+          r'''lemma pi_div_six_gt_three_sqrt3_div_ten :
+              3 * s3 / 10 < Real.pi / 6 := by
+            have hpi := Real.pi_gt_d2
+            have hs3 : s3 < (26 : ℝ) / 15 := sqrt3_lt_26_div_15
+            norm_num at hpi
+            nlinarith
+          ''',
+          r'''lemma pi_div_six_gt_three_sqrt3_div_ten :
+              3 * s3 / 10 < Real.pi / 6 := by
+            have hpi : (157 : ℝ) / 50 < Real.pi := by
+              have h := Real.pi_gt_d2
+              norm_num at h ⊢
+              exact h
+            have hs3 : s3 < (26 : ℝ) / 15 := sqrt3_lt_26_div_15
+            nlinarith
+          ''',
+          ])
+
+          try_stage('numerator lower bound', [
+          r'''/-- The quantitative lower estimate that drives the two-step cap recurrence. -/
+          lemma capNumerator_lower (m : ℕ) :
+              3 * s3 / (10 * (m + 1) * 2 ^ m) < capNumerator m := by
+            have hD : 0 < (m + 1 : ℝ) * 2 ^ m := by positivity
+            have hm : (m + 1 : ℝ) ≠ 0 := ne_of_gt (by positivity)
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            have hleft :
+                3 * s3 / (10 * (m + 1) * 2 ^ m) =
+                  (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by
+              field_simp [hm, htwo]
+              <;> ring
+            have hright :
+                (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) =
+                  Real.pi / (6 * (m + 1) * 2 ^ m) := by
+              field_simp [hm, htwo]
+              <;> ring
+            rw [hleft]
+            calc
+              (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m)
+                  < (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) :=
+                    div_lt_div_of_pos_right pi_div_six_gt_three_sqrt3_div_ten hD
+              _ = Real.pi / (6 * (m + 1) * 2 ^ m) := hright
+              _ = (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) :=
+                    (chord_integral m).symm
+              _ ≤ capNumerator m := chord_integral_le_capNumerator m
+          ''',
+          r'''/-- The quantitative lower estimate that drives the two-step cap recurrence. -/
+          lemma capNumerator_lower (m : ℕ) :
+              3 * s3 / (10 * (m + 1) * 2 ^ m) < capNumerator m := by
+            have hD : 0 < (m + 1 : ℝ) * 2 ^ m := by positivity
+            have h := div_lt_div_of_pos_right
+              pi_div_six_gt_three_sqrt3_div_ten hD
+            have hm : (m + 1 : ℝ) ≠ 0 := ne_of_gt (by positivity)
+            have htwo : (2 : ℝ) ^ m ≠ 0 := pow_ne_zero _ (by norm_num)
+            have h' :
+                3 * s3 / (10 * (m + 1) * 2 ^ m) <
+                  Real.pi / (6 * (m + 1) * 2 ^ m) := by
+              convert h using 1 <;> field_simp [hm, htwo] <;> ring
+            exact h'.trans_le ((chord_integral m).symm ▸ chord_integral_le_capNumerator m)
+          ''',
+          ])
+
+          target.write_text(text + ending)
+          Path('.ci').mkdir(exist_ok=True)
+          Path('.ci/estimate-candidates.log').write_text('\n'.join(logs))
+          root = Path('Sqrt6KissingBound.lean')
+          r = root.read_text()
+          imp = 'import Sqrt6KissingBound.AnalysisEstimate\n'
+          if imp not in r:
+              anchor = 'import Sqrt6KissingBound.AnalysisChord\n'
+              r = r.replace(anchor, anchor + imp)
+              root.write_text(r)
+          PY
+
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/AnalysisEstimate.lean Sqrt6KissingBound.lean .ci/estimate-candidates.log
+          git commit -m 'Formalize the quantitative cap-numerator estimate'
+          git push origin HEAD:gpt-pro/full-lean-certificate
