@@ -40,7 +40,7 @@ lemma strictCone_disjoint {x z : E}
     subst y
     simp at hyx
   have hny : 0 < ‖y‖ := norm_pos_iff.mpr hy0
-  let u : E := normalize y
+  let u : E := NormedSpace.normalize y
   have hu : ‖u‖ = 1 := by
     dsimp [u]
     exact norm_normalize hy0
@@ -49,23 +49,35 @@ lemma strictCone_disjoint {x z : E}
   have ha : s3 / 2 < a := by
     have hdiv : s3 / 2 < inner ℝ x y / ‖y‖ :=
       (lt_div_iff₀ hny).2 hyx
-    simpa [a, u, normalize, div_eq_mul_inv, real_inner_smul_right,
-      mul_comm, mul_left_comm, mul_assoc] using hdiv
+    change s3 / 2 < inner ℝ x (NormedSpace.normalize y)
+    rw [NormedSpace.normalize, real_inner_smul_right]
+    simpa [div_eq_mul_inv, mul_comm] using hdiv
   have hb : s3 / 2 < b := by
     have hdiv : s3 / 2 < inner ℝ z y / ‖y‖ :=
       (lt_div_iff₀ hny).2 hyz
-    simpa [b, u, normalize, div_eq_mul_inv, real_inner_smul_right,
-      mul_comm, mul_left_comm, mul_assoc] using hdiv
+    change s3 / 2 < inner ℝ z (NormedSpace.normalize y)
+    rw [NormedSpace.normalize, real_inner_smul_right]
+    simpa [div_eq_mul_inv, mul_comm] using hdiv
   let p : E := x - a • u
   let q : E := z - b • u
   have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
-    rw [← real_inner_self_eq_norm_sq]
-    simp [p, a, hx, hu, real_inner_self_eq_norm_sq, real_inner_comm]
-    ring
+    calc
+      ‖p‖ ^ 2 = inner ℝ p p := (real_inner_self_eq_norm_sq p).symm
+      _ = 1 - a ^ 2 := by
+        simp only [p, inner_sub_left, inner_sub_right, real_inner_smul_left,
+          real_inner_smul_right, real_inner_self_eq_norm_sq, hx, hu, one_pow]
+        rw [real_inner_comm u x]
+        dsimp [a]
+        ring
   have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
-    rw [← real_inner_self_eq_norm_sq]
-    simp [q, b, hz, hu, real_inner_self_eq_norm_sq, real_inner_comm]
-    ring
+    calc
+      ‖q‖ ^ 2 = inner ℝ q q := (real_inner_self_eq_norm_sq q).symm
+      _ = 1 - b ^ 2 := by
+        simp only [q, inner_sub_left, inner_sub_right, real_inner_smul_left,
+          real_inner_smul_right, real_inner_self_eq_norm_sq, hz, hu, one_pow]
+        rw [real_inner_comm u z]
+        dsimp [b]
+        ring
   have hc0 : 0 ≤ s3 / 2 := by positivity
   have ha0 : 0 ≤ a := hc0.trans ha.le
   have hb0 : 0 ≤ b := hc0.trans hb.le
@@ -99,8 +111,14 @@ lemma strictCone_disjoint {x z : E}
     have habs : |inner ℝ p q| ≤ ‖p‖ * ‖q‖ := abs_real_inner_le_norm p q
     have hlower : -(‖p‖ * ‖q‖) ≤ inner ℝ p q := (abs_le.mp habs).1
     linarith
+  have hpq_eq : inner ℝ p q = inner ℝ x z - a * b := by
+    simp only [p, q, inner_sub_left, inner_sub_right, real_inner_smul_left,
+      real_inner_smul_right, real_inner_self_eq_norm_sq, hu, one_pow]
+    rw [real_inner_comm u z]
+    dsimp [a, b]
+    ring
   have hdecomp : inner ℝ x z = a * b + inner ℝ p q := by
-    simp [p, q, a, b, hu, real_inner_self_eq_norm_sq, real_inner_comm]
+    rw [hpq_eq]
     ring
   rw [hdecomp] at hxz
   linarith
