@@ -81,9 +81,7 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht6 : t ≤ Real.pi / 6
     (show (0 : ℝ) ∈ Set.Icc 0 Real.pi by exact ⟨le_rfl, hpi.le⟩)
     (show Real.pi / 6 ∈ Set.Icc 0 Real.pi by constructor <;> nlinarith)
     (sub_nonneg.2 hx1) hx0
-  dsimp [x] at h
-  simp [Real.sin_pi_div_six, hpi.ne'] at h
-  convert h using 1 <;> field_simp [hpi.ne'] <;> ring
+  simpa [x, Real.sin_pi_div_six, div_eq_mul_inv, hpi.ne'] using h
 
 end
 
