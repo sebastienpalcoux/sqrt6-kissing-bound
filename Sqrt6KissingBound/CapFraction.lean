@@ -47,7 +47,10 @@ private lemma six_boundary_eq_scaled_lower (m : ℕ) :
     norm_num
   rw [pow_succ]
   field_simp [hm]
-  rw [hpow]
+  calc
+    6 * ((1 : ℝ) / 2) ^ m * 10 * 2 ^ m
+        = 60 * (((1 : ℝ) / 2) ^ m * 2 ^ m) := by ring
+    _ = 2 ^ 2 * 5 * 3 := by rw [hpow]; norm_num
 
 private lemma boundary_term_lt (m : ℕ) :
     6 * (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) <
