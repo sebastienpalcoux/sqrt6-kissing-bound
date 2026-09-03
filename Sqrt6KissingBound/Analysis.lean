@@ -70,7 +70,7 @@ lemma three_mul_div_pi_le_sin {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ Real.pi / 6
     constructor
     · positivity
     · nlinarith [Real.pi_pos]
-  have h := (Real.strictConcaveOn_sin_Icc).concaveOn.2
+  have h := strictConcaveOn_sin_Icc.concaveOn.2
     (show (0 : ℝ) ∈ Set.Icc (0 : ℝ) Real.pi by simp [Real.pi_pos.le]) hcap
     (sub_nonneg.2 hx1) hx0
   dsimp [x] at h
@@ -98,7 +98,7 @@ lemma chord_integral (m : ℕ) :
       fun t : ℝ => ((3 : ℝ) / Real.pi) ^ m * t ^ m := by
     funext t
     ring
-  rw [hfun, intervalIntegral.integral_const_mul, intervalIntegral.integral_pow]
+  rw [hfun, intervalIntegral.integral_const_mul, integral_pow]
   simp
   field_simp
   ring
@@ -120,12 +120,10 @@ lemma capNumerator_lower (m : ℕ) :
     3 * s3 / (10 * (m + 1) * 2 ^ m)
         = (3 * s3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by
           field_simp [hDne]
-          ring
     _ < (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) :=
       div_lt_div_of_pos_right hconst hD
     _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
       field_simp [hDne]
-      ring
     _ = (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) :=
       (chord_integral m).symm
     _ ≤ capNumerator m := chord_integral_le_capNumerator m
