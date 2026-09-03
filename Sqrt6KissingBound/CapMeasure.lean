@@ -18,6 +18,7 @@ open Set Metric MeasureTheory NormedSpace
 private abbrev s3 : ℝ := Real.sqrt 3
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+  [MeasurableSpace E] [BorelSpace E]
 
 /-- The radial sector of the open unit ball subtended by the `π/6` cap centered at `x`. -/
 def capSector (x : E) : Set E :=
