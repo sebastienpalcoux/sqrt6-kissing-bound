@@ -4,16 +4,25 @@ name: Full Lean development
   push:
     branches:
       - gpt-pro/full-lean-certificate
+    paths:
+      - 'Sqrt6KissingBound/**'
+      - 'Sqrt6KissingBound.lean'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/full-lean-debug.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
       - uses: leanprover/lean-action@v1
         with:
           build: false
@@ -30,11 +39,17 @@ jobs:
           status=${PIPESTATUS[0]}
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit 0
-      - name: Upload diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: lean-build-diagnostics
-          path: lean-build.log
+      - name: Commit diagnostics
+        shell: bash
+        run: |
+          mkdir -p .ci
+          cp lean-build.log .ci/lean-build.log
+          printf '%s\n' '${{ steps.leanbuild.outputs.status }}' > .ci/lean-build.status
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/lean-build.log .ci/lean-build.status
+          git commit -m 'Record Lean build diagnostics [skip ci]' || true
+          git push origin HEAD:gpt-pro/full-lean-certificate
       - name: Fail on Lean errors
         if: steps.leanbuild.outputs.status != '0'
         run: exit 1
