@@ -1,0 +1,13 @@
+import Sqrt6KissingBound
+
+#print axioms Sqrt6KissingBound.sqrt6_sq
+#print axioms Sqrt6KissingBound.sqrt3_lt_26_div_15
+#print axioms Sqrt6KissingBound.cap5_scaled_lower
+#print axioms Sqrt6KissingBound.CapData.even_scaled
+#print axioms Sqrt6KissingBound.CapData.odd_scaled
+#print axioms Sqrt6KissingBound.count_le_pow_of_pack
+#print axioms Sqrt6KissingBound.count_le_sqrt6_pow_even
+#print axioms Sqrt6KissingBound.count_le_sqrt6_pow_odd_ge_five
+#print axioms Sqrt6KissingBound.count_le_fourteen_of_cap3_pack
+#print axioms Sqrt6KissingBound.count_lt_sqrt6_cubed_of_cap3_pack
+#print axioms Sqrt6KissingBound.universal_base_ge_sqrt6

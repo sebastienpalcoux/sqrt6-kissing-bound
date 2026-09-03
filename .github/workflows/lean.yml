@@ -1,0 +1,35 @@
+name: Lean certificate
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          test: false
+          lint: false
+          axiom-audit: true
+          axiom-audit-root: Sqrt6KissingBound
+          use-mathlib-cache: true
+      - name: Check manuscript-facing declarations
+        run: lake env lean Axioms.lean
+      - name: Scan project sources for proof holes
+        run: |
+          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
+          if grep -R -n -E "$pattern" --include='*.lean' \
+              Sqrt6KissingBound Sqrt6KissingBound.lean Axioms.lean; then
+            echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' >&2
+            exit 1
+          fi
