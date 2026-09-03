@@ -1,5 +1,45 @@
-✔ [8707/8711] Built Sqrt6KissingBound.Analysis (5.9s)
-✔ [8708/8711] Built Sqrt6KissingBound.CapFraction (5.1s)
-✔ [8709/8711] Built Sqrt6KissingBound.Geometry (12s)
-✔ [8710/8711] Built Sqrt6KissingBound (3.9s)
-Build completed successfully (8711 jobs).
+✔ [8707/8712] Built Sqrt6KissingBound.Analysis (4.9s)
+✔ [8708/8712] Built Sqrt6KissingBound.CapFraction (4.9s)
+✔ [8709/8712] Built Sqrt6KissingBound.Geometry (12s)
+✖ [8710/8712] Building Sqrt6KissingBound.Packing (5.2s)
+trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/Packing.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Packing.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/Packing.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Packing.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/Packing.setup.json --json
+error: Sqrt6KissingBound/Packing.lean:33:43: failed to synthesize instance of type class
+  MeasurableSpace ↑(sphere 0 1)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:34:2: failed to synthesize instance of type class
+  MeasurableSpace ↑(sphere 0 1)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:42:61: Application type mismatch: The argument
+  ↑u
+has type
+  E
+of sort `Type u_1` but is expected to have type
+  ?m.55 ∈ strictCone x
+of sort `Prop` in the application
+  disjoint_left.mp (strictCone_disjoint hx hz hxz) ↑u
+error: Sqrt6KissingBound/Packing.lean:51:25: failed to synthesize instance of type class
+  MeasurableSpace E
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:52:17: failed to synthesize instance of type class
+  MeasurableSpace E
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:62:19: failed to synthesize instance of type class
+  MeasurableSpace E
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:80:17: failed to synthesize instance of type class
+  MeasurableSpace E
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Sqrt6KissingBound/Packing.lean:81:23: failed to synthesize instance of type class
+  MeasurableSpace E
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Lean exited with code 1
+Some required targets logged failures:
+- Sqrt6KissingBound.Packing
+error: build failed
