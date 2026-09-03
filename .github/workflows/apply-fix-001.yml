@@ -1,0 +1,122 @@
+name: Apply Lean fix 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/apply-fix-001.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - name: Replace the development modules
+        shell: bash
+        run: |
+          cat > Sqrt6KissingBound/Analysis.lean <<'LEAN'
+          import Sqrt6KissingBound.Core
+
+          /-!
+          # One-dimensional estimates for the square-root-of-six kissing bound
+
+          This file begins the formalization of the sine-integral part of the
+          spherical-cap proof.  The exact recurrences and base values are proved here;
+          the quantitative chord estimate is developed in a subsequent module.
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set
+          open scoped Interval Real
+          open intervalIntegral
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+
+          /-- The numerator in the normalized measure of a spherical cap of angular radius `π / 6`. -/
+          def capNumerator (m : ℕ) : ℝ :=
+            ∫ t in (0 : ℝ)..Real.pi / 6, Real.sin t ^ m
+
+          /-- The denominator in the normalized measure of a spherical cap. -/
+          def capDenominator (m : ℕ) : ℝ :=
+            ∫ t in (0 : ℝ)..Real.pi, Real.sin t ^ m
+
+          lemma capNumerator_recurrence (m : ℕ) :
+              capNumerator (m + 2) =
+                ((m + 1 : ℝ) / (m + 2)) * capNumerator m -
+                  (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2) := by
+            rw [capNumerator, capNumerator, integral_sin_pow]
+            simp [Real.sin_pi_div_six, Real.cos_pi_div_six]
+            field_simp
+            ring
+
+          lemma capDenominator_recurrence (m : ℕ) :
+              capDenominator (m + 2) =
+                ((m + 1 : ℝ) / (m + 2)) * capDenominator m := by
+            rw [capDenominator, capDenominator, integral_sin_pow]
+            simp
+
+          lemma capDenominator_pos (m : ℕ) : 0 < capDenominator m := by
+            simpa [capDenominator] using integral_sin_pow_pos m
+
+          lemma capNumerator_zero : capNumerator 0 = Real.pi / 6 := by
+            simp [capNumerator]
+
+          lemma capDenominator_zero : capDenominator 0 = Real.pi := by
+            simp [capDenominator]
+
+          lemma capNumerator_one : capNumerator 1 = 1 - s3 / 2 := by
+            norm_num [capNumerator, integral_sin]
+
+          lemma capDenominator_one : capDenominator 1 = 2 := by
+            norm_num [capDenominator, integral_sin]
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Sqrt6KissingBound/Geometry.lean')
+          s = p.read_text()
+          s = s.replace(
+          '''  have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
+              dsimp [p]
+              rw [norm_sub_sq_real, norm_smul, hx, hu, abs_of_nonneg ha0]
+              change 1 ^ 2 - 2 * (a * a) + a ^ 2 * 1 ^ 2 = 1 - a ^ 2
+              ring
+            have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
+              dsimp [q]
+              rw [norm_sub_sq_real, norm_smul, hz, hu, abs_of_nonneg hb0]
+              change 1 ^ 2 - 2 * (b * b) + b ^ 2 * 1 ^ 2 = 1 - b ^ 2
+              ring''',
+          '''  have hp_sq : ‖p‖ ^ 2 = 1 - a ^ 2 := by
+              have hxa : inner ℝ x u = a := rfl
+              dsimp [p]
+              rw [norm_sub_sq_real, real_inner_smul_right, norm_smul, hx, hu,
+                Real.norm_eq_abs, abs_of_nonneg ha0, hxa]
+              ring
+            have hq_sq : ‖q‖ ^ 2 = 1 - b ^ 2 := by
+              have hzb : inner ℝ z u = b := rfl
+              dsimp [q]
+              rw [norm_sub_sq_real, real_inner_smul_right, norm_smul, hz, hu,
+                Real.norm_eq_abs, abs_of_nonneg hb0, hzb]
+              ring''')
+          p.write_text(s)
+          PY
+
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/Analysis.lean Sqrt6KissingBound/Geometry.lean
+          git commit -m 'Stabilize the analytic recurrences and cone separation'
+          git push origin HEAD:gpt-pro/full-lean-certificate
