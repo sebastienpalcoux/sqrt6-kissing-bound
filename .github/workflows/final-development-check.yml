@@ -1,0 +1,132 @@
+name: Final development check
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/final-development-check.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: final-development-check
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Wait for one-shot compiler gates and refresh branch
+        shell: bash
+        run: |
+          sleep 180
+          git fetch origin gpt-pro/full-lean-certificate
+          git reset --hard origin/gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Verify required theorem modules exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            Core Analysis Geometry CoordinateVolume ProfileVolume ProfileIntegral
+            ProfileIntegralReal StandardGeometry LinearProfileIntegral BiconeGeometry
+            BiconeVolume VolumePacking CenteredBicone CenteredBody BallVolumes
+            DimensionOne DimensionThree DimensionFour BiconeBounds KissingBound Optimality
+          )
+          for module in "${required[@]}"; do
+            test -s "Sqrt6KissingBound/${module}.lean" || {
+              echo "MISSING: Sqrt6KissingBound/${module}.lean" >&2
+              exit 1
+            }
+          done
+      - name: Assemble a temporary theorem root
+        shell: bash
+        run: |
+          cat > /tmp/CompleteTheorem.lean <<'LEAN'
+          import Sqrt6KissingBound.Optimality
+
+          #check Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow
+          #check Sqrt6KissingBound.kissingConfiguration_card_le_floor_sqrt6_pow
+          #check Sqrt6KissingBound.sqrt6_isLeast_universalKissingBase
+          LEAN
+      - name: Compile complete theorem root
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          lake env lean /tmp/CompleteTheorem.lean 2>&1 | tee /tmp/full-certificate-build.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > /tmp/full-certificate.status
+          exit "$status"
+      - name: Build the whole Lake library
+        if: success()
+        shell: bash
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee -a /tmp/full-certificate-build.log
+      - name: Run project checks
+        if: success()
+        shell: bash
+        run: |
+          bash scripts/check.sh 2>&1 | tee -a /tmp/full-certificate-build.log
+      - name: Scan sources for proof holes and project axioms
+        if: success()
+        shell: bash
+        run: |
+          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
+          if grep -R -n -E "$pattern" --include='*.lean' Sqrt6KissingBound Sqrt6KissingBound.lean Axioms.lean; then
+            echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' | tee -a /tmp/full-certificate-build.log >&2
+            exit 1
+          fi
+      - name: Record success marker
+        if: success()
+        shell: bash
+        run: |
+          mkdir -p .ci
+          {
+            echo 'FULL_CERTIFICATE_DEVELOPMENT_OK'
+            echo "verified_source_commit=$(git rev-parse HEAD)"
+            echo 'commands:'
+            echo '  lake env lean /tmp/CompleteTheorem.lean'
+            echo '  lake build'
+            echo '  bash scripts/check.sh'
+            echo '  proof-hole and project-axiom scan'
+          } > .ci/FULL_CERTIFICATE_DEVELOPMENT_OK
+          cp /tmp/full-certificate-build.log .ci/full-certificate-build.log
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/FULL_CERTIFICATE_DEVELOPMENT_OK .ci/full-certificate-build.log
+          git commit -m 'Record successful full-certificate development check'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
+      - name: Record failure diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p .ci
+          test -f /tmp/full-certificate-build.log || echo 'The failure occurred before Lean compilation.' > /tmp/full-certificate-build.log
+          cp /tmp/full-certificate-build.log .ci/full-certificate-build.log
+          {
+            echo 'FULL_CERTIFICATE_DEVELOPMENT_FAILED'
+            echo "checked_source_commit=$(git rev-parse HEAD)"
+          } > .ci/FULL_CERTIFICATE_DEVELOPMENT_FAILED
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/FULL_CERTIFICATE_DEVELOPMENT_FAILED .ci/full-certificate-build.log
+          git commit -m 'Record full-certificate development diagnostics' || true
+          git pull --rebase origin gpt-pro/full-lean-certificate || true
+          git push origin HEAD:gpt-pro/full-lean-certificate || true
