@@ -1,0 +1,137 @@
+name: Develop profile volume 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-profile-volume-001.yml'
+
+concurrency:
+  group: develop-profile-volume-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile the profile-volume module
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/ProfileVolume.lean <<'LEAN'
+          import Sqrt6KissingBound.CoordinateVolume
+
+          /-!
+          # Volumes of bodies of revolution in first-coordinate form
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+          open scoped ENNReal
+
+          /-- The inverse image of a Euclidean ball under the canonical `L²` identification. -/
+          def tailBall (d : ℕ) (r : ℝ) : Set (Fin d → ℝ) :=
+            {v | ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ < r}
+
+          lemma measurableSet_tailBall (d : ℕ) (r : ℝ) : MeasurableSet (tailBall d r) := by
+            change MeasurableSet ((PiLp.toLp 2 : (Fin d → ℝ) → EuclideanSpace ℝ (Fin d)) ⁻¹'
+              ball 0 r)
+            exact measurableSet_ball.preimage (MeasurableEquiv.toLp 2 _).measurable
+
+          lemma volume_tailBall (d : ℕ) (r : ℝ) :
+              (volume : Measure (Fin d → ℝ)) (tailBall d r) =
+                (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 r) := by
+            change (volume : Measure (Fin d → ℝ))
+                ((PiLp.toLp 2 : (Fin d → ℝ) → EuclideanSpace ℝ (Fin d)) ⁻¹' ball 0 r) = _
+            exact (PiLp.volume_preserving_toLp (Fin d)).measure_preimage
+              measurableSet_ball.nullMeasurableSet
+
+          /-- A measurable body whose transverse section at `t` is an open Euclidean ball
+          of radius `g t`. -/
+          def profileRegion (d : ℕ) (s : Set ℝ) (g : ℝ → ℝ) :
+              Set (ℝ × (Fin d → ℝ)) :=
+            {p | p.1 ∈ s ∧ p.2 ∈ tailBall d (g p.1)}
+
+          lemma measurableSet_profileRegion (d : ℕ) {s : Set ℝ} (hs : MeasurableSet s)
+              {g : ℝ → ℝ} (hg : Measurable g) :
+              MeasurableSet (profileRegion d s g) := by
+            change MeasurableSet
+              ({p : ℝ × (Fin d → ℝ) | p.1 ∈ s} ∩
+                {p | ‖(PiLp.toLp 2 p.2 : EuclideanSpace ℝ (Fin d))‖ < g p.1})
+            apply (hs.preimage measurable_fst).inter
+            exact measurableSet_lt
+              ((continuous_norm.comp
+                ((MeasurableEquiv.toLp 2 _).continuous.comp continuous_snd)).measurable)
+              (hg.comp measurable_fst)
+
+          /-- Fubini formula for a body with ball-shaped transverse sections. -/
+          lemma volume_profileRegion (d : ℕ) {s : Set ℝ} (hs : MeasurableSet s)
+              {g : ℝ → ℝ} (hg : Measurable g) :
+              (volume : Measure (ℝ × (Fin d → ℝ))) (profileRegion d s g) =
+                ∫⁻ t in s, (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 (g t)) := by
+            rw [Measure.volume_eq_prod,
+              Measure.prod_apply (measurableSet_profileRegion d hs hg)]
+            rw [MeasureTheory.setLIntegral_eq_of_forall_compl_eq_zero]
+            · apply lintegral_congr
+              intro t
+              simp [profileRegion, tailBall, volume_tailBall]
+            · intro t ht
+              simp [profileRegion, ht]
+
+          /-- The corresponding body in Euclidean space. -/
+          def rotationalProfile (d : ℕ) (s : Set ℝ) (g : ℝ → ℝ) :
+              Set (EuclideanSpace ℝ (Fin (d + 1))) :=
+            (standardCoordinates d).symm ⁻¹' profileRegion d s g
+
+          lemma measurableSet_rotationalProfile (d : ℕ) {s : Set ℝ} (hs : MeasurableSet s)
+              {g : ℝ → ℝ} (hg : Measurable g) :
+              MeasurableSet (rotationalProfile d s g) := by
+            exact (measurableSet_profileRegion d hs hg).preimage
+              (standardCoordinates d).symm.measurable
+
+          lemma volume_rotationalProfile (d : ℕ) {s : Set ℝ} (hs : MeasurableSet s)
+              {g : ℝ → ℝ} (hg : Measurable g) :
+              (volume : Measure (EuclideanSpace ℝ (Fin (d + 1))))
+                  (rotationalProfile d s g) =
+                ∫⁻ t in s, (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 (g t)) := by
+            calc
+              (volume : Measure (EuclideanSpace ℝ (Fin (d + 1))))
+                    (rotationalProfile d s g) =
+                  (volume : Measure (ℝ × (Fin d → ℝ))) (profileRegion d s g) := by
+                    exact (standardCoordinates_measurePreserving d).symm.measure_preimage
+                      (measurableSet_profileRegion d hs hg).nullMeasurableSet
+              _ = _ := volume_profileRegion d hs hg
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/ProfileVolume.lean
+          cp /tmp/ProfileVolume.lean Sqrt6KissingBound/ProfileVolume.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/ProfileVolume.lean
+          git commit -m 'Add the compiler-confirmed profile-volume formula'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
