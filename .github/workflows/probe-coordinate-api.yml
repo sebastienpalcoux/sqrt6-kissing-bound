@@ -1,0 +1,34 @@
+name: Probe coordinate API
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - 'Probe.lean'
+      - '.github/workflows/probe-coordinate-api.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: probe-coordinate-api
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Elaborate API probe
+        run: lake env lean Probe.lean
