@@ -1,3 +1,514 @@
-DEVELOPMENT COMMAND RUNNING
+DEVELOPMENT COMMAND RESULT
 Command SHA: c65fb2e8ddd94237c469548bce7d7c14efc6091e
 Sequence: 5
+Command exit status: 0
+This status is not a certification claim.
+
+
+COMMAND: lake build Sqrt6KissingBound.ProfileIntegralReal Sqrt6KissingBound.AnalysisEstimate Sqrt6KissingBound.BiconeVolume Sqrt6KissingBound.BallVolumes Sqrt6KissingBound.CenteredBody Sqrt6KissingBound.BiconeBounds Sqrt6KissingBound.DimensionThree Sqrt6KissingBound.DimensionFour EXIT: 1
+⚠ [8710/8729] Replayed Sqrt6KissingBound.LinearProfileIntegral
+warning: Sqrt6KissingBound/LinearProfileIntegral.lean:12:46: Variable name `hc` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hc
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Sqrt6KissingBound/LinearProfileIntegral.lean:29:12: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [div_eq_mul_inv, mul_inv_rev, mul_comm, mul_left_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [8712/8729] Replayed Sqrt6KissingBound.VolumePacking
+warning: Sqrt6KissingBound/VolumePacking.lean:26:2: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+⚠ [8713/8729] Replayed Sqrt6KissingBound.StandardGeometry
+warning: Sqrt6KissingBound/StandardGeometry.lean:36:27: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: Sqrt6KissingBound/StandardGeometry.lean:36:27: Unused tactic linter: `simp` does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Sqrt6KissingBound/StandardGeometry.lean:68:2: Unused tactic linter: `congr 2` does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [8715/8729] Built Sqrt6KissingBound.AnalysisChord (5.1s)
+warning: Sqrt6KissingBound/AnalysisChord.lean:34:8: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: Sqrt6KissingBound/AnalysisChord.lean:34:8: Unused tactic linter: `ring` does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [8716/8729] Built Sqrt6KissingBound.ProfileIntegral (6.1s)
+✔ [8717/8729] Built Sqrt6KissingBound.BodyVolumeAdditivity (6.1s)
+✖ [8718/8729] Building Sqrt6KissingBound.AnalysisEstimate (4.7s)
+info: Sqrt6KissingBound/AnalysisEstimate.lean:37:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/AnalysisEstimate.lean:35:73: unsolved goals
+m : ℕ
+hbase : π / 6 / (π / 3) = 1 / 2
+⊢ π * π ^ m * 6⁻¹ ^ m * (π ^ m * ↑m * (1 / 3) ^ m + π ^ m * (1 / 3) ^ m)⁻¹ * (1 / 6) =
+    π * π ^ m * π⁻¹ ^ m * (1 + ↑m)⁻¹ * (1 / 2) ^ m * (1 / 6)
+info: Sqrt6KissingBound/AnalysisEstimate.lean:41:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/AnalysisEstimate.lean:38:43: unsolved goals
+m : ℕ
+hbase : π / 6 / (π / 3) = 1 / 2
+⊢ 2⁻¹ ^ m * π * (1 + ↑m)⁻¹ * (1 / 6) = π * (↑m * 2 ^ m * 6 + 2 ^ m * 6)⁻¹
+info: Sqrt6KissingBound/AnalysisEstimate.lean:55:61: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/AnalysisEstimate.lean:55:58: unsolved goals
+m : ℕ
+hD : 0 < (↑m + 1) * 2 ^ m
+⊢ √3 * (↑m * 2 ^ m * 10 + 2 ^ m * 10)⁻¹ * 3 = √3 * (↑m * 2 ^ m + 2 ^ m)⁻¹ * (3 / 10)
+info: Sqrt6KissingBound/AnalysisEstimate.lean:58:46: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/AnalysisEstimate.lean:58:43: unsolved goals
+m : ℕ
+hD : 0 < (↑m + 1) * 2 ^ m
+⊢ π * (↑m * 2 ^ m + 2 ^ m)⁻¹ * (1 / 6) = π * (↑m * 2 ^ m * 6 + 2 ^ m * 6)⁻¹
+error: Lean exited with code 1
+✔ [8722/8729] Built Sqrt6KissingBound.ProfileIntegralReal (4.5s)
+✖ [8723/8729] Building Sqrt6KissingBound.BallVolumes (5.1s)
+info: Sqrt6KissingBound/BallVolumes.lean:42:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BallVolumes.lean:28:62: unsolved goals
+d : ℕ
+hz : 0 < ↑(d + 1) / 2 + 1
+hG : Real.Gamma (↑(d + 1) / 2 + 1) ≠ 0
+harg : ↑(d + 3) / 2 + 1 = ↑(d + 1) / 2 + 1 + 1
+⊢ 3 + ↑d = 2 + ↑(1 + d)
+info: Sqrt6KissingBound/BallVolumes.lean:52:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BallVolumes.lean:49:46: unsolved goals
+⊢ (ENNReal.ofReal (π * (4 / 3))).toReal = π * (4 / 3)
+warning: Sqrt6KissingBound/BallVolumes.lean:51:8: This simp argument is unused:
+  Real.pi_pos.le
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Sqrt6KissingBound/BallVolumes.lean:78:13: Unknown constant `Real.pi_lt_22_div_7`
+error: Sqrt6KissingBound/BallVolumes.lean:78:34: unsolved goals
+⊢ ?m.23 < 16 / 5
+error: Sqrt6KissingBound/BallVolumes.lean:75:51: unsolved goals
+⊢ π ^ 3 / 6 < 8 * π ^ 2 / 15
+error: Sqrt6KissingBound/BallVolumes.lean:95:47: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  n - 2
+in the target expression
+  2 * π / (↑(n - 3) + 3) * unitBallVolumeReal (n - 3 + 1) ≤ unitBallVolumeReal (n - 3 + 3 - 1)
+
+n : ℕ
+hn : 8 ≤ n
+hprev : unitBallVolumeReal (n - 2) ≤ unitBallVolumeReal (n - 3)
+hn3 : n = n - 3 + 3
+hn2 : n - 2 = n - 3 + 1
+hn1 : n - 1 = n - 4 + 3
+hn3' : n - 3 = n - 4 + 1
+⊢ 2 * π / (↑(n - 3) + 3) * unitBallVolumeReal (n - 3 + 1) ≤ unitBallVolumeReal (n - 3 + 3 - 1)
+error: Lean exited with code 1
+✖ [8724/8729] Building Sqrt6KissingBound.BiconeVolume (5.3s)
+info: Sqrt6KissingBound/BiconeVolume.lean:55:10: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BiconeVolume.lean:52:46: unsolved goals
+k : ℕ
+hk : ↑(k + 2) ≠ 0
+⊢ -(s3 * (1 / 2) ^ k * 2 ^ k * 2) + (1 / 2) ^ k * 2 ^ k * 4 = 4 - s3 * 2
+error: Sqrt6KissingBound/BiconeVolume.lean:61:2: Type mismatch
+  lower_power_value k
+has type
+  a ^ (k + 2) / (s3 ^ (k + 1) * (↑k + 2)) = s3 / ((↑k + 2) * 2 ^ (k + 2))
+but is expected to have type
+  a ^ (k + 1 + 1) / (s3 ^ (k + 1) * (↑(k + 1) + 1)) = s3 / ((↑k + 2) * 2 ^ (k + 2))
+error: Sqrt6KissingBound/BiconeVolume.lean:67:2: Type mismatch
+  upper_power_value k
+has type
+  upperSlope ^ (k + 1) * (1 - a) ^ (k + 2) / (↑k + 2) = (2 - s3) / ((↑k + 2) * 2 ^ (k + 2))
+but is expected to have type
+  upperSlope ^ (k + 1) * (1 - a) ^ (k + 1 + 1) / (↑(k + 1) + 1) = (2 - s3) / ((↑k + 2) * 2 ^ (k + 2))
+info: Sqrt6KissingBound/BiconeVolume.lean:74:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BiconeVolume.lean:72:37: unsolved goals
+k : ℕ
+⊢ (↑k * 2 ^ k * 4 + 2 ^ k * 8)⁻¹ * 2 = (↑k * 2 ^ k * 2 + 2 ^ k * 4)⁻¹
+error: Sqrt6KissingBound/BiconeVolume.lean:101:8: not a positivity goal
+info: Sqrt6KissingBound/BiconeVolume.lean:119:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BiconeVolume.lean:113:68: unsolved goals
+k : ℕ
+⊢ (↑k * 2 ^ k * 4 + 2 ^ k * 8)⁻¹ * unitBallVolumeReal (1 + k) * 2 =
+    unitBallVolumeReal (1 + k) * (↑k * 2 ^ k * 2 + 2 ^ k * 4)⁻¹
+error: Lean exited with code 1
+Some required targets logged failures:
+- Sqrt6KissingBound.AnalysisEstimate
+- Sqrt6KissingBound.BallVolumes
+- Sqrt6KissingBound.BiconeVolume
+error: build failed
+
+--- FAILED SOURCE Sqrt6KissingBound/AnalysisEstimate.lean ---
+   1 import Sqrt6KissingBound.AnalysisChord
+   2 import Sqrt6KissingBound.LinearProfileIntegral
+   3 
+   4 namespace Sqrt6KissingBound
+   5 noncomputable section
+   6 open Set intervalIntegral
+   7 open scoped Interval Real
+   8 
+   9 lemma chord_integral_le_capNumerator (m : ℕ) :
+  10     (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) ≤ capNumerator m := by
+  11   rw [capNumerator]
+  12   apply intervalIntegral.integral_mono_on (by positivity)
+  13   · exact (by fun_prop : Continuous (fun t : ℝ => (3 * t / Real.pi) ^ m)).intervalIntegrable _ _
+  14   · exact (by fun_prop : Continuous (fun t : ℝ => Real.sin t ^ m)).intervalIntegrable _ _
+  15   · intro t ht
+  16     have ht0 : 0 ≤ t := ht.1
+  17     exact pow_le_pow_left₀ (by positivity) (three_mul_div_pi_le_sin ht.1 ht.2) m
+  18 
+  19 lemma chord_integral (m : ℕ) :
+  20     (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
+  21       Real.pi / (6 * (m + 1) * 2 ^ m) := by
+  22   have hbase : (Real.pi / 6) / (Real.pi / 3) = (1 : ℝ) / 2 := by
+  23     field_simp [Real.pi_ne_zero]
+  24     <;> ring
+  25   calc
+  26     (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) =
+  27         ∫ t in (0 : ℝ)..Real.pi / 6, (t / (Real.pi / 3)) ^ m := by
+  28       apply intervalIntegral.integral_congr
+  29       intro t ht
+  30       congr 1
+  31       field_simp [Real.pi_ne_zero]
+  32       <;> ring
+  33     _ = (Real.pi / 6) ^ (m + 1) / ((Real.pi / 3) ^ m * (m + 1)) :=
+  34       integral_div_mul_pow m (by positivity)
+  35     _ = ((Real.pi / 6) / (Real.pi / 3)) ^ m * (Real.pi / 6) / (m + 1) := by
+  36       rw [div_pow, pow_succ]
+  37       ring
+  38     _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
+  39       rw [hbase, div_pow]
+  40       simp only [one_pow]
+  41       ring
+  42 
+  43 lemma pi_div_six_gt_three_sqrt3_div_ten :
+  44     3 * Real.sqrt 3 / 10 < Real.pi / 6 := by
+  45   have hpi := Real.pi_gt_d2
+  46   have hs3 := sqrt3_lt_26_div_15
+  47   norm_num at hpi
+  48   nlinarith
+  49 
+  50 lemma capNumerator_lower (m : ℕ) :
+  51     3 * Real.sqrt 3 / (10 * (m + 1) * 2 ^ m) < capNumerator m := by
+  52   have hD : 0 < (m + 1 : ℝ) * 2 ^ m := by positivity
+  53   calc
+  54     3 * Real.sqrt 3 / (10 * (m + 1) * 2 ^ m) =
+  55         (3 * Real.sqrt 3 / 10) / ((m + 1 : ℝ) * 2 ^ m) := by ring
+  56     _ < (Real.pi / 6) / ((m + 1 : ℝ) * 2 ^ m) :=
+  57       div_lt_div_of_pos_right pi_div_six_gt_three_sqrt3_div_ten hD
+  58     _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by ring
+  59     _ = (∫ t in (0 : ℝ)..Real.pi / 6, (3 * t / Real.pi) ^ m) := (chord_integral m).symm
+  60     _ ≤ capNumerator m := chord_integral_le_capNumerator m
+  61 
+  62 end
+  63 end Sqrt6KissingBound
+
+
+--- FAILED SOURCE Sqrt6KissingBound/BallVolumes.lean ---
+   1 import Sqrt6KissingBound.ProfileIntegralReal
+   2 import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
+   3 
+   4 /-!
+   5 # Unit-ball volumes in consecutive Euclidean dimensions
+   6 -/
+   7 
+   8 namespace Sqrt6KissingBound
+   9 
+  10 noncomputable section
+  11 
+  12 open Set Metric MeasureTheory
+  13 open scoped ENNReal Real
+  14 
+  15 /-- Gamma-function formula for the real volume of the unit ball. -/
+  16 lemma unitBallVolumeReal_formula (d : ℕ) :
+  17     unitBallVolumeReal (d + 1) =
+  18       Real.sqrt Real.pi ^ (d + 1) /
+  19         Real.Gamma (((d + 1 : ℕ) : ℝ) / 2 + 1) := by
+  20   rw [unitBallVolumeReal, Measure.real, EuclideanSpace.volume_ball]
+  21   simp only [Fintype.card_fin, ENNReal.ofReal_one, one_pow, one_mul]
+  22   rw [ENNReal.toReal_ofReal]
+  23   positivity
+  24 
+  25 /-- The standard two-step recurrence for Euclidean unit-ball volumes. -/
+  26 lemma unitBallVolumeReal_add_two (d : ℕ) :
+  27     unitBallVolumeReal (d + 3) =
+  28       (2 * Real.pi / (d + 3)) * unitBallVolumeReal (d + 1) := by
+  29   rw [unitBallVolumeReal_formula (d + 2), unitBallVolumeReal_formula d]
+  30   have hz : 0 < (((d + 1 : ℕ) : ℝ) / 2 + 1) := by positivity
+  31   have hG : Real.Gamma (((d + 1 : ℕ) : ℝ) / 2 + 1) ≠ 0 :=
+  32     (Real.Gamma_pos_of_pos hz).ne'
+  33   have harg :
+  34       (((d + 3 : ℕ) : ℝ) / 2 + 1) =
+  35         (((d + 1 : ℕ) : ℝ) / 2 + 1) + 1 := by
+  36     push_cast
+  37     ring
+  38   rw [harg, Real.Gamma_add_one (ne_of_gt hz)]
+  39   rw [show d + 3 = (d + 1) + 2 by omega, pow_add,
+  40     Real.sq_sqrt Real.pi_nonneg]
+  41   field_simp [hG]
+  42   ring
+  43 
+  44 lemma unitBallVolumeReal_two : unitBallVolumeReal 2 = Real.pi := by
+  45   rw [unitBallVolumeReal, Measure.real, EuclideanSpace.volume_ball_fin_two]
+  46   simp [Real.pi_pos.le]
+  47 
+  48 lemma unitBallVolumeReal_three :
+  49     unitBallVolumeReal 3 = 4 * Real.pi / 3 := by
+  50   rw [unitBallVolumeReal, Measure.real, EuclideanSpace.volume_ball_fin_three]
+  51   simp [Real.pi_pos.le]
+  52   ring
+  53 
+  54 lemma unitBallVolumeReal_four :
+  55     unitBallVolumeReal 4 = Real.pi ^ 2 / 2 := by
+  56   rw [unitBallVolumeReal_add_two 1, unitBallVolumeReal_two]
+  57   ring
+  58 
+  59 lemma unitBallVolumeReal_five :
+  60     unitBallVolumeReal 5 = 8 * Real.pi ^ 2 / 15 := by
+  61   rw [unitBallVolumeReal_add_two 2, unitBallVolumeReal_three]
+  62   ring
+  63 
+  64 lemma unitBallVolumeReal_six :
+  65     unitBallVolumeReal 6 = Real.pi ^ 3 / 6 := by
+  66   rw [unitBallVolumeReal_add_two 3, unitBallVolumeReal_four]
+  67   ring
+  68 
+  69 lemma unitBallVolumeReal_seven :
+  70     unitBallVolumeReal 7 = 16 * Real.pi ^ 3 / 105 := by
+  71   rw [unitBallVolumeReal_add_two 4, unitBallVolumeReal_five]
+  72   ring
+  73 
+  74 lemma unitBallVolumeReal_five_gt_six :
+  75     unitBallVolumeReal 6 < unitBallVolumeReal 5 := by
+  76   rw [unitBallVolumeReal_five, unitBallVolumeReal_six]
+  77   have hpi : Real.pi < (16 : ℝ) / 5 :=
+  78     lt_trans Real.pi_lt_22_div_7 (by norm_num)
+  79   have hpipos : 0 < Real.pi := Real.pi_pos
+  80   nlinarith [sq_pos_of_pos hpipos]
+  81 
+  82 lemma unitBallVolumeReal_six_gt_seven :
+  83     unitBallVolumeReal 7 < unitBallVolumeReal 6 := by
+  84   rw [unitBallVolumeReal_six, unitBallVolumeReal_seven]
+  85   have hpipos : 0 < Real.pi := Real.pi_pos
+  86   nlinarith [pow_pos hpipos 3]
+  87 
+  88 private lemma volume_descent_step {n : ℕ} (hn : 8 ≤ n)
+  89     (hprev : unitBallVolumeReal (n - 2) ≤ unitBallVolumeReal (n - 3)) :
+  90     unitBallVolumeReal n ≤ unitBallVolumeReal (n - 1) := by
+  91   have hn3 : n = (n - 3) + 3 := by omega
+  92   have hn2 : n - 2 = (n - 3) + 1 := by omega
+  93   have hn1 : n - 1 = (n - 4) + 3 := by omega
+  94   have hn3' : n - 3 = (n - 4) + 1 := by omega
+  95   rw [hn3, unitBallVolumeReal_add_two (n - 3), hn2,
+  96     hn1, unitBallVolumeReal_add_two (n - 4), hn3']
+  97   have hcoef :
+  98       2 * Real.pi / (n : ℝ) ≤ 2 * Real.pi / (n - 1 : ℕ) := by
+  99     have hnpos : (0 : ℝ) < n := by positivity
+ 100     have hn1pos : (0 : ℝ) < (n - 1 : ℕ) := by positivity
+ 101     exact div_le_div_of_nonneg_left (by positivity) hn1pos
+ 102       (by exact_mod_cast Nat.sub_le n 1)
+ 103   have hV : 0 ≤ unitBallVolumeReal (n - 3) := by
+ 104     exact MeasureTheory.measureReal_nonneg
+ 105   calc
+ 106     (2 * Real.pi / (n : ℝ)) * unitBallVolumeReal (n - 2)
+ 107         ≤ (2 * Real.pi / (n : ℝ)) * unitBallVolumeReal (n - 3) := by
+ 108           exact mul_le_mul_of_nonneg_left hprev (by positivity)
+ 109     _ ≤ (2 * Real.pi / (n - 1 : ℕ)) * unitBallVolumeReal (n - 3) := by
+ 110           exact mul_le_mul_of_nonneg_right hcoef hV
+ 111 
+ 112 /-- Unit-ball volume is nonincreasing from dimension five onward. -/
+ 113 lemma unitBallVolumeReal_antitone_from_six (n : ℕ) (hn : 6 ≤ n) :
+ 114     unitBallVolumeReal n ≤ unitBallVolumeReal (n - 1) := by
+ 115   induction n using Nat.strong_induction_on with
+ 116   | h n ih =>
+ 117       by_cases h6 : n = 6
+ 118       · subst n
+ 119         simpa using unitBallVolumeReal_five_gt_six.le
+ 120       by_cases h7 : n = 7
+ 121       · subst n
+ 122         simpa using unitBallVolumeReal_six_gt_seven.le
+ 123       have hn8 : 8 ≤ n := by omega
+ 124       exact volume_descent_step hn8
+ 125         (ih (n - 2) (by omega) (by omega))
+ 126 
+ 127 end
+ 128 
+ 129 end Sqrt6KissingBound
+
+
+--- FAILED SOURCE Sqrt6KissingBound/BiconeVolume.lean ---
+   1 import Sqrt6KissingBound.BodyVolumeAdditivity
+   2 import Sqrt6KissingBound.BiconeGeometry
+   3 import Sqrt6KissingBound.LinearProfileIntegral
+   4 import Sqrt6KissingBound.ProfileIntegralReal
+   5 
+   6 /-!
+   7 # Exact volume of the standard inscribed bicone
+   8 -/
+   9 
+  10 namespace Sqrt6KissingBound
+  11 
+  12 noncomputable section
+  13 
+  14 open Set Metric MeasureTheory intervalIntegral
+  15 open scoped Interval Real
+  16 
+  17 private abbrev s3 : ℝ := Real.sqrt 3
+  18 private abbrev a : ℝ := s3 / 2
+  19 private abbrev upperSlope : ℝ := 2 + s3
+  20 
+  21 private lemma s3_pos : 0 < s3 := Real.sqrt_pos.2 (by norm_num)
+  22 private lemma s3_ne : s3 ≠ 0 := s3_pos.ne'
+  23 private lemma s3_sq : s3 ^ 2 = 3 := by norm_num [s3]
+  24 
+  25 private lemma lower_power_value (k : ℕ) :
+  26     a ^ (k + 2) / (s3 ^ (k + 1) * (k + 2)) =
+  27       s3 / ((k + 2) * 2 ^ (k + 2)) := by
+  28   have hk : ((k + 2 : ℕ) : ℝ) ≠ 0 := by positivity
+  29   rw [show k + 2 = (k + 1) + 1 by omega, pow_succ]
+  30   dsimp [a]
+  31   rw [div_pow]
+  32   field_simp [s3_ne, hk]
+  33   ring
+  34 
+  35 private lemma upper_product : upperSlope * (1 - a) = (1 : ℝ) / 2 := by
+  36   dsimp [upperSlope, a]
+  37   nlinarith [s3_sq]
+  38 
+  39 private lemma upper_power_value (k : ℕ) :
+  40     upperSlope ^ (k + 1) * (1 - a) ^ (k + 2) / (k + 2) =
+  41       (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  42   have hk : ((k + 2 : ℕ) : ℝ) ≠ 0 := by positivity
+  43   rw [show k + 2 = (k + 1) + 1 by omega, pow_succ]
+  44   calc
+  45     upperSlope ^ (k + 1) * ((1 - a) ^ (k + 1) * (1 - a)) /
+  46           (k + 2) =
+  47         (upperSlope * (1 - a)) ^ (k + 1) * (1 - a) / (k + 2) := by
+  48           rw [mul_pow]
+  49           ring
+  50     _ = ((1 : ℝ) / 2) ^ (k + 1) * (1 - a) / (k + 2) := by
+  51           rw [upper_product]
+  52     _ = (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  53           dsimp [a]
+  54           field_simp [hk]
+  55           ring
+  56 
+  57 lemma lower_profile_integral (k : ℕ) :
+  58     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) =
+  59       s3 / ((k + 2) * 2 ^ (k + 2)) := by
+  60   rw [integral_div_mul_pow (k + 1) s3_ne]
+  61   exact lower_power_value k
+  62 
+  63 lemma upper_profile_integral (k : ℕ) :
+  64     (∫ t in a..1, (upperSlope * (1 - t)) ^ (k + 1)) =
+  65       (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  66   rw [integral_const_mul_sub_pow (k + 1)]
+  67   exact upper_power_value k
+  68 
+  69 lemma bicone_profile_integral (k : ℕ) :
+  70     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) +
+  71         (∫ t in a..1, (upperSlope * (1 - t)) ^ (k + 1)) =
+  72       1 / ((k + 2) * 2 ^ (k + 1)) := by
+  73   rw [lower_profile_integral, upper_profile_integral]
+  74   ring
+  75 
+  76 lemma measurableSet_lowerBicone (k : ℕ) : MeasurableSet (lowerBicone k) := by
+  77   exact measurableSet_rotationalProfile (k + 1) measurableSet_Ioo
+  78     (continuous_id.div_const _).measurable
+  79 
+  80 lemma measurableSet_upperBicone (k : ℕ) : MeasurableSet (upperBicone k) := by
+  81   exact measurableSet_rotationalProfile (k + 1) measurableSet_Ioo
+  82     ((continuous_const.mul (continuous_const.sub continuous_id))).measurable
+  83 
+  84 lemma volumeReal_lowerBicone (k : ℕ) :
+  85     (volume : Measure (EuclideanSpace ℝ (Fin (k + 2)))).real (lowerBicone k) =
+  86       (s3 / ((k + 2) * 2 ^ (k + 2))) * unitBallVolumeReal (k + 1) := by
+  87   have h := volumeReal_rotationalProfile_Ioo k
+  88     (a := (0 : ℝ)) (b := a) (g := fun t => t / s3)
+  89     (by positivity) (continuous_id.div_const _)
+  90     (by
+  91       intro t ht
+  92       exact div_nonneg ht.1 s3_pos.le)
+  93   simpa [lowerBicone, lower_profile_integral] using h
+  94 
+  95 lemma volumeReal_upperBicone (k : ℕ) :
+  96     (volume : Measure (EuclideanSpace ℝ (Fin (k + 2)))).real (upperBicone k) =
+  97       ((2 - s3) / ((k + 2) * 2 ^ (k + 2))) *
+  98         unitBallVolumeReal (k + 1) := by
+  99   have h := volumeReal_rotationalProfile_Ioo k
+ 100     (a := a) (b := (1 : ℝ)) (g := fun t => upperSlope * (1 - t))
+ 101     (by positivity)
+ 102     (continuous_const.mul (continuous_const.sub continuous_id))
+ 103     (by
+ 104       intro t ht
+ 105       have : 0 ≤ 1 - t := sub_nonneg.mpr ht.2
+ 106       positivity)
+ 107   simpa [upperBicone, upper_profile_integral] using h
+ 108 
+ 109 /-- Exact real volume of the standard bicone in dimension `k+2`. -/
+ 110 lemma volumeReal_standardBicone (k : ℕ) :
+ 111     (volume : Measure (EuclideanSpace ℝ (Fin (k + 2)))).real
+ 112         (standardBicone k) =
+ 113       (1 / ((k + 2) * 2 ^ (k + 1))) * unitBallVolumeReal (k + 1) := by
+ 114   rw [standardBicone, volumeReal_union_of_subsets_ball
+ 115     (lowerBicone_disjoint_upperBicone k) (measurableSet_upperBicone k)
+ 116     (fun y hy => (lowerBicone_subset k hy).2)
+ 117     (fun y hy => (upperBicone_subset k hy).2)]
+ 118   rw [volumeReal_lowerBicone, volumeReal_upperBicone]
+ 119   ring
+ 120 
+ 121 end
+ 122 
+ 123 end Sqrt6KissingBound
+
