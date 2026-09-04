@@ -1,0 +1,35 @@
+name: Bicone Lean development
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - Sqrt6KissingBound/Bicone.lean
+      - .github/workflows/bicone-dev.yml
+  workflow_dispatch:
+
+concurrency:
+  group: bicone-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Check bicone development
+        run: lake env lean Sqrt6KissingBound/Bicone.lean
