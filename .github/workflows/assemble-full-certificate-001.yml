@@ -1,0 +1,89 @@
+name: Assemble full certificate 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/assemble-full-certificate-001.yml'
+
+concurrency:
+  group: assemble-full-certificate-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile every theorem module through one root
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/FullCertificate.lean <<'LEAN'
+          import Sqrt6KissingBound.Core
+          import Sqrt6KissingBound.Analysis
+          import Sqrt6KissingBound.CapFraction
+          import Sqrt6KissingBound.Geometry
+          import Sqrt6KissingBound.Packing
+          import Sqrt6KissingBound.CapMeasure
+          import Sqrt6KissingBound.CoordinateVolume
+          import Sqrt6KissingBound.ProfileVolume
+          import Sqrt6KissingBound.ProfileIntegral
+          import Sqrt6KissingBound.ProfileIntegralReal
+          import Sqrt6KissingBound.StandardGeometry
+          import Sqrt6KissingBound.LinearProfileIntegral
+          import Sqrt6KissingBound.BiconeGeometry
+          import Sqrt6KissingBound.BiconeVolume
+          import Sqrt6KissingBound.VolumePacking
+          import Sqrt6KissingBound.CenteredBicone
+          import Sqrt6KissingBound.CenteredBody
+          import Sqrt6KissingBound.BallVolumes
+          import Sqrt6KissingBound.DimensionOne
+          import Sqrt6KissingBound.DimensionThree
+          import Sqrt6KissingBound.DimensionFour
+          import Sqrt6KissingBound.BiconeBounds
+          import Sqrt6KissingBound.KissingBound
+
+          #check Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow
+          #check Sqrt6KissingBound.kissingConfiguration_card_le_floor_sqrt6_pow
+          LEAN
+          lake env lean /tmp/FullCertificate.lean 2>&1 | tee full-certificate-build.log
+          cp /tmp/FullCertificate.lean Sqrt6KissingBound/FullCertificate.lean
+      - name: Scan theorem sources
+        shell: bash
+        run: |
+          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
+          if grep -R -n -E "$pattern" --include='*.lean' Sqrt6KissingBound; then
+            echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' >&2
+            exit 1
+          fi
+      - name: Commit the compiler-confirmed aggregate root
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/FullCertificate.lean
+          git commit -m 'Assemble the compiler-confirmed full theorem root'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: assemble-full-certificate-log
+          path: full-certificate-build.log
+          retention-days: 2
