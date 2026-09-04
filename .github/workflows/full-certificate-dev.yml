@@ -1,0 +1,53 @@
+name: Full certificate development
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - 'Sqrt6KissingBound/**'
+      - 'Sqrt6KissingBound.lean'
+      - 'Axioms.lean'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/full-certificate-dev.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: full-certificate-development
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile current development
+        shell: bash
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee lean-build.log
+      - name: Source checks
+        shell: bash
+        run: |
+          bash scripts/check.sh
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-certificate-development-log
+          path: lean-build.log
+          retention-days: 2
