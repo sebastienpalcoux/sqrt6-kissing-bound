@@ -1,0 +1,196 @@
+name: Develop bicone geometry 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-bicone-geometry-001.yml'
+
+concurrency:
+  group: develop-bicone-geometry-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile bicone geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/BiconeGeometry.lean <<'LEAN'
+          import Sqrt6KissingBound.StandardGeometry
+          import Sqrt6KissingBound.ProfileVolume
+
+          /-!
+          # An inscribed bicone in a sixty-degree circular cone
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          private abbrev s3 : ℝ := Real.sqrt 3
+          private abbrev a : ℝ := s3 / 2
+          private abbrev upperSlope : ℝ := 2 + s3
+
+          private lemma s3_pos : 0 < s3 := Real.sqrt_pos.2 (by norm_num)
+          private lemma s3_sq : s3 ^ 2 = 3 := by norm_num [s3]
+          private lemma upperSlope_pos : 0 < upperSlope := by
+            dsimp [upperSlope]
+            positivity
+
+          /-- The lower half of the standard bicone. -/
+          def lowerBicone (k : ℕ) : Set (EuclideanSpace ℝ (Fin (k + 2))) :=
+            rotationalProfile (k + 1) (Set.Ioo 0 a) (fun t => t / s3)
+
+          /-- The upper half of the standard bicone. -/
+          def upperBicone (k : ℕ) : Set (EuclideanSpace ℝ (Fin (k + 2))) :=
+            rotationalProfile (k + 1) (Set.Ioo a 1) (fun t => upperSlope * (1 - t))
+
+          /-- The standard bicone, with equatorial radius `1/2`. -/
+          def standardBicone (k : ℕ) : Set (EuclideanSpace ℝ (Fin (k + 2))) :=
+            lowerBicone k ∪ upperBicone k
+
+          lemma lower_profile_nonneg {t : ℝ} (ht : 0 ≤ t) : 0 ≤ t / s3 := by
+            positivity
+
+          lemma upper_profile_nonneg {t : ℝ} (ht : t ≤ 1) :
+              0 ≤ upperSlope * (1 - t) := by
+            positivity
+
+          lemma lower_point_mem_cone_ball (k : ℕ) {t : ℝ} {v : Fin (k + 1) → ℝ}
+              (ht0 : 0 < t) (hta : t < a)
+              (hv : ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ < t / s3) :
+              standardCoordinates (k + 1) (t, v) ∈
+                strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
+            let r : ℝ := ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
+            have hr0 : 0 ≤ r := norm_nonneg _
+            have hrs : r * s3 < t := (lt_div_iff₀ s3_pos).mp (by simpa [r] using hv)
+            have hrs0 : 0 ≤ r * s3 := mul_nonneg hr0 s3_pos.le
+            have hrsq : (r * s3) ^ 2 < t ^ 2 :=
+              (sq_lt_sq₀ hrs0 ht0.le).2 hrs
+            have hr_sq : 3 * r ^ 2 < t ^ 2 := by
+              nlinarith [s3_sq]
+            have ht_sq : t ^ 2 < (3 : ℝ) / 4 := by
+              have ha0 : 0 ≤ a := by positivity
+              have hsq := (sq_lt_sq₀ ht0.le ha0).2 hta
+              dsimp [a] at hsq
+              nlinarith [s3_sq]
+            constructor
+            · rw [standardCoordinates_mem_strictCone_iff]
+              have hq : 0 ≤ t ^ 2 + r ^ 2 := by positivity
+              have hsqrt : 0 ≤ Real.sqrt (t ^ 2 + r ^ 2) := Real.sqrt_nonneg _
+              have hleft : 0 ≤ (s3 / 2) * Real.sqrt (t ^ 2 + r ^ 2) := by positivity
+              apply (sq_lt_sq₀ hleft ht0.le).1
+              rw [mul_pow, Real.sq_sqrt hq]
+              nlinarith [s3_sq]
+            · rw [standardCoordinates_mem_ball_iff]
+              nlinarith
+
+          lemma upper_point_mem_cone_ball (k : ℕ) {t : ℝ} {v : Fin (k + 1) → ℝ}
+              (hta : a < t) (ht1 : t < 1)
+              (hv : ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ <
+                upperSlope * (1 - t)) :
+              standardCoordinates (k + 1) (t, v) ∈
+                strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
+            let r : ℝ := ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
+            have hr0 : 0 ≤ r := norm_nonneg _
+            have hprof0 : 0 < upperSlope * (1 - t) := by positivity
+            have hrprof : r < upperSlope * (1 - t) := by simpa [r] using hv
+            have hconeLinear : s3 * (upperSlope * (1 - t)) < t := by
+              dsimp [a, upperSlope] at hta ⊢
+              nlinarith [s3_sq]
+            have hrs : r * s3 < t := by
+              have := mul_lt_mul_of_pos_right hrprof s3_pos
+              nlinarith
+            have hrs0 : 0 ≤ r * s3 := mul_nonneg hr0 s3_pos.le
+            have hrsq : (r * s3) ^ 2 < t ^ 2 :=
+              (sq_lt_sq₀ hrs0 (by positivity : 0 ≤ t)).2 hrs
+            have hr_sq : 3 * r ^ 2 < t ^ 2 := by
+              nlinarith [s3_sq]
+            have hballLinear : upperSlope ^ 2 * (1 - t) < 1 + t := by
+              dsimp [a, upperSlope] at hta ⊢
+              nlinarith [s3_sq]
+            have hprof_sq : (upperSlope * (1 - t)) ^ 2 < 1 - t ^ 2 := by
+              have h1t : 0 < 1 - t := by linarith
+              have := mul_lt_mul_of_pos_right hballLinear h1t
+              nlinarith
+            have hr_sq_ball : r ^ 2 < 1 - t ^ 2 := by
+              have hprof_nonneg : 0 ≤ upperSlope * (1 - t) := hprof0.le
+              have hsq := (sq_lt_sq₀ hr0 hprof_nonneg).2 hrprof
+              nlinarith
+            constructor
+            · rw [standardCoordinates_mem_strictCone_iff]
+              have hq : 0 ≤ t ^ 2 + r ^ 2 := by positivity
+              have hleft : 0 ≤ (s3 / 2) * Real.sqrt (t ^ 2 + r ^ 2) := by positivity
+              apply (sq_lt_sq₀ hleft (by positivity : 0 ≤ t)).1
+              rw [mul_pow, Real.sq_sqrt hq]
+              nlinarith [s3_sq]
+            · rw [standardCoordinates_mem_ball_iff]
+              nlinarith
+
+          lemma lowerBicone_subset (k : ℕ) :
+              lowerBicone k ⊆ strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
+            intro y hy
+            let p := (standardCoordinates (k + 1)).symm y
+            have hp : p ∈ profileRegion (k + 1) (Set.Ioo 0 a) (fun t => t / s3) := hy
+            rcases hp with ⟨ht, hv⟩
+            have hpoint := lower_point_mem_cone_ball k ht.1 ht.2 hv
+            simpa [p] using hpoint
+
+          lemma upperBicone_subset (k : ℕ) :
+              upperBicone k ⊆ strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
+            intro y hy
+            let p := (standardCoordinates (k + 1)).symm y
+            have hp : p ∈ profileRegion (k + 1) (Set.Ioo a 1)
+                (fun t => upperSlope * (1 - t)) := hy
+            rcases hp with ⟨ht, hv⟩
+            have hpoint := upper_point_mem_cone_ball k ht.1 ht.2 hv
+            simpa [p] using hpoint
+
+          lemma standardBicone_subset (k : ℕ) :
+              standardBicone k ⊆ strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
+            exact union_subset (lowerBicone_subset k) (upperBicone_subset k)
+
+          lemma lowerBicone_disjoint_upperBicone (k : ℕ) :
+              Disjoint (lowerBicone k) (upperBicone k) := by
+            rw [Set.disjoint_left]
+            intro y hyl hyu
+            let p := (standardCoordinates (k + 1)).symm y
+            have hl : p.1 ∈ Set.Ioo 0 a := hyl.1
+            have hu : p.1 ∈ Set.Ioo a 1 := hyu.1
+            linarith
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/BiconeGeometry.lean
+          cp /tmp/BiconeGeometry.lean Sqrt6KissingBound/BiconeGeometry.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/BiconeGeometry.lean
+          git commit -m 'Add the compiler-confirmed inscribed bicone geometry'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
