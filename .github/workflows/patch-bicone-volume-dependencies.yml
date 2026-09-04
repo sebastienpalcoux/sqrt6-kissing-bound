@@ -1,0 +1,48 @@
+name: Patch bicone-volume dependencies
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/patch-bicone-volume-dependencies.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Build every project dependency before the bicone-volume proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Sqrt6KissingBound/ProfileIntegralReal.lean
+          test -f Sqrt6KissingBound/BiconeGeometry.lean
+          test -f Sqrt6KissingBound/LinearProfileIntegral.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/develop-bicone-volume-001.yml')
+          s = p.read_text()
+          needle = '          lake env lean /tmp/BiconeVolume.lean\n'
+          build = ('          lake build Sqrt6KissingBound.ProfileIntegralReal '
+                   'Sqrt6KissingBound.BiconeGeometry '
+                   'Sqrt6KissingBound.LinearProfileIntegral\n')
+          if build.strip() not in s:
+              if needle not in s:
+                  raise SystemExit('Expected BiconeVolume compiler line not found')
+              s = s.replace(needle, build + needle, 1)
+          s += '\n# Explicitly builds all compiler-confirmed bicone-volume dependencies.\n'
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/develop-bicone-volume-001.yml
+          git commit -m 'Build dependencies before BiconeVolume'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
