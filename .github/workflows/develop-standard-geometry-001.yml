@@ -36,6 +36,7 @@ jobs:
           cat > /tmp/StandardGeometry.lean <<'LEAN'
           import Sqrt6KissingBound.CoordinateVolume
           import Sqrt6KissingBound.Geometry
+          import Mathlib.Analysis.InnerProductSpace.PiL2
 
           /-!
           # Geometry in standard first-coordinate form
