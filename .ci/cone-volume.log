@@ -1,0 +1,2 @@
+STATUS=1
+Sqrt6KissingBound/ConeVolume.lean:1:0: error: object file '/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/CapMeasure.olean' of module Sqrt6KissingBound.CapMeasure does not exist
