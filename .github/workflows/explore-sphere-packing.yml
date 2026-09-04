@@ -1,0 +1,54 @@
+name: Explore existing sphere-packing Lean library
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/explore-sphere-packing.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Clone and index relevant declarations
+        shell: bash
+        run: |
+          rm -rf /tmp/sphere-packing-lean
+          git clone --depth 1 https://github.com/MIT-AI-Accelerator/sphere-packing-lean.git /tmp/sphere-packing-lean
+          mkdir -p .ci
+          {
+            echo '# FILES'
+            find /tmp/sphere-packing-lean -type f -name '*.lean' | sed 's#^/tmp/sphere-packing-lean/##' | sort
+            echo
+            echo '# RELEVANT DECLARATIONS'
+            grep -R -n -E '^[[:space:]]*(theorem|lemma|def|structure|class)[[:space:]].*(kiss|Kiss|spher|Spher|cap|Cap|code|Code|angle|Angle)' \
+              /tmp/sphere-packing-lean --include='*.lean' || true
+            echo
+            echo '# RELEVANT USES'
+            grep -R -n -E '(kissing|Kissing|spherical cap|sphericalCap|sphereCap|spherical code|SphericalCode|toSphere|inner.*1 / 2|inner.*2⁻¹)' \
+              /tmp/sphere-packing-lean --include='*.lean' || true
+            echo
+            echo '# README'
+            cat /tmp/sphere-packing-lean/README.md || true
+            echo
+            echo '# LAKEFILE'
+            cat /tmp/sphere-packing-lean/lakefile.lean || true
+          } > .ci/sphere-packing-index.txt
+          wc -l .ci/sphere-packing-index.txt
+      - name: Commit index
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/sphere-packing-index.txt
+          git commit -m 'Index existing sphere-packing Lean declarations [skip ci]'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
