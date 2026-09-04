@@ -1,0 +1,99 @@
+name: Develop profile integral 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-profile-integral-001.yml'
+
+concurrency:
+  group: develop-profile-integral-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile the profile-integral module
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/ProfileIntegral.lean <<'LEAN'
+          import Sqrt6KissingBound.ProfileVolume
+
+          /-!
+          # Evaluation of positive continuous radial profiles
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory intervalIntegral
+          open scoped ENNReal Interval Real
+
+          /-- The volume of the Euclidean unit ball in dimension `d`. -/
+          def unitBallVolume (d : ℕ) : ℝ≥0∞ :=
+            (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 1)
+
+          lemma volume_ball_eq_pow_mul_unit (d : ℕ) (r : ℝ) (hr : 0 ≤ r) :
+              (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) (ball 0 r) =
+                ENNReal.ofReal r ^ (d + 1) * unitBallVolume (d + 1) := by
+            rw [EuclideanSpace.volume_ball, EuclideanSpace.volume_ball]
+            simp [unitBallVolume, hr]
+
+          /-- For a nonnegative continuous profile on an interval, the volume is the
+          transverse unit-ball volume times the elementary one-dimensional integral. -/
+          lemma volume_rotationalProfile_Ioo (d : ℕ) {a b : ℝ} (hab : a ≤ b)
+              {g : ℝ → ℝ} (hg : Continuous g)
+              (hg0 : ∀ t ∈ Set.Icc a b, 0 ≤ g t) :
+              (volume : Measure (EuclideanSpace ℝ (Fin (d + 2))))
+                  (rotationalProfile (d + 1) (Set.Ioo a b) g) =
+                ENNReal.ofReal (∫ t in a..b, g t ^ (d + 1)) *
+                  unitBallVolume (d + 1) := by
+            rw [volume_rotationalProfile (d + 1) measurableSet_Ioo hg.measurable]
+            have hpoint (t : ℝ) (ht : t ∈ Set.Ioo a b) :
+                (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) (ball 0 (g t)) =
+                  ENNReal.ofReal (g t ^ (d + 1)) * unitBallVolume (d + 1) := by
+              rw [volume_ball_eq_pow_mul_unit d (g t) (hg0 t ⟨ht.1.le, ht.2.le⟩)]
+              rw [ENNReal.ofReal_pow (hg0 t ⟨ht.1.le, ht.2.le⟩)]
+            simp_rw [hpoint]
+            rw [MeasureTheory.setLIntegral_mul_const]
+            congr 1
+            rw [← Measure.restrict_congr_set Ioo_ae_eq_Ioc]
+            rw [← ENNReal.ofReal_integral_eq_lintegral_ofReal
+              (hg.pow (d + 1)).intervalIntegrable.1]
+            · rw [intervalIntegral.integral_of_le hab]
+            · filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
+              exact pow_nonneg (hg0 t ⟨ht.1.le, ht.2⟩) _
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/ProfileIntegral.lean
+          cp /tmp/ProfileIntegral.lean Sqrt6KissingBound/ProfileIntegral.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/ProfileIntegral.lean
+          git commit -m 'Add the compiler-confirmed profile integral formula'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
