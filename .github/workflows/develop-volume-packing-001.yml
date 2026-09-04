@@ -95,6 +95,7 @@ jobs:
 
           end Sqrt6KissingBound
           LEAN
+          lake build Sqrt6KissingBound.Geometry
           lake env lean /tmp/VolumePacking.lean
           cp /tmp/VolumePacking.lean Sqrt6KissingBound/VolumePacking.lean
       - name: Commit only the compiler-confirmed module
@@ -107,4 +108,4 @@ jobs:
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
 
-# Retriggered during completion audit on 2026-09-04.
+# Build imported project modules before compiling the isolated candidate.
