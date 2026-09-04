@@ -1,0 +1,101 @@
+name: Finalize theorem source
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/finalize-theorem-source.yml'
+
+concurrency:
+  group: finalize-theorem-source
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Wait for the last compiler gate and refresh
+        run: |
+          sleep 120
+          git fetch origin gpt-pro/full-lean-certificate
+          git reset --hard origin/gpt-pro/full-lean-certificate
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Write the final public root and axiom audit
+        shell: bash
+        run: |
+          test -s Sqrt6KissingBound/KissingNumber.lean
+          cat > Sqrt6KissingBound.lean <<'LEAN'
+          import Sqrt6KissingBound.KissingNumber
+
+          /-!
+          # The universal square-root-of-six kissing-number bound
+
+          The public root exports an end-to-end formalization of the following facts.
+
+          * Every finite kissing configuration in positive Euclidean dimension `n`
+            has cardinality at most `(√6)^n`.
+          * `kissingNumber n`, defined as the greatest realizable cardinality, satisfies
+            the same bound.
+          * `√6` is the least nonnegative base that works uniformly in all dimensions.
+          -/
+          LEAN
+          cat > Axioms.lean <<'LEAN'
+          import Sqrt6KissingBound
+
+          #print axioms Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow
+          #print axioms Sqrt6KissingBound.kissingNumber_le_sqrt6_pow
+          #print axioms Sqrt6KissingBound.kissingNumber_two_eq_six
+          #print axioms Sqrt6KissingBound.sqrt6_isLeast_universalKissingBase
+          LEAN
+      - name: Compile the complete Lake library
+        shell: bash
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee /tmp/final-source-build.log
+      - name: Run the explicit axiom report
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean Axioms.lean 2>&1 | tee /tmp/final-axioms.log
+      - name: Run project checks
+        run: bash scripts/check.sh
+      - name: Reject proof holes, unsafe shortcuts, and project axioms
+        shell: bash
+        run: |
+          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
+          if grep -R -n -E "$pattern" --include='*.lean' Sqrt6KissingBound Sqrt6KissingBound.lean Axioms.lean; then
+            echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' >&2
+            exit 1
+          fi
+      - name: Commit the fully compiled public theorem root
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound.lean Axioms.lean
+          git commit -m 'Export the complete certified kissing-number theorem'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
+      - name: Upload finalization diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finalize-theorem-source-diagnostics
+          path: |
+            /tmp/final-source-build.log
+            /tmp/final-axioms.log
+          retention-days: 2
