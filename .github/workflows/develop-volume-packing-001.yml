@@ -47,7 +47,7 @@ jobs:
 
           open Set Metric MeasureTheory
 
-          variable {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+          variable {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
             [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E]
 
           /-- The real volumes of finitely many measurable, pairwise disjoint subsets of
@@ -107,5 +107,3 @@ jobs:
           git commit -m 'Add compiler-confirmed ordinary-volume packing lemmas'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
-
-# Build imported project modules before compiling the isolated candidate.
