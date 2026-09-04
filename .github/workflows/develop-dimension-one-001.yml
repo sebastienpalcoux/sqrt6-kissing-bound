@@ -85,16 +85,16 @@ jobs:
               (X.card : ℝ) ≤ Real.sqrt 6 := by
             have hc : (X.card : ℝ) ≤ 2 := by
               exact_mod_cast code_card_le_two_dim_one X hunit
+            have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
             have hs : (2 : ℝ) < Real.sqrt 6 := by
-              have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
-              apply (sq_lt_sq₀ (by norm_num) hs0).1
-              norm_num
+              nlinarith [sqrt6_sq]
             exact hc.trans hs.le
 
           end
 
           end Sqrt6KissingBound
           LEAN
+          lake build Sqrt6KissingBound.StandardGeometry
           lake env lean /tmp/DimensionOne.lean
           cp /tmp/DimensionOne.lean Sqrt6KissingBound/DimensionOne.lean
       - name: Commit only the compiler-confirmed module
