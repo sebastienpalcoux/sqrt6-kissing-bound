@@ -59,6 +59,9 @@ jobs:
               (∑ i ∈ X, (volume : Measure E).real (body i)) ≤
                 (volume : Measure E).real (ball 0 1) := by
             let μ : Measure E := (volume : Measure E).restrict (ball 0 1)
+            letI : IsFiniteMeasure μ :=
+              isFiniteMeasure_restrict.2
+                (measure_ball_lt_top (μ := (volume : Measure E))).ne
             have hpack :
                 (∑ i ∈ X, μ.real (body i)) ≤ μ.real Set.univ := by
               apply sum_measureReal_le_measureReal_univ
@@ -72,8 +75,15 @@ jobs:
               rw [inter_eq_self_of_subset_left (hsub i hi)]
             have huniv : μ.real Set.univ =
                 (volume : Measure E).real (ball 0 1) := by
-              simp [μ, Measure.real, measurableSet_ball]
-            simpa only [hbody, huniv] using hpack
+              simp [μ, Measure.real]
+            calc
+              (∑ i ∈ X, (volume : Measure E).real (body i)) =
+                  ∑ i ∈ X, μ.real (body i) := by
+                    apply Finset.sum_congr rfl
+                    intro i hi
+                    exact (hbody i hi).symm
+              _ ≤ μ.real Set.univ := hpack
+              _ = (volume : Measure E).real (ball 0 1) := huniv
 
           /-- Equal-volume specialization of `sum_volumeReal_le_unitBall`. -/
           lemma card_mul_volumeReal_le_unitBall (X : Finset ι) (body : ι → Set E)
