@@ -61,13 +61,13 @@ jobs:
 
           lemma norm_sq_standardCoordinates (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
               ‖standardCoordinates d (t, v)‖ ^ 2 =
-                t ^ 2 + ‖(toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
+                t ^ 2 + ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
             rw [← real_inner_self_eq_norm_sq, ← real_inner_self_eq_norm_sq]
             simp [standardCoordinates, PiLp.inner_apply]
 
           lemma standardCoordinates_mem_ball_iff (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
               standardCoordinates d (t, v) ∈ ball 0 1 ↔
-                t ^ 2 + ‖(toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 < 1 := by
+                t ^ 2 + ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 < 1 := by
             rw [mem_ball, dist_zero_right]
             constructor
             · intro h
@@ -85,7 +85,7 @@ jobs:
               standardCoordinates d (t, v) ∈ strictCone (standardAxis d) ↔
                 (Real.sqrt 3 / 2) *
                     Real.sqrt (t ^ 2 +
-                      ‖(toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2) < t := by
+                      ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2) < t := by
             change (Real.sqrt 3 / 2) * ‖standardCoordinates d (t, v)‖ <
               inner ℝ (standardAxis d) (standardCoordinates d (t, v)) ↔ _
             rw [inner_standardAxis_standardCoordinates]
