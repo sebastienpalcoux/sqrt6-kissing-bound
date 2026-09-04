@@ -1,0 +1,41 @@
+import Sqrt6KissingBound.CapMeasure
+import Mathlib.Geometry.Euclidean.Volume.Measure
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+
+open Set Metric MeasureTheory
+open scoped ENNReal Interval Real
+
+#check EuclideanGeometry.euclideanHausdorffMeasure_eq_lintegral
+#check AffineSubspace.euclideanHausdorffMeasure_eq_lintegral
+#check Submodule.measurePreserving_measurableEquivProd
+#check MeasureTheory.Measure.prod_apply
+#check MeasureTheory.Measure.real
+#check MeasureTheory.Measure.addHaar_ball_of_pos
+#check MeasureTheory.Measure.addHaar_ball
+#check InnerProductSpace.volume_ball
+#check MeasureTheory.Measure.integral_fun_norm_addHaar
+#check MeasureTheory.Measure.integrable_fun_norm_addHaar
+#check intervalIntegral.integral_comp_mul_deriv
+#check intervalIntegral.integral_comp_mul_deriv'
+#check intervalIntegral.integral_comp_mul_deriv''
+#check intervalIntegral.integral_deriv_mul_comp
+#check intervalIntegral.integral_deriv_mul_comp'
+#check intervalIntegral.integral_deriv_mul_comp''
+#check intervalIntegral.integral_comp_sub_left
+#check intervalIntegral.integral_comp_sub_right
+#check intervalIntegral.integral_comp_add
+#check MeasureTheory.ofReal_integral_eq_lintegral_ofReal
+#check MeasureTheory.ofReal_setIntegral_eq_lintegral_ofReal
+#check ENNReal.toReal_ofReal
+#check MeasureTheory.Measure.volume_eq_prod
+#check WithLp.volume_preserving_ofLp
+#check WithLp.volume_preserving_toLp
+#check Submodule.orthogonalDecomposition
+#check LinearIsometryEquiv.toSpanUnitSingleton
+#check LinearIsometryEquiv.withLpProdCongr
+#check MeasurePreserving.measure_preimage
+#check MeasurePreserving.measure_preimage_equiv
+#check MeasurePreserving.setIntegral_preimage_emb
+#check MeasurableEquiv.setIntegral_preimage_emb
+#check intervalIntegral.integral_pow
+#check intervalIntegral.integral_mul_deriv_eq_deriv_mul
