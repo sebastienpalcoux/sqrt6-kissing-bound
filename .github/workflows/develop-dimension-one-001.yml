@@ -1,0 +1,108 @@
+name: Develop dimension one 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-dimension-one-001.yml'
+
+concurrency:
+  group: develop-dimension-one-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile the one-dimensional argument
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/DimensionOne.lean <<'LEAN'
+          import Sqrt6KissingBound.StandardGeometry
+
+          /-!
+          # The one-dimensional spherical code
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric
+
+          lemma unit_vector_dim_one_eq_axis_or_neg
+              (x : EuclideanSpace ℝ (Fin 1)) (hx : ‖x‖ = 1) :
+              x = standardAxis 0 ∨ x = -standardAxis 0 := by
+            let p : ℝ × (Fin 0 → ℝ) := (standardCoordinates 0).symm x
+            have hp2 : p.2 = 0 := Subsingleton.elim _ _
+            have hxrepr : standardCoordinates 0 p = x :=
+              (standardCoordinates 0).apply_symm_apply x
+            have hnormsq := norm_sq_standardCoordinates 0 p.1 p.2
+            rw [hxrepr, hx, one_pow, hp2] at hnormsq
+            simp at hnormsq
+            have hfactor : (p.1 - 1) * (p.1 + 1) = 0 := by nlinarith
+            rcases mul_eq_zero.mp hfactor with hplus | hminus
+            · left
+              have hp1 : p.1 = 1 := by linarith
+              rw [← hxrepr]
+              simp [p, hp1, hp2, standardAxis]
+            · right
+              have hp1 : p.1 = -1 := by linarith
+              rw [← hxrepr]
+              simp [p, hp1, hp2, standardAxis, standardCoordinates]
+
+          lemma code_card_le_two_dim_one
+              (X : Finset (EuclideanSpace ℝ (Fin 1)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1) :
+              X.card ≤ 2 := by
+            have hsub : X ⊆ ({standardAxis 0, -standardAxis 0} :
+                Finset (EuclideanSpace ℝ (Fin 1))) := by
+              intro x hx
+              rcases unit_vector_dim_one_eq_axis_or_neg x (hunit x hx) with h | h
+              · simp [h]
+              · simp [h]
+            exact (Finset.card_le_card hsub).trans (by simp)
+
+          lemma code_card_le_sqrt6_dim_one
+              (X : Finset (EuclideanSpace ℝ (Fin 1)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1) :
+              (X.card : ℝ) ≤ Real.sqrt 6 := by
+            have hc : (X.card : ℝ) ≤ 2 := by
+              exact_mod_cast code_card_le_two_dim_one X hunit
+            have hs : (2 : ℝ) < Real.sqrt 6 := by
+              have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
+              apply (sq_lt_sq₀ (by norm_num) hs0).1
+              norm_num
+            exact hc.trans hs.le
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/DimensionOne.lean
+          cp /tmp/DimensionOne.lean Sqrt6KissingBound/DimensionOne.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/DimensionOne.lean
+          git commit -m 'Add the compiler-confirmed one-dimensional estimate'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
