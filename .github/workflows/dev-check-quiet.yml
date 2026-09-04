@@ -1,0 +1,67 @@
+name: Quiet Lean development check
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - 'Sqrt6KissingBound/**'
+      - 'Sqrt6KissingBound.lean'
+      - 'Axioms.lean'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/dev-check-quiet.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Run Lean and prepare concise diagnostics
+        id: build
+        shell: bash
+        run: |
+          set +e
+          lake build > /tmp/full.log 2>&1
+          status=$?
+          {
+            echo "LEAN_BUILD_STATUS=$status"
+            grep -E '(^error:|^warning:|^✖|^Some required targets|^Build completed)' /tmp/full.log || true
+            echo '--- tail ---'
+            tail -n 80 /tmp/full.log
+          } > /tmp/lean-latest.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          cat /tmp/lean-latest.log
+          exit 0
+      - name: Store concise diagnostics on the development branch
+        shell: bash
+        run: |
+          mkdir -p .ci
+          cp /tmp/lean-latest.log .ci/latest.log
+          printf '%s\n' '${{ steps.build.outputs.status }}' > .ci/latest.status
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/latest.log .ci/latest.status
+          git commit -m 'Record concise Lean diagnostics [skip ci]' || exit 0
+          for attempt in 1 2 3; do
+            git pull --rebase origin gpt-pro/full-lean-certificate && \
+              git push origin HEAD:gpt-pro/full-lean-certificate && exit 0
+            sleep 3
+          done
+          echo 'Could not persist diagnostics after three attempts.' >&2
+          exit 0
