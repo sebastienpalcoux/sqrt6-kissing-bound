@@ -106,3 +106,5 @@ jobs:
           git commit -m 'Add compiler-confirmed ordinary-volume packing lemmas'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
+
+# Retriggered during completion audit on 2026-09-04.
