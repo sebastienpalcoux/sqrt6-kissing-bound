@@ -1,0 +1,114 @@
+name: Interactive Lean development session (not certification)
+
+"on":
+  push:
+    branches: [gpt-pro/full-lean-certificate]
+    paths: ['.github/workflows/lean-development-session.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lean-development-session
+  cancel-in-progress: true
+
+jobs:
+  development:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Bounded compiler session with explicit diagnostic results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, subprocess, time, urllib.request, urllib.error
+          from pathlib import Path
+          repo = 'sebastienpalcoux/sqrt6-kissing-bound'
+          branch = 'gpt-pro/full-lean-certificate'
+          root = 'https://api.github.com/repos/' + repo
+          def api(path, data=None):
+              req = urllib.request.Request(root + path,
+                  data=None if data is None else json.dumps(data).encode(),
+                  headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+                           'Accept': 'application/vnd.github+json',
+                           'X-GitHub-Api-Version': '2022-11-28'},
+                  method='GET' if data is None else 'PUT')
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  return json.load(response)
+          def record(text):
+              name = '/contents/.ci/session-result.txt'
+              data = {'message': 'Record development-session diagnostics [skip ci]',
+                      'content': base64.b64encode(text.encode()).decode(), 'branch': branch}
+              try:
+                  data['sha'] = api(name + '?ref=' + branch)['sha']
+              except urllib.error.HTTPError as e:
+                  if e.code != 404:
+                      raise
+              api(name, data)
+          Path('session-artifacts').mkdir(exist_ok=True)
+          record('DEVELOPMENT SESSION READY\nNo certification is implied by this workflow.\n')
+          last = None
+          deadline = time.monotonic() + 3600
+          count = 0
+          while time.monotonic() < deadline and count < 150:
+              try:
+                  entry = api('/contents/.ci/next-command.py?ref=' + branch)
+                  sha = entry['sha']
+                  if sha == last:
+                      time.sleep(3)
+                      continue
+                  last = sha
+                  source = base64.b64decode(entry['content']).decode()
+                  count += 1
+                  Path('/tmp/lean-session-command.py').write_text(source)
+                  record(f'DEVELOPMENT COMMAND RUNNING\nCommand SHA: {sha}\nSequence: {count}\n')
+                  try:
+                      p = subprocess.run(['python3', '-u', '/tmp/lean-session-command.py'],
+                          text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=600)
+                      text = p.stdout
+                      code = p.returncode
+                  except subprocess.TimeoutExpired as e:
+                      text = (e.stdout or b'')
+                      if isinstance(text, bytes):
+                          text = text.decode(errors='replace')
+                      text += '\nCOMMAND TIMEOUT (600 seconds)\n'
+                      code = 124
+                  result = f'DEVELOPMENT COMMAND RESULT\nCommand SHA: {sha}\nSequence: {count}\nCommand exit status: {code}\nThis status is not a certification claim.\n\n' + text
+                  Path(f'session-artifacts/result-{count:03d}.txt').write_text(result)
+                  print(result, flush=True)
+                  if len(result) > 150000:
+                      result = result[:5000] + '\n[Full output retained as workflow artifact]\n' + result[-140000:]
+                  record(result)
+                  if Path('.ci/STOP_DEVELOPMENT_SESSION').exists():
+                      break
+              except Exception as e:
+                  print(type(e).__name__, str(e), flush=True)
+                  time.sleep(5)
+          print('Bounded development session ended; inspect explicit build and audit results.', flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lean-development-session-source-and-diagnostics
+          path: |
+            session-artifacts/
+            Sqrt6KissingBound/
+            Sqrt6KissingBound.lean
+            Axioms.lean
+            scripts/check.sh
+            lakefile.lean
+            lake-manifest.json
+            lean-toolchain
+          retention-days: 7
