@@ -1,0 +1,103 @@
+name: Certificate completion chain
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/certificate-chain.yml'
+      - 'Sqrt6KissingBound/CenteredBicone.lean'
+      - 'Sqrt6KissingBound/CenteredBody.lean'
+      - 'Sqrt6KissingBound/BallVolumes.lean'
+      - 'Sqrt6KissingBound/DimensionOne.lean'
+      - 'Sqrt6KissingBound/DimensionThree.lean'
+      - 'Sqrt6KissingBound/DimensionFour.lean'
+      - 'Sqrt6KissingBound/BiconeBounds.lean'
+      - 'Sqrt6KissingBound/KissingBound.lean'
+      - 'Sqrt6KissingBound/Optimality.lean'
+      - 'Sqrt6KissingBound/KissingNumber.lean'
+
+concurrency:
+  group: certificate-completion-chain
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Trigger the first missing dependency-ready module
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          modules=(CenteredBody BallVolumes DimensionOne DimensionThree DimensionFour BiconeBounds KissingBound Optimality KissingNumber)
+          workflows=(develop-centered-body-001.yml develop-ball-volumes-001.yml develop-dimension-one-001.yml develop-dimension-three-001.yml develop-dimension-four-001.yml develop-bicone-bounds-001.yml develop-kissing-bound-001.yml develop-optimality-001.yml develop-kissing-number-001.yml)
+          deps=(
+            'CenteredBicone VolumePacking'
+            'ProfileIntegralReal'
+            'StandardGeometry'
+            'StandardGeometry'
+            'CapMeasure Core'
+            'BiconeVolume BallVolumes'
+            'CenteredBody BiconeBounds DimensionOne DimensionThree DimensionFour Core'
+            'KissingBound Core'
+            'KissingBound Optimality'
+          )
+
+          for i in "${!modules[@]}"; do
+            mod=${modules[$i]}
+            src="Sqrt6KissingBound/${mod}.lean"
+            if [[ -f "$src" ]]; then
+              continue
+            fi
+
+            for dep in ${deps[$i]}; do
+              if [[ ! -f "Sqrt6KissingBound/${dep}.lean" ]]; then
+                echo "${mod} is next, but ${dep} is not committed yet; stopping cleanly."
+                exit 0
+              fi
+            done
+
+            marker=".ci/chain-${mod}.triggered"
+            if [[ -f "$marker" ]]; then
+              echo "${mod} has already been triggered and still needs manual repair."
+              exit 0
+            fi
+
+            wf=".github/workflows/${workflows[$i]}"
+            test -f "$wf"
+            python3 - "$wf" "$mod" "${deps[$i]}" <<'PY'
+          from pathlib import Path
+          import sys
+          p = Path(sys.argv[1])
+          mod = sys.argv[2]
+          deps = sys.argv[3].split()
+          s = p.read_text()
+          needle = f'          lake env lean /tmp/{mod}.lean\n'
+          build = '          lake build ' + ' '.join(f'Sqrt6KissingBound.{d}' for d in deps) + '\n'
+          if build.strip() not in s:
+              if needle not in s:
+                  raise SystemExit(f'Expected compiler line not found in {p}')
+              s = s.replace(needle, build + needle, 1)
+          s += f'\n# Certificate chain trigger for {mod}.\n'
+          p.write_text(s)
+          PY
+            mkdir -p .ci
+            printf '%s\n' "$mod" > "$marker"
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add "$wf" "$marker"
+            git commit -m "Trigger compiler gate for ${mod}"
+            git pull --rebase origin gpt-pro/full-lean-certificate
+            git push origin HEAD:gpt-pro/full-lean-certificate
+            exit 0
+          done
+
+          echo 'All chained theorem modules are present.'
