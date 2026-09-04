@@ -1,0 +1,71 @@
+name: Read-only static Lean diagnostics (not certification)
+
+"on":
+  push:
+    branches: [gpt-pro/full-lean-certificate]
+    paths:
+      - '.github/workflows/static-lean-diagnostics.yml'
+      - '.ci/validate-static.txt'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: static-lean-diagnostics
+  cancel-in-progress: true
+
+jobs:
+  check-static-candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Recover the explicitly identified development checkpoint
+        uses: actions/download-artifact@v4
+        with:
+          name: lean-development-session-source-and-diagnostics
+          run-id: 33929059470
+          github-token: ${{ github.token }}
+          path: .ci/checkpoint
+      - name: Stage only static Lean source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .ci/checkpoint/Sqrt6KissingBound/*.lean Sqrt6KissingBound/
+          cp .ci/candidates/*.lean Sqrt6KissingBound/
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile candidates and record the actual build status
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p static-diagnostics
+          lake build Sqrt6KissingBound.KissingNumber > static-diagnostics/build.log 2>&1
+          result=$?
+          printf 'CANDIDATE_BUILD_EXIT_STATUS=%s\nNOT_A_CERTIFICATION\n' "$result" | tee static-diagnostics/status.txt
+          cat static-diagnostics/build.log
+          printf 'Development-only build exit status: %s. No proof source was published.\n' "$result" >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+      - name: Retain source and diagnostics without publishing proof changes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-lean-candidates-and-diagnostics
+          path: |
+            static-diagnostics/
+            Sqrt6KissingBound/
+            Sqrt6KissingBound.lean
+            Axioms.lean
+            lakefile.lean
+            lake-manifest.json
+            lean-toolchain
+            scripts/check.sh
+          retention-days: 7
