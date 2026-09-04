@@ -1,0 +1,44 @@
+name: Patch profile-real dependency
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/patch-profile-real-dependency.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - name: Add the explicit project dependency build
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/develop-profile-real-001.yml')
+          s = p.read_text()
+          needle = '          lake env lean /tmp/ProfileIntegralReal.lean\n'
+          replacement = ('          lake build Sqrt6KissingBound.ProfileIntegral\n'
+                         '          lake env lean /tmp/ProfileIntegralReal.lean\n')
+          if 'lake build Sqrt6KissingBound.ProfileIntegral' not in s:
+              if needle not in s:
+                  raise SystemExit('Expected ProfileIntegralReal compiler line not found')
+              s = s.replace(needle, replacement, 1)
+          s += '\n# Explicitly builds the compiler-confirmed ProfileIntegral dependency.\n'
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/develop-profile-real-001.yml
+          git commit -m 'Build ProfileIntegral before ProfileIntegralReal'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
