@@ -54,8 +54,7 @@ jobs:
           lemma volume_ball_eq_pow_mul_unit (d : ℕ) (r : ℝ) (hr : 0 ≤ r) :
               (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) (ball 0 r) =
                 ENNReal.ofReal r ^ (d + 1) * unitBallVolume (d + 1) := by
-            rw [EuclideanSpace.volume_ball, EuclideanSpace.volume_ball]
-            simp [unitBallVolume, hr]
+            simp [unitBallVolume, EuclideanSpace.volume_ball, hr]
 
           /-- For a nonnegative continuous profile on an interval, the volume is the
           transverse unit-ball volume times the elementary one-dimensional integral. -/
