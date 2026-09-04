@@ -1,0 +1,237 @@
+name: Develop bicone bounds 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-bicone-bounds-001.yml'
+
+concurrency:
+  group: develop-bicone-bounds-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile the generic bicone packing bounds
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/BiconeBounds.lean <<'LEAN'
+          import Sqrt6KissingBound.CenteredBicone
+          import Sqrt6KissingBound.BallVolumes
+
+          /-!
+          # Dimension-uniform consequences of the bicone packing
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          /-- The basic packing inequality delivered by the standard bicone. -/
+          lemma bicone_packing_inequality (k : ℕ)
+              (X : Finset (EuclideanSpace ℝ (Fin (k + 2))))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              (X.card : ℝ) *
+                  ((1 / ((k + 2) * 2 ^ (k + 1))) * unitBallVolumeReal (k + 1)) ≤
+                unitBallVolumeReal (k + 2) := by
+            have h := card_mul_volumeReal_le_unitBall X (centeredBicone k)
+              (fun x hx => measurableSet_centeredBicone k x)
+              (fun x hx => centeredBicone_subset_unitBall (hunit x hx))
+              (fun x hx z hz hne => centeredBicone_disjoint
+                (hunit x hx) (hunit z hz) (hsep x hx z hz hne))
+              (q := (1 / ((k + 2) * 2 ^ (k + 1))) * unitBallVolumeReal (k + 1))
+              (fun x hx => volumeReal_centeredBicone k x)
+            simpa [unitBallVolumeReal] using h
+
+          lemma unitBallVolumeReal_one : unitBallVolumeReal 1 = 2 := by
+            rw [unitBallVolumeReal_formula 0]
+            have hsp : Real.sqrt Real.pi ≠ 0 :=
+              (Real.sqrt_pos.2 Real.pi_pos).ne'
+            norm_num [Real.Gamma_add_one, Real.Gamma_one_half_eq]
+            field_simp [hsp]
+
+          lemma code_card_le_six_dim_two
+              (X : Finset (EuclideanSpace ℝ (Fin 2)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              X.card ≤ 6 := by
+            have hpack := bicone_packing_inequality 0 X hunit hsep
+            rw [unitBallVolumeReal_one, unitBallVolumeReal_two] at hpack
+            have hpi : Real.pi < (7 : ℝ) / 2 :=
+              lt_trans Real.pi_lt_22_div_7 (by norm_num)
+            have hcardR : (X.card : ℝ) < 7 := by nlinarith
+            exact_mod_cast (show X.card < 7 by exact_mod_cast hcardR)
+
+          lemma code_card_le_sqrt6_sq
+              (X : Finset (EuclideanSpace ℝ (Fin 2)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              (X.card : ℝ) ≤ (Real.sqrt 6) ^ 2 := by
+            have hc : (X.card : ℝ) ≤ 6 := by
+              exact_mod_cast code_card_le_six_dim_two X hunit hsep
+            simpa using hc
+
+          lemma code_card_le_eightyfive_dim_five
+              (X : Finset (EuclideanSpace ℝ (Fin 5)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              X.card ≤ 85 := by
+            have hpack := bicone_packing_inequality 3 X hunit hsep
+            rw [unitBallVolumeReal_four, unitBallVolumeReal_five] at hpack
+            have hp : 0 < Real.pi ^ 2 := sq_pos_of_pos Real.pi_pos
+            have hcardR : (X.card : ℝ) < 86 := by
+              by_contra hnot
+              have hc : (86 : ℝ) ≤ X.card := le_of_not_gt hnot
+              nlinarith
+            exact_mod_cast (show X.card < 86 by exact_mod_cast hcardR)
+
+          lemma code_card_le_sqrt6_fifth
+              (X : Finset (EuclideanSpace ℝ (Fin 5)))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              (X.card : ℝ) ≤ (Real.sqrt 6) ^ 5 := by
+            have hc : (X.card : ℝ) ≤ 85 := by
+              exact_mod_cast code_card_le_eightyfive_dim_five X hunit hsep
+            have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
+            have hsq : (Real.sqrt 6) ^ 2 = 6 := by norm_num
+            have hs : (85 : ℝ) / 36 < Real.sqrt 6 := by
+              apply (sq_lt_sq₀ (by norm_num) hs0).1
+              rw [hsq]
+              norm_num
+            have h85 : (85 : ℝ) < (Real.sqrt 6) ^ 5 := by
+              rw [show (Real.sqrt 6) ^ 5 =
+                ((Real.sqrt 6) ^ 2) ^ 2 * Real.sqrt 6 by ring]
+              rw [hsq]
+              nlinarith
+            exact hc.trans h85.le
+
+          /-- The elementary numerical inequality used in dimensions at least six. -/
+          lemma dimension_mul_two_pow_le_sqrt6_pow :
+              ∀ n : ℕ, 6 ≤ n →
+                (n : ℝ) * (2 : ℝ) ^ (n - 1) ≤ (Real.sqrt 6) ^ n := by
+            intro n
+            induction n using Nat.strong_induction_on with
+            | h n ih =>
+                intro hn
+                by_cases h6 : n = 6
+                · subst n
+                  norm_num [show (Real.sqrt 6) ^ 2 = 6 by norm_num]
+                by_cases h7 : n = 7
+                · subst n
+                  have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
+                  have hsq : (Real.sqrt 6) ^ 2 = 6 := by norm_num
+                  have hs : (56 : ℝ) / 27 < Real.sqrt 6 := by
+                    apply (sq_lt_sq₀ (by norm_num) hs0).1
+                    rw [hsq]
+                    norm_num
+                  rw [show (Real.sqrt 6) ^ 7 =
+                    ((Real.sqrt 6) ^ 2) ^ 3 * Real.sqrt 6 by ring, hsq]
+                  norm_num
+                  nlinarith
+                have hn8 : 8 ≤ n := by omega
+                have hprev := ih (n - 2) (by omega) (by omega)
+                have hpow2 :
+                    (2 : ℝ) ^ (n - 1) = 4 * (2 : ℝ) ^ (n - 3) := by
+                  rw [show n - 1 = (n - 3) + 2 by omega, pow_add]
+                  norm_num
+                  ring
+                have hsquare : (Real.sqrt 6) ^ 2 = 6 := by norm_num
+                have hsqrtn :
+                    (Real.sqrt 6) ^ n = 6 * (Real.sqrt 6) ^ (n - 2) := by
+                  rw [show n = (n - 2) + 2 by omega, pow_add, hsquare]
+                  ring
+                have hprev' :
+                    ((n - 2 : ℕ) : ℝ) * (2 : ℝ) ^ (n - 3) ≤
+                      (Real.sqrt 6) ^ (n - 2) := by
+                  simpa [show (n - 2) - 1 = n - 3 by omega] using hprev
+                have hcoef : (4 : ℝ) * n ≤ 6 * (n - 2 : ℕ) := by
+                  push_cast
+                  nlinarith
+                rw [hpow2, hsqrtn]
+                calc
+                  (n : ℝ) * (4 * (2 : ℝ) ^ (n - 3)) =
+                      (4 * n) * (2 : ℝ) ^ (n - 3) := by ring
+                  _ ≤ (6 * (n - 2 : ℕ)) * (2 : ℝ) ^ (n - 3) := by
+                    exact mul_le_mul_of_nonneg_right hcoef (by positivity)
+                  _ = 6 * (((n - 2 : ℕ) : ℝ) * (2 : ℝ) ^ (n - 3)) := by ring
+                  _ ≤ 6 * (Real.sqrt 6) ^ (n - 2) := by
+                    exact mul_le_mul_of_nonneg_left hprev' (by norm_num)
+
+          /-- In dimensions at least six, the bicone packing already proves the
+          square-root-of-six estimate. -/
+          lemma code_card_le_sqrt6_high {k : ℕ} (hk : 4 ≤ k)
+              (X : Finset (EuclideanSpace ℝ (Fin (k + 2))))
+              (hunit : ∀ x ∈ X, ‖x‖ = 1)
+              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
+                inner ℝ x z ≤ (1 : ℝ) / 2) :
+              (X.card : ℝ) ≤ (Real.sqrt 6) ^ (k + 2) := by
+            let D : ℝ := (k + 2) * 2 ^ (k + 1)
+            let V : ℝ := unitBallVolumeReal (k + 1)
+            have hpack := bicone_packing_inequality k X hunit hsep
+            have hvol : unitBallVolumeReal (k + 2) ≤ V := by
+              simpa [V] using unitBallVolumeReal_antitone_from_six (k + 2) (by omega)
+            have hVpos : 0 < V := by
+              simpa [V] using unitBallVolumeReal_pos k
+            have hDpos : 0 < D := by
+              dsimp [D]
+              positivity
+            have hscaled := (mul_le_mul_left hDpos).2 hpack
+            have hmul : (X.card : ℝ) * V ≤ D * unitBallVolumeReal (k + 2) := by
+              dsimp [D, V] at hscaled ⊢
+              field_simp at hscaled
+              nlinarith
+            have hmul' : (X.card : ℝ) * V ≤ D * V :=
+              hmul.trans (mul_le_mul_of_nonneg_left hvol hDpos.le)
+            have hcardD : (X.card : ℝ) ≤ D :=
+              le_of_mul_le_mul_right hmul' hVpos
+            have hnum := dimension_mul_two_pow_le_sqrt6_pow (k + 2) (by omega)
+            have hDeq : D = ((k + 2 : ℕ) : ℝ) * (2 : ℝ) ^ ((k + 2) - 1) := by
+              dsimp [D]
+              congr 2
+              · rfl
+              · congr 1
+                omega
+            rw [hDeq] at hcardD
+            exact hcardD.trans hnum
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/BiconeBounds.lean
+          cp /tmp/BiconeBounds.lean Sqrt6KissingBound/BiconeBounds.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/BiconeBounds.lean
+          git commit -m 'Add compiler-confirmed bicone packing bounds'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
