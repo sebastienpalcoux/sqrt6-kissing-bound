@@ -1,0 +1,56 @@
+name: Verify cone-volume module
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - 'Sqrt6KissingBound/ConeVolume.lean'
+      - '.github/workflows/verify-cone-volume.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile cone-volume module
+        shell: bash
+        run: |
+          set +e
+          lake env lean Sqrt6KissingBound/ConeVolume.lean > /tmp/cone.log 2>&1
+          status=$?
+          mkdir -p .ci
+          {
+            echo "STATUS=$status"
+            cat /tmp/cone.log
+          } > .ci/cone-volume.log
+          if [ "$status" -eq 0 ]; then
+            printf 'verified\n' > .ci/cone-volume.ok
+          else
+            rm -f .ci/cone-volume.ok
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .ci/cone-volume.log
+          if [ -f .ci/cone-volume.ok ]; then git add .ci/cone-volume.ok; else git add -u .ci/cone-volume.ok 2>/dev/null || true; fi
+          git commit -m 'Record cone-volume verification [skip ci]' || exit 0
+          for attempt in 1 2 3; do
+            git pull --rebase origin gpt-pro/full-lean-certificate && \
+              git push origin HEAD:gpt-pro/full-lean-certificate && exit 0
+            sleep 3
+          done
+          exit 0
