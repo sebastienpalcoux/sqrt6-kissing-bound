@@ -76,7 +76,7 @@ jobs:
               intro t ht
               exact (ENNReal.ofReal_pow (hg0 t ⟨ht.1.le, ht.2.le⟩) (d + 1)).symm
             rw [hpow]
-            rw [← Measure.restrict_congr_set Ioo_ae_eq_Ioc]
+            rw [Measure.restrict_congr_set Ioo_ae_eq_Ioc]
             rw [← ENNReal.ofReal_integral_eq_lintegral_ofReal
               (hg.pow (d + 1)).intervalIntegrable.1]
             · rw [intervalIntegral.integral_of_le hab]
