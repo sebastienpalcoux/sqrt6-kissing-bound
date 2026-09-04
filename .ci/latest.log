@@ -1,16 +1,16 @@
 LEAN_BUILD_STATUS=1
-✖ [8708/8713] Building Sqrt6KissingBound.CapFraction (4.6s)
+✖ [8708/8713] Building Sqrt6KissingBound.CapFraction (4.0s)
 error: Sqrt6KissingBound/CapFraction.lean:59:32: Unknown identifier `capNumerator_lower`
 error: Lean exited with code 1
 Some required targets logged failures:
 error: build failed
 --- tail ---
-✔ [8707/8713] Built Sqrt6KissingBound.Analysis (6.6s)
-✖ [8708/8713] Building Sqrt6KissingBound.CapFraction (4.6s)
+✔ [8707/8713] Built Sqrt6KissingBound.Analysis (3.9s)
+✖ [8708/8713] Building Sqrt6KissingBound.CapFraction (4.0s)
 trace: .> LEAN_PATH=/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.33.1/bin/lean /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/Sqrt6KissingBound/CapFraction.lean -o /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/CapFraction.olean -i /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/lib/lean/Sqrt6KissingBound/CapFraction.ilean -c /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/CapFraction.c --setup /home/runner/work/sqrt6-kissing-bound/sqrt6-kissing-bound/.lake/build/ir/Sqrt6KissingBound/CapFraction.setup.json --json
 error: Sqrt6KissingBound/CapFraction.lean:59:32: Unknown identifier `capNumerator_lower`
 error: Lean exited with code 1
-✔ [8709/8713] Built Sqrt6KissingBound.Geometry (12s)
+✔ [8709/8713] Built Sqrt6KissingBound.Geometry (8.0s)
 Some required targets logged failures:
 - Sqrt6KissingBound.CapFraction
 error: build failed
