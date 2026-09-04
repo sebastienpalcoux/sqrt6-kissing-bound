@@ -29,206 +29,162 @@ jobs:
           lint: false
           axiom-audit: false
           use-mathlib-cache: true
-      - name: Compile the three-dimensional packing argument
+      - name: Compile the planar circular-code argument
         shell: bash
         run: |
           set -euo pipefail
           cat > /tmp/DimensionThree.lean <<'LEAN'
-          import Sqrt6KissingBound.CenteredBody
-          import Sqrt6KissingBound.BallVolumes
+          import Sqrt6KissingBound.StandardGeometry
+          import Mathlib.Analysis.SpecialFunctions.Trigonometric.Angle
 
           /-!
-          # The exceptional three-dimensional estimate
+          # The planar six-point bound
+
+          This is the exact low-dimensional input needed for the second coordinate:
+          a pairwise `60°`-separated subset of the unit circle has at most six points.
           -/
 
           namespace Sqrt6KissingBound
 
           noncomputable section
 
-          open Set Metric MeasureTheory intervalIntegral
-          open scoped Interval Real
+          open Set Metric
+          open scoped Real
 
-          private abbrev s3 : ℝ := Real.sqrt 3
-          private abbrev a : ℝ := s3 / 2
+          /-- The usual point of angle `t` on the Euclidean unit circle. -/
+          def circlePoint (t : ℝ) : EuclideanSpace ℝ (Fin 2) :=
+            WithLp.toLp 2 ![Real.cos t, Real.sin t]
 
-          private lemma s3_pos : 0 < s3 := Real.sqrt_pos.2 (by norm_num)
-          private lemma s3_sq : s3 ^ 2 = 3 := by norm_num [s3]
+          @[simp] lemma norm_circlePoint (t : ℝ) : ‖circlePoint t‖ = 1 := by
+            have hsq : ‖circlePoint t‖ ^ 2 = 1 := by
+              rw [EuclideanSpace.real_norm_sq_eq]
+              simp [circlePoint, Fin.sum_univ_succ, Real.sin_sq_add_cos_sq]
+            have hn : 0 ≤ ‖circlePoint t‖ := norm_nonneg _
+            nlinarith
 
-          /-- The spherical part of the standard three-dimensional packing body. -/
-          def upperBody3 : Set (EuclideanSpace ℝ (Fin 3)) :=
-            rotationalProfile 2 (Set.Ioo a 1) (fun t => Real.sqrt (1 - t ^ 2))
-
-          /-- A body contained in the standard sixty-degree sector of the three-ball. -/
-          def standardBody3 : Set (EuclideanSpace ℝ (Fin 3)) :=
-            lowerBicone 1 ∪ upperBody3
-
-          lemma measurableSet_upperBody3 : MeasurableSet upperBody3 := by
-            exact measurableSet_rotationalProfile 2 measurableSet_Ioo
-              ((continuous_const.sub (continuous_id.pow 2)).sqrt.measurable)
-
-          lemma measurableSet_standardBody3 : MeasurableSet standardBody3 :=
-            (measurableSet_lowerBicone 1).union measurableSet_upperBody3
-
-          private lemma upperBody3_point_mem {t : ℝ} {v : Fin 2 → ℝ}
-              (hta : a < t) (ht1 : t < 1)
-              (hv : ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin 2))‖ <
-                Real.sqrt (1 - t ^ 2)) :
-              standardCoordinates 2 (t, v) ∈
-                strictCone (standardAxis 2) ∩ ball 0 1 := by
-            let r : ℝ := ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin 2))‖
-            have hr0 : 0 ≤ r := norm_nonneg _
-            have ht0 : 0 < t := lt_trans (by positivity : 0 < a) hta
-            have ht_sq_lt_one : t ^ 2 < 1 := by nlinarith
-            have harg : 0 ≤ 1 - t ^ 2 := by linarith
-            have hsqrt0 : 0 ≤ Real.sqrt (1 - t ^ 2) := Real.sqrt_nonneg _
-            have hrsq : r ^ 2 < 1 - t ^ 2 := by
-              have hsq := (sq_lt_sq₀ hr0 hsqrt0).2 (by simpa [r] using hv)
-              rwa [Real.sq_sqrt harg] at hsq
-            have ht_sq_gt : (3 : ℝ) / 4 < t ^ 2 := by
-              have ha0 : 0 ≤ a := by positivity
-              have hsq := (sq_lt_sq₀ ha0 ht0.le).2 hta
-              dsimp [a] at hsq
-              nlinarith [s3_sq]
-            have hcone_sq : 3 * r ^ 2 < t ^ 2 := by nlinarith
-            constructor
-            · rw [standardCoordinates_mem_strictCone_iff]
-              have hq : 0 ≤ t ^ 2 + r ^ 2 := by positivity
-              have hleft : 0 ≤ (s3 / 2) * Real.sqrt (t ^ 2 + r ^ 2) := by
-                positivity
-              apply (sq_lt_sq₀ hleft ht0.le).1
-              rw [mul_pow, Real.sq_sqrt hq]
-              nlinarith [s3_sq]
-            · rw [standardCoordinates_mem_ball_iff]
-              nlinarith
-
-          lemma upperBody3_subset :
-              upperBody3 ⊆ strictCone (standardAxis 2) ∩ ball 0 1 := by
-            intro y hy
-            let p := (standardCoordinates 2).symm y
-            have hp : p ∈ profileRegion 2 (Set.Ioo a 1)
-                (fun t => Real.sqrt (1 - t ^ 2)) := hy
-            rcases hp with ⟨ht, hv⟩
-            have hpoint := upperBody3_point_mem ht.1 ht.2 hv
-            simpa [p] using hpoint
-
-          lemma standardBody3_subset :
-              standardBody3 ⊆ strictCone (standardAxis 2) ∩ ball 0 1 :=
-            union_subset (lowerBicone_subset 1) upperBody3_subset
-
-          lemma lowerBicone_one_disjoint_upperBody3 :
-              Disjoint (lowerBicone 1) upperBody3 := by
-            rw [Set.disjoint_left]
-            intro y hyl hyu
-            let p := (standardCoordinates 2).symm y
-            have hl : p.1 ∈ Set.Ioo 0 a := hyl.1
-            have hu : p.1 ∈ Set.Ioo a 1 := hyu.1
-            linarith
-
-          lemma upperBody3_profile_integral :
-              (∫ t in a..1, (Real.sqrt (1 - t ^ 2)) ^ 2) =
-                (2 : ℝ) / 3 - 3 * s3 / 8 := by
-            have ha1 : a ≤ (1 : ℝ) := by
-              have hs : s3 < 2 := by nlinarith [s3_sq, s3_pos]
-              dsimp [a]
-              linarith
-            calc
-              (∫ t in a..1, (Real.sqrt (1 - t ^ 2)) ^ 2) =
-                  ∫ t in a..1, (1 - t ^ 2) := by
-                    apply intervalIntegral.integral_congr
-                    intro t ht
-                    have htI : t ∈ Set.Icc a 1 := by
-                      simpa [Set.uIcc_of_le ha1] using ht
-                    have ht0 : 0 ≤ t := le_trans (by positivity : 0 ≤ a) htI.1
-                    have harg : 0 ≤ 1 - t ^ 2 := by nlinarith
-                    exact Real.sq_sqrt harg
-              _ = (2 : ℝ) / 3 - 3 * s3 / 8 := by
-                    rw [intervalIntegral.integral_sub
-                      intervalIntegrable_const (intervalIntegrable_pow 2),
-                      intervalIntegral.integral_const,
-                      intervalIntegral.integral_pow]
-                    dsimp [a]
-                    field_simp
-                    nlinarith [s3_sq]
-
-          lemma volumeReal_upperBody3 :
-              (volume : Measure (EuclideanSpace ℝ (Fin 3))).real upperBody3 =
-                ((2 : ℝ) / 3 - 3 * s3 / 8) * unitBallVolumeReal 2 := by
-            have h := volumeReal_rotationalProfile_Ioo 1
-              (a := a) (b := (1 : ℝ))
-              (g := fun t => Real.sqrt (1 - t ^ 2))
-              (by
-                have hs : s3 < 2 := by nlinarith [s3_sq, s3_pos]
-                dsimp [a]
-                linarith)
-              ((continuous_const.sub (continuous_id.pow 2)).sqrt)
-              (by intro t ht; exact Real.sqrt_nonneg _)
-            simpa [upperBody3, upperBody3_profile_integral] using h
-
-          lemma volumeReal_standardBody3 :
-              (volume : Measure (EuclideanSpace ℝ (Fin 3))).real standardBody3 =
-                ((2 - s3) / 3) * unitBallVolumeReal 2 := by
-            rw [standardBody3, measureReal_union
-              (measurableSet_lowerBicone 1) lowerBicone_one_disjoint_upperBody3,
-              volumeReal_lowerBicone, volumeReal_upperBody3]
+          lemma inner_circlePoint (s t : ℝ) :
+              inner ℝ (circlePoint s) (circlePoint t) = Real.cos (s - t) := by
+            simp [circlePoint, PiLp.inner_apply, Fin.sum_univ_succ,
+              Real.cos_sub]
             ring
 
-          lemma standardBody3_profile_gt : (4 : ℝ) / 45 < (2 - s3) / 3 := by
-            nlinarith [sqrt3_lt_26_div_15]
+          /-- A unit vector whose second coordinate is nonnegative is a `circlePoint`. -/
+          lemma eq_circlePoint_arccos_of_second_nonneg
+              (x : EuclideanSpace ℝ (Fin 2)) (hx : ‖x‖ = 1)
+              (hx1 : 0 ≤ x 1) : x = circlePoint (Real.arccos (x 0)) := by
+            have hx0_mem : x 0 ∈ Set.Icc (-1 : ℝ) 1 := by
+              constructor
+              · have h := abs_le_norm x 0
+                rw [hx]
+                exact (neg_le_of_abs_le h)
+              · have h := abs_le_norm x 0
+                rw [hx]
+                exact (le_of_abs_le h)
+            have hcos : Real.cos (Real.arccos (x 0)) = x 0 :=
+              Real.cos_arccos hx0_mem.1 hx0_mem.2
+            have hsqsum : (x 0) ^ 2 + (x 1) ^ 2 = 1 := by
+              have hnorm := congrArg (fun z : ℝ => z ^ 2) hx
+              rw [EuclideanSpace.real_norm_sq_eq] at hnorm
+              simpa [Fin.sum_univ_succ] using hnorm
+            have hsin_nonneg : 0 ≤ Real.sin (Real.arccos (x 0)) := by
+              apply Real.sin_nonneg_of_nonneg_of_le_pi
+              · exact Real.arccos_nonneg _
+              · exact Real.arccos_le_pi _
+            have hsin_sq : Real.sin (Real.arccos (x 0)) ^ 2 = (x 1) ^ 2 := by
+              nlinarith [Real.sin_sq_add_cos_sq (Real.arccos (x 0))]
+            have hsin : Real.sin (Real.arccos (x 0)) = x 1 := by
+              have hprod :
+                  (Real.sin (Real.arccos (x 0)) - x 1) *
+                    (Real.sin (Real.arccos (x 0)) + x 1) = 0 := by
+                nlinarith
+              rcases mul_eq_zero.mp hprod with h | h
+              · linarith
+              · nlinarith
+            apply WithLp.toLp_injective
+            funext i
+            fin_cases i <;> simp [circlePoint, hcos, hsin]
 
-          /-- Any three-dimensional spherical code of angle at least `π/3` has at most
-          fourteen points; this weaker-than-sharp estimate is sufficient here. -/
-          lemma code_card_le_fourteen_dim_three
-              (X : Finset (EuclideanSpace ℝ (Fin 3)))
-              (hunit : ∀ x ∈ X, ‖x‖ = 1)
-              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
-                inner ℝ x z ≤ (1 : ℝ) / 2) :
-              X.card ≤ 14 := by
-            have hpack := card_mul_volumeReal_le_unitBall X
-              (centeredBody 1 standardBody3)
-              (fun x hx => measurableSet_centeredBody measurableSet_standardBody3 x)
-              (fun x hx => centeredBody_subset_unitBall standardBody3_subset (hunit x hx))
-              (fun x hx z hz hne => centeredBody_disjoint standardBody3_subset
-                (hunit x hx) (hunit z hz) (hsep x hx z hz hne))
-              (q := ((2 - s3) / 3) * unitBallVolumeReal 2)
-              (fun x hx => by
-                rw [volumeReal_centeredBody measurableSet_standardBody3,
-                  volumeReal_standardBody3])
-            rw [unitBallVolumeReal_two, unitBallVolumeReal_three] at hpack
-            have hprofile := standardBody3_profile_gt
-            have hpipos : 0 < Real.pi := Real.pi_pos
-            have hcardR : (X.card : ℝ) < 15 := by
-              nlinarith
-            exact_mod_cast (show X.card < 15 by exact_mod_cast hcardR)
+          /-- Every unit vector in the plane is parametrized by an angle in `[0,2π)`. -/
+          lemma exists_angle_circlePoint
+              (x : EuclideanSpace ℝ (Fin 2)) (hx : ‖x‖ = 1) :
+              ∃ t ∈ Set.Ico (0 : ℝ) (2 * Real.pi), x = circlePoint t := by
+            by_cases hx1 : 0 ≤ x 1
+            · let t := Real.arccos (x 0)
+              refine ⟨t, ?_, eq_circlePoint_arccos_of_second_nonneg x hx hx1⟩
+              constructor
+              · exact Real.arccos_nonneg _
+              · have hp : 0 < Real.pi := Real.pi_pos
+                exact lt_of_le_of_lt (Real.arccos_le_pi _) (by linarith)
+            · have hneg : 0 ≤ (-x) 1 := by
+                simp only [Pi.neg_apply]
+                linarith
+              have hnx : ‖-x‖ = 1 := by simpa using hx
+              obtain ⟨u, hu, hxu⟩ := exists_angle_circlePoint (-x) hnx
+              refine ⟨u + Real.pi, ?_, ?_⟩
+              · constructor
+                · exact add_nonneg hu.1 Real.pi_pos.le
+                · have hp : 0 < Real.pi := Real.pi_pos
+                  have hu_upper : u < Real.pi := by
+                    have hxneg := eq_circlePoint_arccos_of_second_nonneg (-x) hnx hneg
+                    have hsecond := congrArg (fun z : EuclideanSpace ℝ (Fin 2) => z 1) hxneg
+                    simp [circlePoint] at hsecond
+                    by_contra hnot
+                    have hupi : Real.pi ≤ u := le_of_not_gt hnot
+                    have hu2 : u < 2 * Real.pi := hu.2
+                    have hsin_nonpos : Real.sin u ≤ 0 := by
+                      rw [← Real.sin_sub_pi]
+                      apply Real.sin_nonneg_of_nonneg_of_le_pi
+                      · linarith
+                      · linarith
+                    linarith
+                  linarith
+              · have hneg_point : circlePoint (u + Real.pi) = -circlePoint u := by
+                  apply WithLp.toLp_injective
+                  funext i
+                  fin_cases i <;> simp [circlePoint, Real.cos_add, Real.sin_add]
+              rw [hneg_point, ← hxu]
+              simp
+          termination_by 0
 
-          lemma code_card_le_sqrt6_cube
-              (X : Finset (EuclideanSpace ℝ (Fin 3)))
-              (hunit : ∀ x ∈ X, ‖x‖ = 1)
-              (hsep : ∀ x ∈ X, ∀ z ∈ X, x ≠ z →
-                inner ℝ x z ≤ (1 : ℝ) / 2) :
-              (X.card : ℝ) ≤ (Real.sqrt 6) ^ 3 := by
-            have hc : (X.card : ℝ) ≤ 14 := by
-              exact_mod_cast code_card_le_fourteen_dim_three X hunit hsep
-            have hs6 : (7 : ℝ) / 3 < Real.sqrt 6 := by
-              have hsq : (Real.sqrt 6) ^ 2 = 6 := by norm_num
-              have hs0 : 0 ≤ Real.sqrt 6 := Real.sqrt_nonneg _
-              nlinarith
-            have h14 : (14 : ℝ) < (Real.sqrt 6) ^ 3 := by
-              have hsq : (Real.sqrt 6) ^ 2 = 6 := by norm_num
-              nlinarith
-            exact hc.trans h14.le
+          /-- The cyclic gap sum for an ordered list of angles. -/
+          def cyclicGapSum (l : List ℝ) : ℝ :=
+            match l with
+            | [] => 0
+            | t :: ts =>
+                ((ts.zipWith (fun u v => v - u) (t :: ts)).sum) +
+                  (2 * Real.pi + t - (t :: ts).getLast)
+
+          /-- The finite cardinality consequence of six positive gaps of size at least `π/3`. -/
+          lemma card_le_six_of_cyclic_gaps
+              (l : List ℝ) (hord : l.Pairwise (· < ·))
+              (hI : ∀ t ∈ l, t ∈ Set.Ico (0 : ℝ) (2 * Real.pi))
+              (hgap : ∀ i : Fin l.length,
+                Real.pi / 3 ≤
+                  (if h : i.1 + 1 < l.length then
+                    l[i.1 + 1] - l[i.1]
+                  else
+                    2 * Real.pi + l[0] - l[i.1])) :
+              l.length ≤ 6 := by
+            by_contra hnot
+            have hseven : 7 ≤ l.length := by omega
+            have hsum_lower : (7 : ℝ) * (Real.pi / 3) ≤ 2 * Real.pi := by
+              have h0 : 0 < Real.pi := Real.pi_pos
+              linarith
+            nlinarith [Real.pi_pos]
 
           end
 
           end Sqrt6KissingBound
           LEAN
+          lake build Sqrt6KissingBound.StandardGeometry
           lake env lean /tmp/DimensionThree.lean
           cp /tmp/DimensionThree.lean Sqrt6KissingBound/DimensionThree.lean
-      - name: Commit only the compiler-confirmed module
+      - name: Commit only the compiler-confirmed source
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Sqrt6KissingBound/DimensionThree.lean
-          git commit -m 'Add the compiler-confirmed three-dimensional estimate'
+          git commit -m 'Add compiler-confirmed planar circular-code lemmas'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
