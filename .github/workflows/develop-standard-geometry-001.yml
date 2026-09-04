@@ -1,0 +1,109 @@
+name: Develop standard geometry 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-standard-geometry-001.yml'
+
+concurrency:
+  group: develop-standard-geometry-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile standard-coordinate geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/StandardGeometry.lean <<'LEAN'
+          import Sqrt6KissingBound.CoordinateVolume
+          import Sqrt6KissingBound.Geometry
+
+          /-!
+          # Geometry in standard first-coordinate form
+          -/
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set Metric MeasureTheory
+
+          /-- The first standard unit vector in dimension `d+1`. -/
+          def standardAxis (d : ℕ) : EuclideanSpace ℝ (Fin (d + 1)) :=
+            standardCoordinates d (1, 0)
+
+          @[simp] lemma norm_standardAxis (d : ℕ) : ‖standardAxis d‖ = 1 := by
+            simp [standardAxis, standardCoordinates, PiLp.norm_eq_sum]
+
+          @[simp] lemma inner_standardAxis_standardCoordinates (d : ℕ)
+              (t : ℝ) (v : Fin d → ℝ) :
+              inner ℝ (standardAxis d) (standardCoordinates d (t, v)) = t := by
+            simp [standardAxis, standardCoordinates, PiLp.inner_apply]
+
+          lemma norm_sq_standardCoordinates (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
+              ‖standardCoordinates d (t, v)‖ ^ 2 =
+                t ^ 2 + ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
+            rw [← real_inner_self_eq_norm_sq, ← real_inner_self_eq_norm_sq]
+            simp [standardCoordinates, PiLp.inner_apply]
+
+          lemma standardCoordinates_mem_ball_iff (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
+              standardCoordinates d (t, v) ∈ ball 0 1 ↔
+                t ^ 2 + ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 < 1 := by
+            rw [mem_ball, dist_zero_right]
+            constructor
+            · intro h
+              have h0 : 0 ≤ ‖standardCoordinates d (t, v)‖ := norm_nonneg _
+              have hsq := sq_lt_sq₀ h0 zero_le_one |>.2 h
+              simpa [norm_sq_standardCoordinates] using hsq
+            · intro h
+              have hn : 0 ≤ ‖standardCoordinates d (t, v)‖ := norm_nonneg _
+              have hsq : ‖standardCoordinates d (t, v)‖ ^ 2 < (1 : ℝ) ^ 2 := by
+                simpa [norm_sq_standardCoordinates] using h
+              exact (sq_lt_sq₀ hn zero_le_one).1 hsq
+
+          lemma standardCoordinates_mem_strictCone_iff (d : ℕ) (t : ℝ)
+              (v : Fin d → ℝ) :
+              standardCoordinates d (t, v) ∈ strictCone (standardAxis d) ↔
+                (Real.sqrt 3 / 2) *
+                    Real.sqrt (t ^ 2 +
+                      ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2) < t := by
+            change (Real.sqrt 3 / 2) * ‖standardCoordinates d (t, v)‖ <
+              inner ℝ (standardAxis d) (standardCoordinates d (t, v)) ↔ _
+            rw [inner_standardAxis_standardCoordinates]
+            congr 2
+            rw [← Real.sqrt_sq (norm_nonneg _), norm_sq_standardCoordinates]
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/StandardGeometry.lean
+          cp /tmp/StandardGeometry.lean Sqrt6KissingBound/StandardGeometry.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/StandardGeometry.lean
+          git commit -m 'Add compiler-confirmed standard-coordinate geometry'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
