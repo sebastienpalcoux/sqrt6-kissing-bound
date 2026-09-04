@@ -86,6 +86,7 @@ jobs:
 
           end Sqrt6KissingBound
           LEAN
+          lake build Sqrt6KissingBound.ProfileVolume
           lake env lean /tmp/ProfileIntegral.lean
           cp /tmp/ProfileIntegral.lean Sqrt6KissingBound/ProfileIntegral.lean
       - name: Commit only the compiler-confirmed module
