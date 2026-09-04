@@ -79,3 +79,5 @@ jobs:
           git commit -m 'Add compiler-confirmed linear profile integrals'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
+
+# Triggered during the end-to-end completion pass.
