@@ -1,3 +1,141 @@
-DEVELOPMENT COMMAND RUNNING
+DEVELOPMENT COMMAND RESULT
 Command SHA: 69c2f40f312fa2f94d0caf6a8679fb66c64d447b
 Sequence: 6
+Command exit status: 0
+This status is not a certification claim.
+
+PI DECIMAL SOURCE .lake/packages/mathlib/Mathlib/Analysis/Real/Pi/Bounds.lean
+theorem pi_lt_d2 : π < 3.15 := by
+  -- bound[315*^-2, Iters -> 4, Rounding -> 1.4, Precision -> 7]
+  pi_upper_bound [41 / 29, 109 / 59, 865 / 441, 412 / 207]
+theorem pi_lt_d4 : π < 3.1416 := by
+  -- bound[31416*^-4, Iters -> 9, Rounding -> .9, Precision -> 16]
+  pi_upper_bound [
+theorem pi_lt_d6 : π < 3.141593 := by
+  -- bound[3141593*^-6, Iters -> 11, Rounding -> .5, Precision -> 17]
+  pi_upper_bound [
+theorem pi_lt_d20 : π < 3.14159265358979323847 := by
+  -- bound[314159265358979323847*^-20, Iters -> 34, Rounding -> .5, Precision -> 46]
+  pi_upper_bound [
+
+COMMAND: lake build Sqrt6KissingBound.AnalysisEstimate Sqrt6KissingBound.BiconeVolume Sqrt6KissingBound.BallVolumes Sqrt6KissingBound.CenteredBody Sqrt6KissingBound.BiconeBounds Sqrt6KissingBound.DimensionThree Sqrt6KissingBound.DimensionFour EXIT: 1
+⚠ [8708/8729] Replayed Sqrt6KissingBound.AnalysisChord
+⚠ [8709/8729] Replayed Sqrt6KissingBound.LinearProfileIntegral
+⚠ [8711/8729] Replayed Sqrt6KissingBound.VolumePacking
+⚠ [8714/8729] Replayed Sqrt6KissingBound.StandardGeometry
+✖ [8719/8729] Building Sqrt6KissingBound.AnalysisEstimate (5.5s)
+info: Sqrt6KissingBound/AnalysisEstimate.lean:44:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/AnalysisEstimate.lean:41:43: unsolved goals
+m : ℕ
+hbase : π / 6 / (π / 3) = 1 / 2
+halg : ∀ (u v w : ℝ), u ^ (m + 1) / (v ^ m * w) = (u / v) ^ m * u / w
+⊢ π * (1 + ↑m)⁻¹ * (1 / 2) ^ m * (1 / 6) = π * (1 + ↑m)⁻¹ * 2⁻¹ ^ m * (1 / 6)
+error: Lean exited with code 1
+✖ [8723/8729] Building Sqrt6KissingBound.BallVolumes (6.2s)
+error: Sqrt6KissingBound/BallVolumes.lean:55:46: unsolved goals
+⊢ π * 4 / 3 = 4 * π / 3
+error: Lean exited with code 1
+✖ [8724/8729] Building Sqrt6KissingBound.BiconeVolume (6.7s)
+info: Sqrt6KissingBound/BiconeVolume.lean:56:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: Sqrt6KissingBound/BiconeVolume.lean:53:46: unsolved goals
+k : ℕ
+⊢ s3 * (2 + ↑k)⁻¹ * (1 / 2) ^ k * (-1 / 4) + (2 + ↑k)⁻¹ * (1 / 2) ^ k * (1 / 2) =
+    s3 * (2 + ↑k)⁻¹ * 2⁻¹ ^ k * (-1 / 4) + (2 + ↑k)⁻¹ * 2⁻¹ ^ k * (1 / 2)
+error: Sqrt6KissingBound/BiconeVolume.lean:62:2: Type mismatch: After simplification, term
+  lower_power_value k
+ has type
+  a ^ (k + 2) / (s3 ^ (k + 1) * (↑k + 2)) = s3 / ((↑k + 2) * 2 ^ (k + 2))
+but is expected to have type
+  a ^ (k + 2) / (s3 ^ (k + 1) * (↑k + (1 + 1))) = s3 / ((↑k + 2) * 2 ^ (k + 2))
+error: Sqrt6KissingBound/BiconeVolume.lean:68:2: Type mismatch: After simplification, term
+  upper_power_value k
+ has type
+  upperSlope ^ (k + 1) * (1 - a) ^ (k + 2) / (↑k + 2) = (2 - s3) / ((↑k + 2) * 2 ^ (k + 2))
+but is expected to have type
+  upperSlope ^ (k + 1) * (1 - a) ^ (k + 2) / (↑k + (1 + 1)) = (2 - s3) / ((↑k + 2) * 2 ^ (k + 2))
+error: Lean exited with code 1
+Some required targets logged failures:
+- Sqrt6KissingBound.AnalysisEstimate
+- Sqrt6KissingBound.BallVolumes
+- Sqrt6KissingBound.BiconeVolume
+error: build failed
+
+--- CONTEXT Sqrt6KissingBound/AnalysisEstimate.lean 41 ---
+  37     _ = (Real.pi / 6) ^ (m + 1) / ((Real.pi / 3) ^ m * (m + 1)) :=
+  38       integral_div_mul_pow m (by positivity)
+  39     _ = ((Real.pi / 6) / (Real.pi / 3)) ^ m * (Real.pi / 6) / (m + 1) :=
+  40       halg (Real.pi / 6) (Real.pi / 3) (m + 1)
+  41     _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
+  42       rw [hbase]
+  43       simp only [div_pow, one_pow, div_eq_mul_inv, mul_inv_rev]
+  44       ring
+  45 
+  46 lemma pi_div_six_gt_three_sqrt3_div_ten :
+  47     3 * Real.sqrt 3 / 10 < Real.pi / 6 := by
+  48   have hpi := Real.pi_gt_d2
+
+--- CONTEXT Sqrt6KissingBound/BallVolumes.lean 55 ---
+  51   rw [unitBallVolumeReal, Measure.real, EuclideanSpace.volume_ball_fin_two]
+  52   simp [Real.pi_pos.le]
+  53 
+  54 lemma unitBallVolumeReal_three :
+  55     unitBallVolumeReal 3 = 4 * Real.pi / 3 := by
+  56   rw [unitBallVolumeReal, Measure.real, EuclideanSpace.volume_ball_fin_three]
+  57   simp [Real.pi_pos.le]
+  58   rw [ENNReal.toReal_ofReal (by positivity)]
+  59 
+  60 lemma unitBallVolumeReal_four :
+  61     unitBallVolumeReal 4 = Real.pi ^ 2 / 2 := by
+  62   rw [unitBallVolumeReal_add_two 1, unitBallVolumeReal_two]
+
+--- CONTEXT Sqrt6KissingBound/BiconeVolume.lean 53 ---
+  49         (upperSlope * (1 - a)) ^ (k + 1) * (1 - a) / (k + 2) := by
+  50       rw [mul_pow]
+  51       ring
+  52     _ = ((1 : ℝ) / 2) ^ (k + 1) * (1 - a) / (k + 2) := by rw [upper_product]
+  53     _ = (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  54       dsimp [a]
+  55       simp only [two_power_step, div_pow, one_pow, div_eq_mul_inv, mul_inv_rev]
+  56       ring
+  57 
+  58 lemma lower_profile_integral (k : ℕ) :
+  59     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) =
+  60       s3 / ((k + 2) * 2 ^ (k + 2)) := by
+
+--- CONTEXT Sqrt6KissingBound/BiconeVolume.lean 62 ---
+  58 lemma lower_profile_integral (k : ℕ) :
+  59     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) =
+  60       s3 / ((k + 2) * 2 ^ (k + 2)) := by
+  61   rw [integral_div_mul_pow (k + 1) s3_ne]
+  62   simpa [Nat.cast_add, add_assoc] using lower_power_value k
+  63 
+  64 lemma upper_profile_integral (k : ℕ) :
+  65     (∫ t in a..1, (upperSlope * (1 - t)) ^ (k + 1)) =
+  66       (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  67   rw [integral_const_mul_sub_pow (k + 1)]
+  68   simpa [Nat.cast_add, add_assoc] using upper_power_value k
+  69 
+
+--- CONTEXT Sqrt6KissingBound/BiconeVolume.lean 68 ---
+  64 lemma upper_profile_integral (k : ℕ) :
+  65     (∫ t in a..1, (upperSlope * (1 - t)) ^ (k + 1)) =
+  66       (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
+  67   rw [integral_const_mul_sub_pow (k + 1)]
+  68   simpa [Nat.cast_add, add_assoc] using upper_power_value k
+  69 
+  70 lemma bicone_profile_integral (k : ℕ) :
+  71     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) +
+  72         (∫ t in a..1, (upperSlope * (1 - t)) ^ (k + 1)) =
+  73       1 / ((k + 2) * 2 ^ (k + 1)) := by
+  74   rw [lower_profile_integral, upper_profile_integral]
+  75   simp only [two_power_step, div_eq_mul_inv, mul_inv_rev]
