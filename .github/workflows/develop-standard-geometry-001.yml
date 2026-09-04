@@ -37,6 +37,7 @@ jobs:
           import Sqrt6KissingBound.CoordinateVolume
           import Sqrt6KissingBound.Geometry
           import Mathlib.Analysis.InnerProductSpace.PiL2
+          import Mathlib.Algebra.Order.Ring.Abs
 
           /-!
           # Geometry in standard first-coordinate form
@@ -63,7 +64,8 @@ jobs:
               _ = t ^ 2 +
                   inner ℝ (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))
                     (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d)) := by
-                simp [standardCoordinates, PiLp.inner_apply, Fin.sum_univ_succ, pow_two]
+                simp [standardCoordinates, PiLp.inner_apply, Fin.sum_univ_succ, pow_two] <;>
+                  simp
               _ = t ^ 2 +
                   ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
                 rw [real_inner_self_eq_norm_sq]
@@ -79,7 +81,7 @@ jobs:
               (t : ℝ) (v : Fin d → ℝ) :
               inner ℝ (standardAxis d) (standardCoordinates d (t, v)) = t := by
             simp [standardAxis, standardCoordinates, PiLp.inner_apply,
-              Fin.sum_univ_succ]
+              Fin.sum_univ_succ] <;> simp
 
           lemma standardCoordinates_mem_ball_iff (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
               standardCoordinates d (t, v) ∈ ball 0 1 ↔
