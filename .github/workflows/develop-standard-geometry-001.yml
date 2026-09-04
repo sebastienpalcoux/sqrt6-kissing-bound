@@ -51,19 +51,34 @@ jobs:
           def standardAxis (d : ℕ) : EuclideanSpace ℝ (Fin (d + 1)) :=
             standardCoordinates d (1, 0)
 
+          lemma norm_sq_standardCoordinates (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
+              ‖standardCoordinates d (t, v)‖ ^ 2 =
+                t ^ 2 + ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
+            calc
+              ‖standardCoordinates d (t, v)‖ ^ 2 =
+                  inner ℝ (standardCoordinates d (t, v))
+                    (standardCoordinates d (t, v)) :=
+                (real_inner_self_eq_norm_sq _).symm
+              _ = t ^ 2 +
+                  inner ℝ (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))
+                    (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d)) := by
+                simp [standardCoordinates, PiLp.inner_apply, Fin.sum_univ_succ, pow_two]
+              _ = t ^ 2 +
+                  ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
+                rw [real_inner_self_eq_norm_sq]
+
           @[simp] lemma norm_standardAxis (d : ℕ) : ‖standardAxis d‖ = 1 := by
-            simp [standardAxis, standardCoordinates, PiLp.norm_eq_sum]
+            have hsq : ‖standardAxis d‖ ^ 2 = 1 := by
+              simpa [standardAxis] using
+                norm_sq_standardCoordinates d 1 (0 : Fin d → ℝ)
+            have hn : 0 ≤ ‖standardAxis d‖ := norm_nonneg _
+            nlinarith
 
           @[simp] lemma inner_standardAxis_standardCoordinates (d : ℕ)
               (t : ℝ) (v : Fin d → ℝ) :
               inner ℝ (standardAxis d) (standardCoordinates d (t, v)) = t := by
-            simp [standardAxis, standardCoordinates, PiLp.inner_apply]
-
-          lemma norm_sq_standardCoordinates (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
-              ‖standardCoordinates d (t, v)‖ ^ 2 =
-                t ^ 2 + ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
-            rw [← real_inner_self_eq_norm_sq, ← real_inner_self_eq_norm_sq]
-            simp [standardCoordinates, PiLp.inner_apply]
+            simp [standardAxis, standardCoordinates, PiLp.inner_apply,
+              Fin.sum_univ_succ]
 
           lemma standardCoordinates_mem_ball_iff (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
               standardCoordinates d (t, v) ∈ ball 0 1 ↔
