@@ -27,31 +27,67 @@ jobs:
           lint: false
           axiom-audit: false
           use-mathlib-cache: true
-      - name: Inspect complete source and build diagnostics
+      - name: Assemble and compile temporary candidate (no publication)
         shell: bash
         run: |
-          set -uo pipefail
-          mkdir -p diagnostic-artifacts
-          echo 'DEVELOPMENT DIAGNOSTICS ONLY: a successful workflow is not a certificate.'
-          lean --version
-          git rev-parse HEAD
-          lake build > diagnostic-artifacts/build.log 2>&1
-          status=$?
-          printf 'ROOT_BUILD_EXIT_STATUS=%s\n' "$status" | tee diagnostic-artifacts/status.txt
-          cat diagnostic-artifacts/build.log
-          printf '\n--- Root imports ---\n'
-          cat Sqrt6KissingBound.lean
-          printf '\n--- Existing project modules ---\n'
-          find Sqrt6KissingBound -maxdepth 1 -name '*.lean' -print | sort
-          printf '\n--- Candidate source locations ---\n'
-          grep -nE 'cat > .*\.lean.*LEAN|cat >> .*\.lean.*LEAN' .github/workflows/*.yml || true
-          printf '\n--- Check script ---\n'
-          cat scripts/check.sh
-          echo "Development build exit status: $status. No source files were published." >> "$GITHUB_STEP_SUMMARY"
-          exit 0
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re, subprocess, textwrap, json
+          out = Path('diagnostic-artifacts')
+          out.mkdir(exist_ok=True)
+          workflows = [
+              'develop-profile-integral-001.yml',
+              'develop-profile-real-001.yml',
+              'develop-bicone-geometry-002.yml',
+              'develop-bicone-volume-001.yml',
+              'develop-centered-bicone-001.yml',
+              'develop-centered-body-001.yml',
+              'develop-ball-volumes-001.yml',
+              'develop-dimension-one-001.yml',
+              'develop-dimension-three-001.yml',
+              'develop-dimension-four-001.yml',
+              'develop-bicone-bounds-001.yml',
+              'develop-main-bound-001.yml',
+              'develop-optimality-001.yml',
+              'develop-kissing-number-001.yml',
+          ]
+          pattern = re.compile(r"cat > /tmp/(?P<name>[A-Za-z0-9_]+\.lean) <<'LEAN'\n(?P<body>.*?)\n\s*LEAN\n", re.S)
+          for workflow in workflows:
+              p = Path('.github/workflows') / workflow
+              match = pattern.search(p.read_text())
+              if match is None:
+                  raise RuntimeError(f'Cannot extract candidate from {p}')
+              src = textwrap.dedent(match['body']).rstrip() + '\n'
+              src = src.replace('PiLp.toLp', 'WithLp.toLp')
+              src = src.replace('intervalIntegral.integral_pow', 'integral_pow')
+              if match['name'] == 'ProfileIntegral.lean':
+                  src = src.replace('MeasureTheory.setLIntegral_mul_const', 'MeasureTheory.lintegral_mul_const (unitBallVolume (d + 1)) ((ENNReal.measurable_ofReal.comp hg.measurable).pow_const (d + 1))')
+              if match['name'] == 'BiconeGeometry.lean':
+                  src = src.replace('  have hr0 : 0 ≤ r := norm_nonneg _\n  have hprof0', '  have hr0 : 0 ≤ r := norm_nonneg _\n  have ht0 : 0 < t := lt_trans (by positivity : 0 < a) hta\n  have hprof0')
+                  src = src.replace('  rcases hyu with ⟨hu, -⟩\n  linarith', '  rcases hyu with ⟨hu, -⟩\n  exact lt_asymm hl.2 hu.1')
+              target = Path('Sqrt6KissingBound') / match['name']
+              target.write_text(src)
+              print(f'Materialized temporary candidate: {target}', flush=True)
+          print('DEVELOPMENT ONLY: no source files will be committed by this workflow.', flush=True)
+          result = subprocess.run(['lake', 'build', 'Sqrt6KissingBound.KissingNumber'], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+          (out / 'build.log').write_text(result.stdout)
+          (out / 'status.json').write_text(json.dumps({'candidate_build_exit_status': result.returncode, 'certified': False}))
+          print(result.stdout, flush=True)
+          print(f'CANDIDATE_BUILD_EXIT_STATUS={result.returncode}', flush=True)
+          failed = sorted(set(re.findall(r'error: (Sqrt6KissingBound/[^:\n]+\.lean):', result.stdout)))
+          for name in failed:
+              print(f'\n--- Failed candidate source: {name} ---', flush=True)
+              print(''.join(f'{i:4d} {line}\n' for i, line in enumerate(Path(name).read_text().splitlines(), 1)), flush=True)
+          for name in ['Sqrt6KissingBound.lean', 'scripts/check.sh', 'Axioms.lean']:
+              print(f'\n--- {name} ---\n{Path(name).read_text()}', flush=True)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write(f'Development candidate build exit status: {result.returncode}. No proof sources were published. This workflow is not a certification.\n')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: full-certificate-development-diagnostics
-          path: diagnostic-artifacts/
+          path: |
+            diagnostic-artifacts/
+            Sqrt6KissingBound/
           retention-days: 7
