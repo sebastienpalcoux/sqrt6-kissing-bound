@@ -49,18 +49,17 @@ jobs:
 
           /-- The inverse image of a Euclidean ball under the canonical `L²` identification. -/
           def tailBall (d : ℕ) (r : ℝ) : Set (Fin d → ℝ) :=
-            {v | ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ < r}
+            {v | ‖(toLp 2 v : EuclideanSpace ℝ (Fin d))‖ < r}
 
           lemma measurableSet_tailBall (d : ℕ) (r : ℝ) : MeasurableSet (tailBall d r) := by
-            change MeasurableSet ((PiLp.toLp 2 : (Fin d → ℝ) → EuclideanSpace ℝ (Fin d)) ⁻¹'
-              ball 0 r)
-            exact measurableSet_ball.preimage (MeasurableEquiv.toLp 2 _).measurable
+            change MeasurableSet ((@toLp 2 (Fin d → ℝ)) ⁻¹' ball 0 r)
+            exact measurableSet_ball.preimage (PiLp.continuous_toLp 2 _).measurable
 
           lemma volume_tailBall (d : ℕ) (r : ℝ) :
               (volume : Measure (Fin d → ℝ)) (tailBall d r) =
                 (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 r) := by
             change (volume : Measure (Fin d → ℝ))
-                ((PiLp.toLp 2 : (Fin d → ℝ) → EuclideanSpace ℝ (Fin d)) ⁻¹' ball 0 r) = _
+                ((@toLp 2 (Fin d → ℝ)) ⁻¹' ball 0 r) = _
             exact (PiLp.volume_preserving_toLp (Fin d)).measure_preimage
               measurableSet_ball.nullMeasurableSet
 
@@ -75,11 +74,11 @@ jobs:
               MeasurableSet (profileRegion d s g) := by
             change MeasurableSet
               ({p : ℝ × (Fin d → ℝ) | p.1 ∈ s} ∩
-                {p | ‖(PiLp.toLp 2 p.2 : EuclideanSpace ℝ (Fin d))‖ < g p.1})
+                {p | ‖(toLp 2 p.2 : EuclideanSpace ℝ (Fin d))‖ < g p.1})
             apply (hs.preimage measurable_fst).inter
             exact measurableSet_lt
               ((continuous_norm.comp
-                ((MeasurableEquiv.toLp 2 _).continuous.comp continuous_snd)).measurable)
+                ((PiLp.continuous_toLp 2 _).comp continuous_snd)).measurable)
               (hg.comp measurable_fst)
 
           /-- Fubini formula for a body with ball-shaped transverse sections. -/
@@ -89,12 +88,12 @@ jobs:
                 ∫⁻ t in s, (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 (g t)) := by
             rw [Measure.volume_eq_prod,
               Measure.prod_apply (measurableSet_profileRegion d hs hg)]
-            rw [MeasureTheory.setLIntegral_eq_of_forall_compl_eq_zero]
-            · apply lintegral_congr
-              intro t
-              simp [profileRegion, tailBall, volume_tailBall]
-            · intro t ht
-              simp [profileRegion, ht]
+            rw [← lintegral_indicator hs]
+            apply lintegral_congr
+            intro t
+            by_cases ht : t ∈ s
+            · simp [profileRegion, ht, volume_tailBall]
+            · simp [profileRegion, ht]
 
           /-- The corresponding body in Euclidean space. -/
           def rotationalProfile (d : ℕ) (s : Set ℝ) (g : ℝ → ℝ) :
