@@ -1,0 +1,3 @@
+Validation pass 3: static Lean candidates only.
+Check the complete dependency chain through Sqrt6KissingBound.KissingNumber.
+This request does not assert certification.
