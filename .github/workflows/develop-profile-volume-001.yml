@@ -52,16 +52,17 @@ jobs:
             {v | ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ < r}
 
           lemma measurableSet_tailBall (d : ℕ) (r : ℝ) : MeasurableSet (tailBall d r) := by
-            change MeasurableSet ((@WithLp.toLp 2 (Fin d → ℝ)) ⁻¹' ball 0 r)
-            exact measurableSet_ball.preimage (PiLp.continuous_toLp 2 _).measurable
+            simpa [tailBall, mem_ball, dist_zero_right] using
+              (measurableSet_ball.preimage (PiLp.continuous_toLp 2 _).measurable :
+                MeasurableSet ((@WithLp.toLp 2 (Fin d → ℝ)) ⁻¹'
+                  ball (0 : EuclideanSpace ℝ (Fin d)) r))
 
           lemma volume_tailBall (d : ℕ) (r : ℝ) :
               (volume : Measure (Fin d → ℝ)) (tailBall d r) =
                 (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 r) := by
-            change (volume : Measure (Fin d → ℝ))
-                ((@WithLp.toLp 2 (Fin d → ℝ)) ⁻¹' ball 0 r) = _
-            exact (PiLp.volume_preserving_toLp (Fin d)).measure_preimage
-              measurableSet_ball.nullMeasurableSet
+            simpa [tailBall, mem_ball, dist_zero_right] using
+              (PiLp.volume_preserving_toLp (Fin d)).measure_preimage
+                measurableSet_ball.nullMeasurableSet
 
           /-- A measurable body whose transverse section at `t` is an open Euclidean ball
           of radius `g t`. -/
