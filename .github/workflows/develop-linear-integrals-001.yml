@@ -48,21 +48,35 @@ jobs:
           lemma integral_div_mul_pow (m : ℕ) {a c : ℝ} (hc : c ≠ 0) :
               (∫ t in (0 : ℝ)..a, (t / c) ^ m) =
                 a ^ (m + 1) / (c ^ m * (m + 1)) := by
-            simp_rw [div_pow]
-            rw [← intervalIntegral.integral_const_mul,
-              intervalIntegral.integral_pow]
-            field_simp [hc]
-            ring
+            calc
+              (∫ t in (0 : ℝ)..a, (t / c) ^ m) =
+                  ∫ t in (0 : ℝ)..a, (c ^ m)⁻¹ * t ^ m := by
+                    apply intervalIntegral.integral_congr
+                    intro t ht
+                    simp [div_pow, div_eq_mul_inv, mul_comm]
+              _ = (c ^ m)⁻¹ * ∫ t in (0 : ℝ)..a, t ^ m := by
+                    rw [intervalIntegral.integral_const_mul]
+              _ = a ^ (m + 1) / (c ^ m * (m + 1)) := by
+                    rw [intervalIntegral.integral_pow]
+                    field_simp [hc]
+                    ring
 
           /-- Integral of a power of a line vanishing at the right endpoint. -/
           lemma integral_const_mul_sub_pow (m : ℕ) {a b c : ℝ} :
               (∫ t in a..b, (c * (b - t)) ^ m) =
                 c ^ m * (b - a) ^ (m + 1) / (m + 1) := by
-            simp_rw [mul_pow]
-            rw [← intervalIntegral.integral_const_mul]
-            rw [intervalIntegral.integral_comp_sub_left]
-            rw [intervalIntegral.integral_pow]
-            ring
+            calc
+              (∫ t in a..b, (c * (b - t)) ^ m) =
+                  ∫ t in a..b, c ^ m * (b - t) ^ m := by
+                    apply intervalIntegral.integral_congr
+                    intro t ht
+                    rw [mul_pow]
+              _ = c ^ m * ∫ t in a..b, (b - t) ^ m := by
+                    rw [intervalIntegral.integral_const_mul]
+              _ = c ^ m * (b - a) ^ (m + 1) / (m + 1) := by
+                    rw [intervalIntegral.integral_comp_sub_left]
+                    rw [intervalIntegral.integral_pow]
+                    ring
 
           end
 
@@ -79,5 +93,3 @@ jobs:
           git commit -m 'Add compiler-confirmed linear profile integrals'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
-
-# Triggered during the end-to-end completion pass.
