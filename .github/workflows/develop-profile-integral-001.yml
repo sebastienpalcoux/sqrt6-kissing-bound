@@ -97,3 +97,5 @@ jobs:
           git commit -m 'Add the compiler-confirmed profile integral formula'
           git pull --rebase origin gpt-pro/full-lean-certificate
           git push origin HEAD:gpt-pro/full-lean-certificate
+
+# Compiled after the ProfileVolume layer was established.
