@@ -51,10 +51,10 @@ jobs:
           def unitBallVolume (d : ℕ) : ℝ≥0∞ :=
             (volume : Measure (EuclideanSpace ℝ (Fin d))) (ball 0 1)
 
-          lemma volume_ball_eq_pow_mul_unit (d : ℕ) (r : ℝ) (hr : 0 ≤ r) :
+          lemma volume_ball_eq_pow_mul_unit (d : ℕ) (r : ℝ) :
               (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) (ball 0 r) =
                 ENNReal.ofReal r ^ (d + 1) * unitBallVolume (d + 1) := by
-            simp [unitBallVolume, EuclideanSpace.volume_ball, hr]
+            simp [unitBallVolume, EuclideanSpace.volume_ball]
 
           /-- For a nonnegative continuous profile on an interval, the volume is the
           transverse unit-ball volume times the elementary one-dimensional integral. -/
@@ -66,14 +66,16 @@ jobs:
                 ENNReal.ofReal (∫ t in a..b, g t ^ (d + 1)) *
                   unitBallVolume (d + 1) := by
             rw [volume_rotationalProfile (d + 1) measurableSet_Ioo hg.measurable]
-            have hpoint (t : ℝ) (ht : t ∈ Set.Ioo a b) :
-                (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) (ball 0 (g t)) =
-                  ENNReal.ofReal (g t ^ (d + 1)) * unitBallVolume (d + 1) := by
-              rw [volume_ball_eq_pow_mul_unit d (g t) (hg0 t ⟨ht.1.le, ht.2.le⟩)]
-              rw [ENNReal.ofReal_pow (hg0 t ⟨ht.1.le, ht.2.le⟩)]
-            simp_rw [hpoint]
+            simp_rw [volume_ball_eq_pow_mul_unit d]
             rw [MeasureTheory.setLIntegral_mul_const]
             congr 1
+            have hpow :
+                (∫⁻ t in Set.Ioo a b, ENNReal.ofReal (g t) ^ (d + 1)) =
+                  ∫⁻ t in Set.Ioo a b, ENNReal.ofReal (g t ^ (d + 1)) := by
+              apply setLIntegral_congr_fun measurableSet_Ioo
+              intro t ht
+              exact ENNReal.ofReal_pow (hg0 t ⟨ht.1.le, ht.2.le⟩)
+            rw [hpow]
             rw [← Measure.restrict_congr_set Ioo_ae_eq_Ioc]
             rw [← ENNReal.ofReal_integral_eq_lintegral_ofReal
               (hg.pow (d + 1)).intervalIntegrable.1]
