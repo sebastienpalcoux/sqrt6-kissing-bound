@@ -1,0 +1,81 @@
+name: Develop linear profile integrals 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-linear-integrals-001.yml'
+
+concurrency:
+  group: develop-linear-integrals-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile elementary linear-profile integral formulas
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/LinearProfileIntegral.lean <<'LEAN'
+          import Mathlib
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open Set
+          open scoped Interval Real
+          open intervalIntegral
+
+          /-- Integral of a power of a line through the origin. -/
+          lemma integral_div_mul_pow (m : ℕ) {a c : ℝ} (hc : c ≠ 0) :
+              (∫ t in (0 : ℝ)..a, (t / c) ^ m) =
+                a ^ (m + 1) / (c ^ m * (m + 1)) := by
+            simp_rw [div_pow]
+            rw [← intervalIntegral.integral_const_mul,
+              intervalIntegral.integral_pow]
+            field_simp [hc]
+            ring
+
+          /-- Integral of a power of a line vanishing at the right endpoint. -/
+          lemma integral_const_mul_sub_pow (m : ℕ) {a b c : ℝ} :
+              (∫ t in a..b, (c * (b - t)) ^ m) =
+                c ^ m * (b - a) ^ (m + 1) / (m + 1) := by
+            simp_rw [mul_pow]
+            rw [← intervalIntegral.integral_const_mul]
+            rw [intervalIntegral.integral_comp_sub_left]
+            rw [intervalIntegral.integral_pow]
+            ring
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/LinearProfileIntegral.lean
+          cp /tmp/LinearProfileIntegral.lean Sqrt6KissingBound/LinearProfileIntegral.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/LinearProfileIntegral.lean
+          git commit -m 'Add compiler-confirmed linear profile integrals'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
