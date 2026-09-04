@@ -1,0 +1,57 @@
+name: Full certificate development diagnostics (not certification)
+
+"on":
+  push:
+    branches: [gpt-pro/full-lean-certificate]
+    paths: ['.github/workflows/full-certificate-diagnostics.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-certificate-development
+  cancel-in-progress: true
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Inspect complete source and build diagnostics
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p diagnostic-artifacts
+          echo 'DEVELOPMENT DIAGNOSTICS ONLY: a successful workflow is not a certificate.'
+          lean --version
+          git rev-parse HEAD
+          lake build > diagnostic-artifacts/build.log 2>&1
+          status=$?
+          printf 'ROOT_BUILD_EXIT_STATUS=%s\n' "$status" | tee diagnostic-artifacts/status.txt
+          cat diagnostic-artifacts/build.log
+          printf '\n--- Root imports ---\n'
+          cat Sqrt6KissingBound.lean
+          printf '\n--- Existing project modules ---\n'
+          find Sqrt6KissingBound -maxdepth 1 -name '*.lean' -print | sort
+          printf '\n--- Candidate source locations ---\n'
+          grep -nE 'cat > .*\.lean.*LEAN|cat >> .*\.lean.*LEAN' .github/workflows/*.yml || true
+          printf '\n--- Check script ---\n'
+          cat scripts/check.sh
+          echo "Development build exit status: $status. No source files were published." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-certificate-development-diagnostics
+          path: diagnostic-artifacts/
+          retention-days: 7
