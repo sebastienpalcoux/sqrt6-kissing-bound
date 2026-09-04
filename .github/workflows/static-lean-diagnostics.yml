@@ -46,14 +46,16 @@ jobs:
       - name: Compile candidates and record the actual build status
         shell: bash
         run: |
-          set -uo pipefail
+          set -euo pipefail
           mkdir -p static-diagnostics
-          lake build Sqrt6KissingBound.KissingNumber > static-diagnostics/build.log 2>&1
-          result=$?
+          if lake build Sqrt6KissingBound.KissingNumber > static-diagnostics/build.log 2>&1; then
+            result=0
+          else
+            result=$?
+          fi
           printf 'CANDIDATE_BUILD_EXIT_STATUS=%s\nNOT_A_CERTIFICATION\n' "$result" | tee static-diagnostics/status.txt
           cat static-diagnostics/build.log
           printf 'Development-only build exit status: %s. No proof source was published.\n' "$result" >> "$GITHUB_STEP_SUMMARY"
-          exit 0
       - name: Retain source and diagnostics without publishing proof changes
         if: always()
         uses: actions/upload-artifact@v4
