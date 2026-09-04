@@ -57,6 +57,21 @@ jobs:
             dsimp [upperSlope]
             positivity
 
+          private lemma sq_lt_sq_nonneg_iff {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+              x ^ 2 < y ^ 2 ↔ x < y := by
+            constructor
+            · intro hsq
+              by_contra hnot
+              have hyx : y ≤ x := le_of_not_gt hnot
+              have hprod : 0 ≤ (x - y) * (x + y) :=
+                mul_nonneg (sub_nonneg.mpr hyx) (add_nonneg hx hy)
+              nlinarith
+            · intro hxy
+              have hypos : 0 < y := lt_of_le_of_lt hx hxy
+              have hprod : 0 < (y - x) * (y + x) :=
+                mul_pos (sub_pos.mpr hxy) (add_pos_of_pos_of_nonneg hypos hx)
+              nlinarith
+
           /-- The lower half of the standard bicone. -/
           def lowerBicone (k : ℕ) : Set (EuclideanSpace ℝ (Fin (k + 2))) :=
             rotationalProfile (k + 1) (Set.Ioo 0 a) (fun t => t / s3)
@@ -78,20 +93,20 @@ jobs:
 
           lemma lower_point_mem_cone_ball (k : ℕ) {t : ℝ} {v : Fin (k + 1) → ℝ}
               (ht0 : 0 < t) (hta : t < a)
-              (hv : ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ < t / s3) :
+              (hv : ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ < t / s3) :
               standardCoordinates (k + 1) (t, v) ∈
                 strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
-            let r : ℝ := ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
+            let r : ℝ := ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
             have hr0 : 0 ≤ r := norm_nonneg _
             have hrs : r * s3 < t := (lt_div_iff₀ s3_pos).mp (by simpa [r] using hv)
             have hrs0 : 0 ≤ r * s3 := mul_nonneg hr0 s3_pos.le
             have hrsq : (r * s3) ^ 2 < t ^ 2 :=
-              (sq_lt_sq₀ hrs0 ht0.le).2 hrs
+              (sq_lt_sq_nonneg_iff hrs0 ht0.le).2 hrs
             have hr_sq : 3 * r ^ 2 < t ^ 2 := by
               nlinarith [s3_sq]
             have ht_sq : t ^ 2 < (3 : ℝ) / 4 := by
               have ha0 : 0 ≤ a := by positivity
-              have hsq := (sq_lt_sq₀ ht0.le ha0).2 hta
+              have hsq := (sq_lt_sq_nonneg_iff ht0.le ha0).2 hta
               dsimp [a] at hsq
               nlinarith [s3_sq]
             constructor
@@ -99,7 +114,7 @@ jobs:
               have hq : 0 ≤ t ^ 2 + r ^ 2 := by positivity
               have hsqrt : 0 ≤ Real.sqrt (t ^ 2 + r ^ 2) := Real.sqrt_nonneg _
               have hleft : 0 ≤ (s3 / 2) * Real.sqrt (t ^ 2 + r ^ 2) := by positivity
-              apply (sq_lt_sq₀ hleft ht0.le).1
+              apply (sq_lt_sq_nonneg_iff hleft ht0.le).1
               rw [mul_pow, Real.sq_sqrt hq]
               nlinarith [s3_sq]
             · rw [standardCoordinates_mem_ball_iff]
@@ -107,11 +122,11 @@ jobs:
 
           lemma upper_point_mem_cone_ball (k : ℕ) {t : ℝ} {v : Fin (k + 1) → ℝ}
               (hta : a < t) (ht1 : t < 1)
-              (hv : ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ <
+              (hv : ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖ <
                 upperSlope * (1 - t)) :
               standardCoordinates (k + 1) (t, v) ∈
                 strictCone (standardAxis (k + 1)) ∩ ball 0 1 := by
-            let r : ℝ := ‖(PiLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
+            let r : ℝ := ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin (k + 1)))‖
             have hr0 : 0 ≤ r := norm_nonneg _
             have hprof0 : 0 < upperSlope * (1 - t) := by positivity
             have hrprof : r < upperSlope * (1 - t) := by simpa [r] using hv
@@ -119,11 +134,11 @@ jobs:
               dsimp [a, upperSlope] at hta ⊢
               nlinarith [s3_sq]
             have hrs : r * s3 < t := by
-              have := mul_lt_mul_of_pos_right hrprof s3_pos
+              have hmul := mul_lt_mul_of_pos_right hrprof s3_pos
               nlinarith
             have hrs0 : 0 ≤ r * s3 := mul_nonneg hr0 s3_pos.le
             have hrsq : (r * s3) ^ 2 < t ^ 2 :=
-              (sq_lt_sq₀ hrs0 (by positivity : 0 ≤ t)).2 hrs
+              (sq_lt_sq_nonneg_iff hrs0 (by positivity : 0 ≤ t)).2 hrs
             have hr_sq : 3 * r ^ 2 < t ^ 2 := by
               nlinarith [s3_sq]
             have hballLinear : upperSlope ^ 2 * (1 - t) < 1 + t := by
@@ -131,17 +146,17 @@ jobs:
               nlinarith [s3_sq]
             have hprof_sq : (upperSlope * (1 - t)) ^ 2 < 1 - t ^ 2 := by
               have h1t : 0 < 1 - t := by linarith
-              have := mul_lt_mul_of_pos_right hballLinear h1t
+              have hmul := mul_lt_mul_of_pos_right hballLinear h1t
               nlinarith
             have hr_sq_ball : r ^ 2 < 1 - t ^ 2 := by
               have hprof_nonneg : 0 ≤ upperSlope * (1 - t) := hprof0.le
-              have hsq := (sq_lt_sq₀ hr0 hprof_nonneg).2 hrprof
+              have hsq := (sq_lt_sq_nonneg_iff hr0 hprof_nonneg).2 hrprof
               nlinarith
             constructor
             · rw [standardCoordinates_mem_strictCone_iff]
               have hq : 0 ≤ t ^ 2 + r ^ 2 := by positivity
               have hleft : 0 ≤ (s3 / 2) * Real.sqrt (t ^ 2 + r ^ 2) := by positivity
-              apply (sq_lt_sq₀ hleft (by positivity : 0 ≤ t)).1
+              apply (sq_lt_sq_nonneg_iff hleft (by positivity : 0 ≤ t)).1
               rw [mul_pow, Real.sq_sqrt hq]
               nlinarith [s3_sq]
             · rw [standardCoordinates_mem_ball_iff]
@@ -183,6 +198,7 @@ jobs:
 
           end Sqrt6KissingBound
           LEAN
+          lake build Sqrt6KissingBound.StandardGeometry Sqrt6KissingBound.ProfileVolume
           lake env lean /tmp/BiconeGeometry.lean
           cp /tmp/BiconeGeometry.lean Sqrt6KissingBound/BiconeGeometry.lean
       - name: Commit only the compiler-confirmed module
