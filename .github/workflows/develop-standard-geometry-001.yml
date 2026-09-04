@@ -37,7 +37,6 @@ jobs:
           import Sqrt6KissingBound.CoordinateVolume
           import Sqrt6KissingBound.Geometry
           import Mathlib.Analysis.InnerProductSpace.PiL2
-          import Mathlib.Algebra.Order.Ring.Abs
 
           /-!
           # Geometry in standard first-coordinate form
@@ -56,19 +55,8 @@ jobs:
           lemma norm_sq_standardCoordinates (d : ℕ) (t : ℝ) (v : Fin d → ℝ) :
               ‖standardCoordinates d (t, v)‖ ^ 2 =
                 t ^ 2 + ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
-            calc
-              ‖standardCoordinates d (t, v)‖ ^ 2 =
-                  inner ℝ (standardCoordinates d (t, v))
-                    (standardCoordinates d (t, v)) :=
-                (real_inner_self_eq_norm_sq _).symm
-              _ = t ^ 2 +
-                  inner ℝ (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))
-                    (WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d)) := by
-                simp [standardCoordinates, PiLp.inner_apply, Fin.sum_univ_succ, pow_two] <;>
-                  simp
-              _ = t ^ 2 +
-                  ‖(WithLp.toLp 2 v : EuclideanSpace ℝ (Fin d))‖ ^ 2 := by
-                rw [real_inner_self_eq_norm_sq]
+            rw [EuclideanSpace.real_norm_sq_eq, EuclideanSpace.real_norm_sq_eq]
+            simp [standardCoordinates, Fin.sum_univ_succ]
 
           @[simp] lemma norm_standardAxis (d : ℕ) : ‖standardAxis d‖ = 1 := by
             have hsq : ‖standardAxis d‖ ^ 2 = 1 := by
@@ -89,14 +77,20 @@ jobs:
             rw [mem_ball, dist_zero_right]
             constructor
             · intro h
-              have h0 : 0 ≤ ‖standardCoordinates d (t, v)‖ := norm_nonneg _
-              have hsq := sq_lt_sq₀ h0 zero_le_one |>.2 h
-              simpa [norm_sq_standardCoordinates] using hsq
+              let N : ℝ := ‖standardCoordinates d (t, v)‖
+              have hN0 : 0 ≤ N := norm_nonneg _
+              have hpos : 0 < (1 - N) * (1 + N) :=
+                mul_pos (sub_pos.mpr h) (by linarith)
+              have hsq : N ^ 2 < 1 := by nlinarith
+              simpa [N, norm_sq_standardCoordinates] using hsq
             · intro h
-              have hn : 0 ≤ ‖standardCoordinates d (t, v)‖ := norm_nonneg _
-              have hsq : ‖standardCoordinates d (t, v)‖ ^ 2 < (1 : ℝ) ^ 2 := by
-                simpa [norm_sq_standardCoordinates] using h
-              exact (sq_lt_sq₀ hn zero_le_one).1 hsq
+              let N : ℝ := ‖standardCoordinates d (t, v)‖
+              have hN0 : 0 ≤ N := norm_nonneg _
+              have hsq : N ^ 2 < 1 := by
+                simpa [N, norm_sq_standardCoordinates] using h
+              by_contra hnot
+              have hge : 1 ≤ N := le_of_not_gt hnot
+              nlinarith [sq_nonneg (N - 1)]
 
           lemma standardCoordinates_mem_strictCone_iff (d : ℕ) (t : ℝ)
               (v : Fin d → ℝ) :
