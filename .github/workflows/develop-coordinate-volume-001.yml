@@ -1,0 +1,72 @@
+name: Develop coordinate volume 001
+
+"on":
+  push:
+    branches:
+      - gpt-pro/full-lean-certificate
+    paths:
+      - '.github/workflows/develop-coordinate-volume-001.yml'
+
+concurrency:
+  group: develop-coordinate-volume-001
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gpt-pro/full-lean-certificate
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Compile coordinate equivalence candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/candidates
+          cat > /tmp/candidates/CoordinateVolume.lean <<'LEAN'
+          import Mathlib
+
+          namespace Sqrt6KissingBound
+
+          noncomputable section
+
+          open MeasureTheory
+
+          /-- Split off the first Euclidean coordinate. -/
+          noncomputable def standardCoordinates (d : ℕ) :
+              (ℝ × (Fin d → ℝ)) ≃ᵐ EuclideanSpace ℝ (Fin (d + 1)) :=
+            (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0).symm.trans
+              (MeasurableEquiv.toLp 2 _)
+
+          lemma standardCoordinates_measurePreserving (d : ℕ) :
+              MeasurePreserving (standardCoordinates d) := by
+            exact
+              ((volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0).symm _).trans
+                (PiLp.volume_preserving_toLp _)
+
+          end
+
+          end Sqrt6KissingBound
+          LEAN
+          lake env lean /tmp/candidates/CoordinateVolume.lean
+          cp /tmp/candidates/CoordinateVolume.lean Sqrt6KissingBound/CoordinateVolume.lean
+      - name: Commit only the compiler-confirmed module
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Sqrt6KissingBound/CoordinateVolume.lean
+          git commit -m 'Add the compiler-confirmed coordinate volume equivalence'
+          git pull --rebase origin gpt-pro/full-lean-certificate
+          git push origin HEAD:gpt-pro/full-lean-certificate
