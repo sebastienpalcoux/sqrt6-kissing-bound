@@ -42,7 +42,7 @@ lemma chord_integral (m : ℕ) :
     _ = Real.pi / (6 * (m + 1) * 2 ^ m) := by
       rw [hbase]
       simp only [div_pow, one_pow, div_eq_mul_inv, mul_inv_rev]
-      norm_num <;> ring
+      ring_nf <;> norm_num
 
 lemma pi_div_six_gt_three_sqrt3_div_ten :
     3 * Real.sqrt 3 / 10 < Real.pi / 6 := by
