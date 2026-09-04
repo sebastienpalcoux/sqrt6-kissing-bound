@@ -47,7 +47,7 @@ private lemma upper_power_value (k : ℕ) :
     _ = (2 - s3) / ((k + 2) * 2 ^ (k + 2)) := by
       dsimp [a]
       simp only [two_power_step, div_pow, one_pow, div_eq_mul_inv, mul_inv_rev]
-      norm_num <;> ring
+      ring_nf <;> norm_num
 
 lemma lower_profile_integral (k : ℕ) :
     (∫ t in (0 : ℝ)..a, (t / s3) ^ (k + 1)) =
