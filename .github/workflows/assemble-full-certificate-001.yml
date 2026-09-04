@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   assemble:
@@ -29,61 +29,101 @@ jobs:
           lint: false
           axiom-audit: false
           use-mathlib-cache: true
-      - name: Compile every theorem module through one root
+      - name: Materialize the complete candidate chain
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/FullCertificate.lean <<'LEAN'
-          import Sqrt6KissingBound.Core
-          import Sqrt6KissingBound.Analysis
-          import Sqrt6KissingBound.CapFraction
-          import Sqrt6KissingBound.Geometry
-          import Sqrt6KissingBound.Packing
-          import Sqrt6KissingBound.CapMeasure
-          import Sqrt6KissingBound.CoordinateVolume
-          import Sqrt6KissingBound.ProfileVolume
-          import Sqrt6KissingBound.ProfileIntegral
-          import Sqrt6KissingBound.ProfileIntegralReal
-          import Sqrt6KissingBound.StandardGeometry
-          import Sqrt6KissingBound.LinearProfileIntegral
-          import Sqrt6KissingBound.BiconeGeometry
-          import Sqrt6KissingBound.BiconeVolume
-          import Sqrt6KissingBound.VolumePacking
-          import Sqrt6KissingBound.CenteredBicone
-          import Sqrt6KissingBound.CenteredBody
-          import Sqrt6KissingBound.BallVolumes
-          import Sqrt6KissingBound.DimensionOne
-          import Sqrt6KissingBound.DimensionThree
-          import Sqrt6KissingBound.DimensionFour
-          import Sqrt6KissingBound.BiconeBounds
-          import Sqrt6KissingBound.KissingBound
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import textwrap
 
-          #check Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow
-          #check Sqrt6KissingBound.kissingConfiguration_card_le_floor_sqrt6_pow
-          LEAN
-          lake env lean /tmp/FullCertificate.lean 2>&1 | tee full-certificate-build.log
-          cp /tmp/FullCertificate.lean Sqrt6KissingBound/FullCertificate.lean
-      - name: Scan theorem sources
+          workflows = [
+              "develop-profile-volume-001.yml",
+              "develop-profile-integral-001.yml",
+              "develop-profile-real-001.yml",
+              "develop-standard-geometry-001.yml",
+              "develop-linear-integrals-001.yml",
+              "develop-bicone-geometry-001.yml",
+              "develop-bicone-volume-001.yml",
+              "develop-volume-packing-001.yml",
+              "develop-centered-bicone-001.yml",
+              "develop-centered-body-001.yml",
+              "develop-ball-volumes-001.yml",
+              "develop-dimension-one-001.yml",
+              "develop-dimension-three-001.yml",
+              "develop-dimension-four-001.yml",
+              "develop-bicone-bounds-001.yml",
+              "develop-main-bound-001.yml",
+              "develop-optimality-001.yml",
+              "develop-kissing-number-001.yml",
+          ]
+          workflow_dir = Path(".github/workflows")
+          target_dir = Path("Sqrt6KissingBound")
+          pattern = re.compile(
+              r"cat > /tmp/(?P<name>[A-Za-z0-9_]+\.lean) <<'LEAN'\n"
+              r"(?P<body>.*?)\n\s*LEAN\n",
+              re.S,
+          )
+          for workflow in workflows:
+              path = workflow_dir / workflow
+              text = path.read_text(encoding="utf-8")
+              match = pattern.search(text)
+              if match is None:
+                  raise RuntimeError(f"No Lean heredoc found in {path}")
+              body = textwrap.dedent(match.group("body"))
+              body = body.replace("PiLp.toLp", "WithLp.toLp")
+              body = body.replace("intervalIntegral.integral_pow", "integral_pow")
+              out = target_dir / match.group("name")
+              out.write_text(body.rstrip() + "\n", encoding="utf-8")
+              print(f"materialized {out}")
+          PY
+          git diff --stat
+      - name: Compile the complete candidate chain
         shell: bash
         run: |
+          set -euo pipefail
+          lake build Sqrt6KissingBound.KissingNumber 2>&1 | tee full-certificate-build.log
+      - name: Scan all theorem sources
+        shell: bash
+        run: |
+          set -euo pipefail
           pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
           if grep -R -n -E "$pattern" --include='*.lean' Sqrt6KissingBound; then
             echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' >&2
             exit 1
           fi
-      - name: Commit the compiler-confirmed aggregate root
+      - name: Show exact generated diff
+        if: always()
         shell: bash
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Sqrt6KissingBound/FullCertificate.lean
-          git commit -m 'Assemble the compiler-confirmed full theorem root'
-          git pull --rebase origin gpt-pro/full-lean-certificate
-          git push origin HEAD:gpt-pro/full-lean-certificate
-      - name: Upload diagnostics on failure
-        if: failure()
+          git status --short
+          git diff --check || true
+          git diff --stat
+      - name: Upload integration diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: assemble-full-certificate-log
-          path: full-certificate-build.log
+          name: full-certificate-integration
+          path: |
+            full-certificate-build.log
+            Sqrt6KissingBound/ProfileVolume.lean
+            Sqrt6KissingBound/ProfileIntegral.lean
+            Sqrt6KissingBound/ProfileIntegralReal.lean
+            Sqrt6KissingBound/StandardGeometry.lean
+            Sqrt6KissingBound/LinearProfileIntegral.lean
+            Sqrt6KissingBound/BiconeGeometry.lean
+            Sqrt6KissingBound/BiconeVolume.lean
+            Sqrt6KissingBound/VolumePacking.lean
+            Sqrt6KissingBound/CenteredBicone.lean
+            Sqrt6KissingBound/CenteredBody.lean
+            Sqrt6KissingBound/BallVolumes.lean
+            Sqrt6KissingBound/DimensionOne.lean
+            Sqrt6KissingBound/DimensionThree.lean
+            Sqrt6KissingBound/DimensionFour.lean
+            Sqrt6KissingBound/BiconeBounds.lean
+            Sqrt6KissingBound/KissingBound.lean
+            Sqrt6KissingBound/Optimality.lean
+            Sqrt6KissingBound/KissingNumber.lean
+          if-no-files-found: warn
           retention-days: 2
