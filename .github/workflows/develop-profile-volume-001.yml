@@ -102,13 +102,12 @@ jobs:
             intro t
             by_cases ht : t ∈ s
             · have hfiber :
-                  {a : Fin d → ℝ | (t, a) ∈ profileRegion d s g} =
-                    tailBall d (g t) := by
+                  Prod.mk t ⁻¹' profileRegion d s g = tailBall d (g t) := by
                 ext v
                 simp [profileRegion, ht]
               simp only [Set.indicator_of_mem ht]
               rw [hfiber]
-              exact (volume_tailBall d (g t)).symm
+              exact volume_tailBall d (g t)
             · simp [profileRegion, ht]
 
           /-- The corresponding body in Euclidean space. -/
