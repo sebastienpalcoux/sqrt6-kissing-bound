@@ -14,6 +14,7 @@ namespace Sqrt6KissingBound
 noncomputable section
 
 open Set Metric MeasureTheory NormedSpace
+open scoped Pointwise
 
 private abbrev s3 : ℝ := Real.sqrt 3
 
@@ -35,10 +36,13 @@ lemma mem_strictCone_smul_iff {x y : E} {r : ℝ} (hr : 0 < r) :
   change (s3 / 2) * ‖r • y‖ < inner ℝ x (r • y) ↔
     (s3 / 2) * ‖y‖ < inner ℝ x y
   rw [norm_smul, Real.norm_eq_abs, abs_of_pos hr, real_inner_smul_right]
-  simpa [mul_assoc, mul_left_comm, mul_comm] using
-    (mul_lt_mul_left hr :
-      r * ((s3 / 2) * ‖y‖) < r * inner ℝ x y ↔
-        (s3 / 2) * ‖y‖ < inner ℝ x y)
+  constructor
+  · intro h
+    apply (mul_lt_mul_left hr).mp
+    simpa only [mul_assoc] using h
+  · intro h
+    have := (mul_lt_mul_left hr).mpr h
+    simpa only [mul_assoc] using this
 
 /-- The radial set used in the definition of `Measure.toSphere` is exactly the
 intersection of the cone with the open unit ball. -/
@@ -46,15 +50,17 @@ lemma Ioo_smul_sphericalCap (x : E) :
     Set.Ioo (0 : ℝ) 1 • ((↑) '' sphericalCap x) = capSector x := by
   ext y
   constructor
-  · rintro ⟨r, hr, u, hu, rfl⟩
-    rcases hu with ⟨v, hv, rfl⟩
-    have hvnorm : ‖(v : E)‖ = 1 := mem_sphere_zero_iff_norm.mp v.property
+  · intro hy
+    rcases hy with ⟨r, hr, z, hz, rfl⟩
+    rcases hz with ⟨u, hu, rfl⟩
+    have hunorm : ‖(u : E)‖ = 1 := mem_sphere_zero_iff_norm.mp u.property
     constructor
-    · exact (mem_strictCone_smul_iff hr.1).2 hv
+    · exact (mem_strictCone_smul_iff hr.1).2 hu
     · rw [mem_ball, dist_zero_right, norm_smul, Real.norm_eq_abs,
-        abs_of_pos hr.1, hvnorm, mul_one]
+        abs_of_pos hr.1, hunorm, mul_one]
       exact hr.2
-  · rintro ⟨hycone, hyball⟩
+  · intro hy
+    rcases hy with ⟨hycone, hyball⟩
     have hy0 : y ≠ 0 := by
       intro h
       subst y
@@ -66,8 +72,9 @@ lemma Ioo_smul_sphericalCap (x : E) :
       ⟨NormedSpace.normalize y, mem_sphere_zero_iff_norm.mpr (norm_normalize hy0)⟩
     have hucone : u ∈ sphericalCap x := by
       change NormedSpace.normalize y ∈ strictCone x
-      have h := (mem_strictCone_smul_iff (x := x) (y := NormedSpace.normalize y) hnorm_pos).1
-      simpa using h (by simpa using hycone)
+      have hscaled : ‖y‖ • NormedSpace.normalize y ∈ strictCone x := by
+        simpa using hycone
+      exact (mem_strictCone_smul_iff hnorm_pos).1 hscaled
     refine ⟨‖y‖, ⟨hnorm_pos, hnorm_lt⟩, (u : E), ⟨u, hucone, rfl⟩, ?_⟩
     exact NormedSpace.norm_smul_normalize y
 
@@ -93,7 +100,7 @@ lemma preimage_capSector_linearIsometryEquiv (A : E ≃ₗᵢ[ℝ] E) {x z : E}
     (hAx : A x = z) : A ⁻¹' capSector z = capSector x := by
   rw [capSector, capSector, preimage_inter, preimage_strictCone_linearIsometryEquiv A hAx]
   ext y
-  simp [A.norm_map]
+  simp
 
 /-- The radial-sector volume is independent of the unit center. -/
 lemma volume_capSector_eq_of_norm_eq {x z : E} (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) :
@@ -101,8 +108,11 @@ lemma volume_capSector_eq_of_norm_eq {x z : E} (hx : ‖x‖ = 1) (hz : ‖z‖ 
   let A : E ≃ₗᵢ[ℝ] E := Submodule.reflection (ℝ ∙ (x - z))ᗮ
   have hAx : A x = z := by
     exact Submodule.reflection_sub (by rw [hx, hz])
-  rw [← A.measurePreserving.measure_preimage (measurableSet_capSector z),
-    preimage_capSector_linearIsometryEquiv A hAx]
+  calc
+    volume (capSector x) = volume (A ⁻¹' capSector z) := by
+      rw [preimage_capSector_linearIsometryEquiv A hAx]
+    _ = volume (capSector z) :=
+      A.measurePreserving.measure_preimage (measurableSet_capSector z).nullMeasurableSet
 
 /-- Spherical caps with unit centers have equal `Measure.toSphere` measure. -/
 lemma toSphere_sphericalCap_eq_of_norm_eq {x z : E} (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) :
