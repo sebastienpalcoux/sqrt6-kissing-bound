@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
-if grep -R -n -E --include='*.lean' "$pattern" \
-    Sqrt6KissingBound Sqrt6KissingBound.lean Axioms.lean; then
-  echo 'forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found' >&2
+python3 scripts/palomar_static_check.py
+if ! command -v lake >/dev/null 2>&1; then
+  echo 'error: lake is not on PATH. Load $HOME/.elan/env, or use the GitHub Actions checks.' >&2
   exit 1
 fi
-lake build
+lake build Sqrt6KissingBound Solution Challenge
 lake env lean Axioms.lean
+sha256sum --check SOURCE_SHA256SUMS
+echo 'Lean, source-integrity, and Palomar packaging checks passed.'
+echo 'Full independent verification additionally requires: bash scripts/verify-comparator.sh'

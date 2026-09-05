@@ -1,0 +1,103 @@
+{
+  "version": "v0.4",
+  "project": {
+    "name": "The optimal universal exponential base for Euclidean kissing numbers",
+    "description": "For every positive integer n, the Euclidean kissing number tau_n is an attained maximum and satisfies tau_n <= (sqrt(6))^n. This Lean formalization proves the bound by packing explicit bodies of revolution in the unit ball, including the geometric separation, volume integrals, and every dimension case. An explicit six-point planar configuration proves tau_2 = 6. Consequently sqrt(6) is the least nonnegative (and least positive) universal exponential base without a prefactor; the admissible bases are exactly alpha >= sqrt(6), and the supremum of tau_n^(1/n) over positive dimensions equals sqrt(6). No asymptotic-optimality claim is made.",
+    "authors": [
+      "Sébastien Palcoux"
+    ],
+    "responsible_maintainers": [
+      "Sébastien Palcoux"
+    ],
+    "license": "Apache-2.0"
+  },
+  "classification": {
+    "arxiv": [
+      "math.MG",
+      "math.CO"
+    ],
+    "msc2020": [
+      "52C17",
+      "52C35"
+    ]
+  },
+  "sources": [
+    {
+      "title": "A Universal Square-Root-of-Six Bound for Kissing Numbers",
+      "authors": [
+        "Sébastien Palcoux"
+      ],
+      "type": "paper",
+      "location": "manuscript/sqrt6-kissing-bound.tex and manuscript/sqrt6-kissing-bound.pdf in the submitted repository snapshot",
+      "relationship": "formalizes",
+      "license": "Apache-2.0",
+      "author_endorsement": "participated",
+      "note": "The accompanying AI-generated manuscript is the mathematical source being formalized. The manuscript and substantive Lean development are in this same repository, not an external thin wrapper. AI contributions are recorded below. Independent human mathematical review and a novelty assessment have not been completed."
+    },
+    {
+      "title": "Upper bound of the kissing number in n dimensions",
+      "authors": [
+        "Sébastien Palcoux"
+      ],
+      "type": "web discussion",
+      "id": "https://mathoverflow.net/questions/282644/",
+      "relationship": "background",
+      "author_endorsement": "participated",
+      "note": "The 2017 motivating question; it is not an assumed theorem in the formal proof."
+    },
+    {
+      "title": "Answer to Upper bound of the kissing number in n dimensions",
+      "authors": [
+        "Henry Cohn"
+      ],
+      "type": "web discussion",
+      "id": "https://mathoverflow.net/a/282685/",
+      "relationship": "background",
+      "author_endorsement": "not-contacted",
+      "note": "Context on spherical-code bounds. No endorsement of this manuscript is claimed and no result from this answer is introduced as a formal axiom."
+    }
+  ],
+  "related_formalizations": [],
+  "status": {
+    "scope": "The full project contains the Euclidean-volume proof and its geometric, analytic, numerical, and optimality steps. Comparator selects the eight principal claims listed in comparator.json, not a separate comparison of every intermediate lemma. Four targets are existing substantive theorems. Four proved adapters expose genuine maximum cardinalities without the implementation-specific bounded-search definition. The Challenge definitions do not build in any claimed upper bound. The proof code is checked transitively, but Lean does not certify the prose or independently audit informal-to-formal alignment.",
+    "sorry_count": 0,
+    "sorry_in_definitions": 0,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "notes": "The zero-hole counts refer to Solution and the substantive proof development. Challenge has eight deliberate statement placeholders, which are not imported into the proof and whose replacements Comparator must check. Palomar registration is not claimed by this metadata."
+  },
+  "automation": {
+    "methods": [
+      {
+        "method": "agent",
+        "models": [
+          "GPT-5.6 Pro"
+        ],
+        "framework": "ChatGPT",
+        "tool_setup": "AI-generated mathematical argument, manuscript, and Lean formalization, with further AI assistance in ChatGPT Work.",
+        "prompting_notes": "Sébastien Palcoux supplied the mathematical prompts and maintains the repository. The existing project disclosure names GPT-5.6 Pro; a complete session-by-session model and prompt history was not recorded and is not reconstructed here."
+      },
+      {
+        "method": "agent",
+        "models": [
+          "GPT-6 Pro"
+        ],
+        "framework": "ChatGPT",
+        "tool_setup": "Palomar packaging revision: separate Challenge/Solution interface, canonical dependency pins, metadata, static checks, and a pinned Comparator/NanoDa CI gate.",
+        "prompting_notes": "The user requested registration preparation while avoiding the prior group-theory submission failures. This packaging step does not claim a new proof or a completed independent human review."
+      }
+    ],
+    "notes": "The mathematical proof is substantive AI-generated work, not human-written mathematics merely typeset by an assistant. Mechanical checks and AI inspection are distinguished from human peer review. Cost, complete prompt logs, and exact total wall time were not recorded."
+  },
+  "fidelity": {
+    "divergences": "The manuscript defines tau_n as the greatest realizable cardinality. The implementation constructs that number by a bounded search and separately proves its IsGreatest property. The Palomar interface instead states existence of an attained maximum and formulates the number-level consequences for any function of genuine maxima. Solution proves these adapters from the implementation, so there is no extra geometric assumption, cutoff, or weakening of the quantifiers. Universal bases are stated as nonnegative; the theorem characterizes them as alpha >= sqrt(6), hence also gives the manuscript formulation for positive bases."
+  },
+  "review": {
+    "status": "unchecked",
+    "reviewers": [],
+    "notes": "No independent human mathematical review or independent human audit of statement alignment is recorded. AI packaging inspection and passing Lean/Comparator/NanoDa runs, when shown for the exact commit in GitHub Actions, are mechanical evidence, not a human review or Palomar registration."
+  }
+}

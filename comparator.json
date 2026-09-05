@@ -1,0 +1,21 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow",
+    "Sqrt6KissingBound.sqrt6_isLeast_universalKissingBase",
+    "Sqrt6KissingBound.isUniversalKissingBase_iff",
+    "Sqrt6KissingBound.supremum_kissing_roots_eq_sqrt6",
+    "Sqrt6KissingBound.Palomar.kissingNumber_exists",
+    "Sqrt6KissingBound.Palomar.planar_kissingNumber",
+    "Sqrt6KissingBound.Palomar.kissingNumber_roots",
+    "Sqrt6KissingBound.Palomar.kissingNumber_universal_base"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": true
+}

@@ -7,8 +7,14 @@ package «sqrt6-kissing-bound» where
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @
-  "0df444a360eaa60ab8c11dca51a86af692955474"
+  "db584cd6d46c92f209a44c0f1c829460d327499d"
 
 @[default_target]
 lean_lib Sqrt6KissingBound where
   roots := #[`Sqrt6KissingBound]
+
+lean_lib Challenge where
+  roots := #[`Challenge]
+
+lean_lib Solution where
+  roots := #[`Solution]
