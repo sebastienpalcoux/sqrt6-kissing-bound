@@ -1,0 +1,116 @@
+name: Full Lean certificate
+
+"on":
+  push:
+    branches: [gpt-pro/full-lean-certificate]
+    paths:
+      - 'Sqrt6KissingBound/**'
+      - 'Sqrt6KissingBound.lean'
+      - 'Axioms.lean'
+      - 'scripts/check.sh'
+      - 'scripts/check_axioms.py'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - 'SOURCE_SHA256SUMS'
+      - '.github/workflows/dev-check-quiet.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-lean-certificate
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+          axiom-audit: false
+          use-mathlib-cache: true
+      - name: Verify source hashes and pinned dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c SOURCE_SHA256SUMS
+          test "$(cat lean-toolchain)" = 'leanprover/lean4:v4.33.1'
+          test "$(git -C .lake/packages/mathlib rev-parse HEAD)" = '0df444a360eaa60ab8c11dca51a86af692955474'
+          git -C .lake/packages/mathlib diff --exit-code HEAD -- '*.lean'
+      - name: Clean build, source scan, and enforced public-theorem axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p certification
+          rm -rf .lake/build
+          bash scripts/check.sh 2>&1 | tee certification/check.log
+          grep -q '^AXIOM_WHITELIST_AUDIT_PASSED: 16 public theorems$' certification/axiom-whitelist.log
+          printf 'FULL_BUILD_AND_AXIOM_AUDIT_PASSED\n' > certification/VERIFICATION_STATUS.txt
+      - name: Record verification provenance and package only reproducible source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from datetime import datetime, timezone
+          import json, os, shutil, subprocess
+          def output(*args):
+              return subprocess.run(args, check=True, text=True, stdout=subprocess.PIPE).stdout.strip()
+          result = {
+              'status': 'FULL_BUILD_AND_AXIOM_AUDIT_PASSED',
+              'commit': output('git', 'rev-parse', 'HEAD'),
+              'workflow_run_id': os.environ['GITHUB_RUN_ID'],
+              'verified_at_utc': datetime.now(timezone.utc).isoformat(),
+              'lean': output('lake', 'env', 'lean', '--version'),
+              'mathlib_commit': output('git', '-C', '.lake/packages/mathlib', 'rev-parse', 'HEAD'),
+              'audited_public_theorems': 16,
+              'allowed_axioms': ['propext', 'Classical.choice', 'Quot.sound'],
+              'clean_project_build': True,
+              'proof_holes_or_custom_axioms': False,
+          }
+          Path('certification/VERIFICATION.json').write_text(json.dumps(result, indent=2) + '\n')
+          package = Path('verified-package')
+          package.mkdir(exist_ok=True)
+          sources = [Path(line.split('  ', 1)[1]) for line in Path('SOURCE_SHA256SUMS').read_text().splitlines() if line]
+          sources += [Path(name) for name in ['SOURCE_SHA256SUMS', 'README.md',
+              'CERTIFICATION_STATUS.md', 'FORMALIZATION_SCOPE.md', 'PROOF_GUIDE.md']]
+          sources += sorted(Path('certification').glob('*'))
+          sources += sorted(Path('manuscript').glob('*.tex'))
+          sources += sorted(Path('manuscript').glob('*.pdf'))
+          if Path('LICENSE').is_file():
+              sources.append(Path('LICENSE'))
+          for source in sources:
+              if not source.is_file():
+                  raise SystemExit(f'Missing source or verification record: {source}')
+              target = package / source
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copyfile(source, target)
+          print(json.dumps(result, indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('Full clean build, source scan, and 16-theorem axiom whitelist audit passed.\n')
+              f.write('Verified commit: `' + result['commit'] + '`\n')
+              f.write('Only the standard axioms propext, Classical.choice, and Quot.sound are permitted.\n')
+          PY
+      - name: Upload the complete verified certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: sqrt6-complete-lean-certificate
+          path: verified-package/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Retain diagnostics even when verification fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: certificate-verification-diagnostics
+          path: certification/
+          retention-days: 7
