@@ -1,3 +1,3 @@
-Validation pass 6: static Lean candidates only.
-Check the full root, including the strict cap recurrence and supremum formulation, and enforce the 16-theorem axiom whitelist.
+Validation pass 7: static Lean sources only.
+Check the assembled exceptional-dimensional bounds, the full root module, and the 16-theorem axiom audit.
 No certification is claimed unless the clean build and audit both pass.

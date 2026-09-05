@@ -1,7 +1,7 @@
 import Sqrt6KissingBound.CenteredBody
 import Sqrt6KissingBound.BallVolumes
 
-/-! Development candidate: a polynomial body gives the four-dimensional bound. -/
+/-! A polynomial body gives the four-dimensional bound. -/
 namespace Sqrt6KissingBound
 noncomputable section
 open Set Metric MeasureTheory intervalIntegral
@@ -195,8 +195,7 @@ lemma code_card_le_thirtysix_dim_four
       (hunit x hx) (hunit z hz) (hsep x hx z hz hne))
     (q := q)
     (fun x hx => by
-      rw [volumeReal_centeredBody measurableSet_standardBody4, volumeReal_standardBody4]
-      rfl)
+      rw [volumeReal_centeredBody measurableSet_standardBody4, volumeReal_standardBody4])
   change (X.card : ℝ) * q ≤ unitBallVolumeReal 4 at hpack
   rw [unitBallVolumeReal_four] at hpack
   have hT : (33 : ℝ) / 1036 < T := by simpa [T] using standardBody4_profile_gt
