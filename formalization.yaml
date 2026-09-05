@@ -67,27 +67,18 @@
       "Classical.choice",
       "Quot.sound"
     ],
-    "notes": "The zero-hole counts refer to Solution and the substantive proof development. Challenge has eight deliberate statement placeholders, which are not imported into the proof and whose replacements Comparator must check. Palomar registration is not claimed by this metadata."
+    "notes": "The zero-hole counts refer to Solution and the substantive proof development. Challenge has eight deliberate statement placeholders, which are not imported into the proof and whose replacements Comparator checks. Palomar registered the eight selected declarations as PALOMAR-2026-09-05-000002 version 1 at repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9. This later disclosure and documentation revision does not replace that immutable snapshot."
   },
   "automation": {
     "methods": [
       {
         "method": "agent",
         "models": [
-          "GPT-5.6 Pro"
+          "GPT-6 Astra"
         ],
         "framework": "ChatGPT",
-        "tool_setup": "AI-generated mathematical argument, manuscript, and Lean formalization, with further AI assistance in ChatGPT Work.",
-        "prompting_notes": "Sébastien Palcoux supplied the mathematical prompts and maintains the repository. The existing project disclosure names GPT-5.6 Pro; a complete session-by-session model and prompt history was not recorded and is not reconstructed here."
-      },
-      {
-        "method": "agent",
-        "models": [
-          "GPT-6 Pro"
-        ],
-        "framework": "ChatGPT",
-        "tool_setup": "Palomar packaging revision: separate Challenge/Solution interface, canonical dependency pins, metadata, static checks, and a pinned Comparator/NanoDa CI gate.",
-        "prompting_notes": "The user requested registration preparation while avoiding the prior group-theory submission failures. This packaging step does not claim a new proof or a completed independent human review."
+        "tool_setup": "AI-generated mathematical argument, manuscript, Lean formalization, and Palomar packaging, including the Challenge/Solution interface and verification configuration.",
+        "prompting_notes": "Sébastien Palcoux supplied the mathematical prompts and maintains the repository. GPT-6 Astra is credited in the AI disclosure; Sébastien Palcoux is the listed human author and responsible maintainer."
       }
     ],
     "notes": "The mathematical proof is substantive AI-generated work, not human-written mathematics merely typeset by an assistant. Mechanical checks and AI inspection are distinguished from human peer review. Cost, complete prompt logs, and exact total wall time were not recorded."
@@ -96,8 +87,8 @@
     "divergences": "The manuscript defines tau_n as the greatest realizable cardinality. The implementation constructs that number by a bounded search and separately proves its IsGreatest property. The Palomar interface instead states existence of an attained maximum and formulates the number-level consequences for any function of genuine maxima. Solution proves these adapters from the implementation, so there is no extra geometric assumption, cutoff, or weakening of the quantifiers. Universal bases are stated as nonnegative; the theorem characterizes them as alpha >= sqrt(6), hence also gives the manuscript formulation for positive bases."
   },
   "review": {
-    "status": "unchecked",
+    "status": "agent-reviewed",
     "reviewers": [],
-    "notes": "No independent human mathematical review or independent human audit of statement alignment is recorded. AI packaging inspection and passing Lean/Comparator/NanoDa runs, when shown for the exact commit in GitHub Actions, are mechanical evidence, not a human review or Palomar registration."
+    "notes": "Palomar mechanically verified and automatically reviewed repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9 and registered it as PALOMAR-2026-09-05-000002 version 1 on 5 September 2026. The automated editorial review identified no problems. Its record is https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1. This later disclosure and documentation revision is not a new Palomar registration. No independent human mathematical review or independent human audit of statement alignment is recorded."
   }
 }

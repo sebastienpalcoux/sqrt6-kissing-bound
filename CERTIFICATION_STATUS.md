@@ -39,13 +39,21 @@ for that commit and require all three verification jobs to pass. A successful
 older run is not evidence for a later edit. A queued or running Comparator job
 is not a successful independent check.
 
-The pre-packaging proof snapshot recorded a successful build and an axiom audit
-of 274 project declarations. That record is not presented as validation of the
-new interface or repinned environment; those have their own CI gate. The
-manuscript's environment note describes that original proof build; the current
-registration pins are the ones above and in the committed Lake files.
+## Completed Palomar registration
 
-No Palomar identifier or registration outcome is asserted here. Registration
-requires Palomar's own mechanical verification and automated review, followed
-by the submitter's decision to make the result and review public. No
-independent human mathematical review is recorded.
+[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1)
+was registered on 5 September 2026 for repository commit
+`cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`, using the root `comparator.json`.
+All eight selected declarations passed Comparator, Lean kernel checking, and
+independent NanoDa replay in
+[Palomar's verification run](https://github.com/PalomarRegistry/PalomarSubmission/actions/runs/33941141603).
+The automated editorial review identified no problems. The submitter then
+authorized permanent registration, and the public record and source-preservation
+receipt are available at the entry above.
+
+The current disclosure and manuscript revision postdates the registered
+snapshot. It updates the AI attribution and registration account; the Lean
+source, Comparator configuration, and dependency pins remain those registered.
+Palomar version 1 preserves its original metadata and manuscript. Registration
+does not constitute human peer review or a novelty certificate. No independent
+human mathematical review is recorded.

@@ -1,4 +1,17 @@
-# Palomar submission
+# Palomar registration and submission record
+
+## Registered version
+
+This result was registered on 5 September 2026 as
+[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1),
+at repository commit `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`.
+Palomar's mechanical verification passed and its automated editorial review
+identified no problems. The submitter authorized publication and the permanent
+record is now public.
+
+The fields below document the original submission. Do not resubmit that
+already registered commit. A future version of this same result must use the
+new tested commit and existing ID `PALOMAR-2026-09-05-000002`.
 
 ## Submission fields
 
@@ -7,12 +20,12 @@
 | Repository | `sebastienpalcoux/sqrt6-kissing-bound` |
 | Project directory | repository root (leave empty, or `.` if requested) |
 | Comparator configuration | `comparator.json` |
-| Commit | the full 40-character **repository commit** whose verification jobs all passed |
-| Existing Palomar ID | leave empty for this new result |
+| Commit | `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9` |
+| Existing Palomar ID | left empty for the initial registration |
 
 The title and abstract come from `project.name` and `project.description` in
 `formalization.yaml`; there is no need to search for a separate title field.
-This is a new result, not a new version of the group-theory registration.
+This was a new result, not a new version of the group-theory registration.
 Do not enter `PALOMAR-2026-09-03-000005` here.
 
 **Do not use the Mathlib commit as the submission commit.** The Mathlib pin is
@@ -87,17 +100,18 @@ The Landrun wrapper retains sandbox restrictions and supplies exactly one
 command delimiter. The standard Apache-2.0 root license matches the metadata.
 Lean build output and verifier caches are ignored, not committed.
 
-The mathematical manuscript is unchanged by this packaging revision. Its
-reproducibility paragraph records the original proof-build environment; the
-current registration environment is the committed `lean-toolchain`, Lakefile,
-and manifest listed above. The two environments are not two different proofs.
+The manuscript's reproducibility paragraph records the registered environment:
+the committed `lean-toolchain`, Lakefile, and manifest listed above. The later
+disclosure and registration revision leaves the mathematical argument and Lean
+source unchanged; the archived Palomar version retains the submitted snapshot.
 
 ## Submission and registration are distinct
 
-Open [Palomar's submission service](https://submit.palomar-registry.org/) and
-submit the tested repository snapshot with the fields above. Read the returned
-review before choosing registration. Passing this repository's checks does not
-guarantee that Palomar's separate automated review will find no blocking issue.
+For a future version, open [Palomar's submission service](https://submit.palomar-registry.org/)
+and submit a new tested repository snapshot with the existing kissing-number
+ID above. Read the returned review before choosing registration. Passing this
+repository's checks does not guarantee that Palomar's separate automated
+review will find no blocking issue.
 
 Registration permanently records an immutable source snapshot and publishes
 the mathematical statements, dependency and verification records, and the

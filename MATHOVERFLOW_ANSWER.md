@@ -1,4 +1,4 @@
-**AI disclosure.** This proof was generated with OpenAI's GPT-5.6 Pro and ChatGPT Work. The argument below is fully formalized in Lean 4/Mathlib ([certificate and manuscript](https://github.com/sebastienpalcoux/sqrt6-kissing-bound)); it has not undergone independent human mathematical review.
+**AI disclosure.** This proof was generated with OpenAI's GPT-6 Astra, from my prompts. The argument below is fully formalized in Lean 4/Mathlib ([certificate and manuscript](https://github.com/sebastienpalcoux/sqrt6-kissing-bound)) and registered as [PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1), after successful Comparator, Lean, and NanoDa checks and an automated review that identified no problems. Registration is not human peer review or a novelty certificate; independent human mathematical review remains pending.
 
 Yes. With the natural correction
 \[

@@ -18,6 +18,7 @@ explicit bodies, and every dimension case.
 ## Read the result
 
 - [Manuscript PDF](manuscript/sqrt6-kissing-bound.pdf) and [LaTeX source](manuscript/sqrt6-kissing-bound.tex).
+- [Palomar registration: PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1).
 - [Formal statements and proof map](FORMALIZATION_SCOPE.md).
 - [Verification and its limits](CERTIFICATION_STATUS.md).
 - [Palomar submission instructions and statement map](PALOMAR_SUBMISSION.md).
@@ -39,7 +40,12 @@ printed text. The full project axiom audit also includes the adapters.
 [formalization.yaml](formalization.yaml) records the public title and abstract,
 mathematical sources, human responsibility, AI contributions, scope, and review
 status. The repository is licensed under [Apache-2.0](LICENSE).
-**Repository preparation and a green CI run are not Palomar registration.**
+
+Palomar registered all eight selected declarations on 5 September 2026 at
+repository commit `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`. Comparator, Lean's
+kernel, and NanoDa passed; the automated editorial review identified no
+problems. The registration preserves that exact snapshot. Subsequent disclosure
+and documentation edits do not change the registered version.
 
 ## Verify
 
@@ -70,9 +76,9 @@ these GitHub checks.
 
 ## AI provenance and review
 
-The proof, manuscript, and formalization were developed with OpenAI's GPT-5.6 Pro
-and further AI assistance in ChatGPT Work, from prompts supplied by Sébastien
-Palcoux. GPT-6 Pro assisted with Palomar packaging. No independent human
-mathematical review or human audit of the informal-to-formal alignment is
-recorded. Mechanical verification does not establish novelty, assess research
-importance, or certify the prose as a human referee would.
+The proof, manuscript, formalization, and Palomar packaging were developed with
+OpenAI's GPT-6 Astra, from prompts supplied by Sébastien Palcoux, who is the
+listed author and responsible maintainer. No independent human mathematical review or human
+audit of the informal-to-formal alignment is recorded. Palomar registration
+includes mechanical verification and an automated editorial review; it is not
+human peer review or a novelty certificate.

@@ -44,7 +44,7 @@ The proof packs explicit bodies of revolution inside the unit ball. An inscribed
 \begin{minipage}{0.88\textwidth}
 \small
 \textbf{AI provenance and verification status.}
-The mathematical argument, manuscript, and Lean~4/Mathlib formalization were generated with OpenAI's GPT-5.6 Pro and further AI assistance in ChatGPT Work, from prompts supplied by the author. The accompanying certificate verifies the proof presented below. The manuscript has not undergone independent human mathematical review.
+The mathematical argument, manuscript, and Lean~4/Mathlib formalization were generated with OpenAI's GPT-6 Astra, from prompts supplied by the author. The formalization was registered in Palomar on September~5, 2026, as \href{https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1}{\nolinkurl{PALOMAR-2026-09-05-000002}, version~1}, following successful mechanical verification and an automated review that identified no problems. Registration is not human peer review or a novelty certificate. The manuscript has not undergone independent human mathematical review.
 \end{minipage}
 \end{center}
 
@@ -352,20 +352,38 @@ are distinct unit vectors, and the inner product of any two distinct members is 
 The base $\sqrt6$ works by Theorem~\ref{thm:main}. Any positive universal base $\alpha$ must satisfy $6=\tau_2\leq\alpha^2$, hence $\alpha\geq\sqrt6$. Likewise each $\tau_n^{1/n}\leq\sqrt6$, with equality at $n=2$, which proves the supremum statement.
 \end{proof}
 
-\section{Lean certification}\label{sec:lean}
+\section{Lean certification and Palomar registration}\label{sec:lean}
 
 The proof in Section~2 is formalized in the accompanying repository:
 \begin{center}
 \url{https://github.com/sebastienpalcoux/sqrt6-kissing-bound}.
 \end{center}
-The certificate checks cone separation, measurability and disjoint packing, the profile-volume formula and all exact integrations, the ball-volume estimates, and the numerical inequalities. It also constructs the kissing number as an attained maximum and verifies the six-point configuration used for optimality. Standard analysis, including the unit-ball volume formula, comes from proved Mathlib theorems.
+The certificate checks cone separation, measurable disjoint packing, body-volume integrals, ball-volume estimates, and every dimension case. It also proves that the kissing number is an attained maximum and verifies the six-point configuration used for optimality. Standard analysis comes from proved Mathlib theorems.
 
-The development pins Lean~4.33.1 and Mathlib revision
+The eight principal declarations selected by \texttt{comparator.json} were registered as
 \begin{center}
-\small\texttt{0df444a360eaa60ab8c11dca51a86af692955474}.
+\href{https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1}{\texttt{PALOMAR-2026-09-05-000002}, version~1}.
 \end{center}
-After obtaining the dependencies with \texttt{lake exe cache get}, run
-\texttt{bash scripts/check.sh} to build the complete certificate and audit its axiom dependencies. Only Lean's standard foundational axioms \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound} are allowed; there are no admitted proofs or additional axioms.
+They express the universal bound, the existence of attained kissing numbers, the planar value six, and the equivalent optimality statements. The registered repository commit is
+\begin{center}
+\small\texttt{cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9}.
+\end{center}
+Comparator checked the correspondence between the independently stated Challenge and its Solution, and both Lean's kernel and the independent NanoDa checker verified the exported proofs. Palomar's automated editorial review identified no problems with the statements, definitions, presentation, literature account, or research interest. These checks do not constitute independent human review or establish novelty.
+
+The registered development pins Lean~4.33.0 and Mathlib revision
+\begin{center}
+\small\texttt{db584cd6d46c92f209a44c0f1c829460d327499d}.
+\end{center}
+The registration preserves that exact source snapshot. This later revision updates the disclosure and registration information; the mathematical argument and Lean source are unchanged.
+
+After obtaining the dependencies with \texttt{lake exe cache get}, the commands
+\begin{center}
+\begin{tabular}{l}
+\texttt{bash scripts/check.sh}\\
+\texttt{bash scripts/verify-comparator.sh}
+\end{tabular}
+\end{center}
+respectively build the certificate and audit its axioms, and repeat the Comparator and NanoDa checks. Only Lean's standard foundational axioms \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound} are allowed in the proof development. The isolated Challenge contains eight deliberate statement placeholders, whose replacements are verified by Comparator; the Solution and substantive proofs contain no admitted results or additional axioms.
 
 \section*{Acknowledgment}
 This note was prompted by the MathOverflow question ``Upper bound of the kissing number in $n$ dimensions'' and by Henry Cohn's answer explaining how effective spherical-code bounds bear on the problem.
