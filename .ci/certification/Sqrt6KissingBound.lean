@@ -1,12 +1,14 @@
 import Sqrt6KissingBound.Core
-import Sqrt6KissingBound.KissingNumber
+import Sqrt6KissingBound.Supremum
+import Sqrt6KissingBound.ManuscriptLemmas
 
 /-!
 # The universal square-root-of-six bound for kissing numbers
 
-The final public theorems are in `KissingBound`, `KissingNumber`, and `Optimality`.
-Their proof proceeds through measurable disjoint cone bodies, exact rotational
-profile volumes, dimension-specific estimates, and a regular planar hexagon.
+The final public theorems are in `KissingBound`, `KissingNumber`, `Optimality`,
+and `Supremum`. Their proof proceeds through measurable disjoint cone bodies,
+exact rotational profile volumes, dimension-specific estimates, and a regular
+planar hexagon. `ManuscriptLemmas` records the strict sine-integral recurrence.
 
 `Core` retains the earlier conditional numerical lemmas for reference. The final
 configuration and kissing-number theorems do not assume a cap-packing inequality,

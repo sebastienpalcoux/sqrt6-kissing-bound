@@ -17,6 +17,10 @@ EXPECTED = {
     'sqrt6_isLeast_universalKissingBase',
     'isUniversalKissingBase_iff',
     'universal_kissingNumber_bound_iff',
+    'kissingNumber_root_le_sqrt6',
+    'sqrt6_isGreatest_kissingNumberRoots',
+    'supremum_kissingNumber_roots_eq_sqrt6',
+    'capFraction_step_strict',
 }
 EXPECTED = {'Sqrt6KissingBound.' + name for name in EXPECTED}
 ALLOWED = {'propext', 'Classical.choice', 'Quot.sound'}
