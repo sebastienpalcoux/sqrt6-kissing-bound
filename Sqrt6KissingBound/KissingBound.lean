@@ -1,0 +1,48 @@
+import Sqrt6KissingBound.DimensionOne
+import Sqrt6KissingBound.DimensionThree
+import Sqrt6KissingBound.DimensionFour
+import Sqrt6KissingBound.BiconeBounds
+
+/-!
+# The universal square-root-of-six bound
+-/
+
+namespace Sqrt6KissingBound
+
+noncomputable section
+
+/-- A finite spherical code with maximal inner product at most `1/2`. -/
+def IsKissingConfiguration {n : ℕ}
+    (X : Finset (EuclideanSpace ℝ (Fin n))) : Prop :=
+  (∀ x ∈ X, ‖x‖ = 1) ∧
+    (∀ x ∈ X, ∀ z ∈ X, x ≠ z → inner ℝ x z ≤ (1 : ℝ) / 2)
+
+/-- Every finite kissing configuration in positive Euclidean dimension has
+cardinality at most `(√6)^n`. This is the formal upper-bound theorem. -/
+theorem kissingConfiguration_card_le_sqrt6_pow {n : ℕ} (hn : 1 ≤ n)
+    (X : Finset (EuclideanSpace ℝ (Fin n)))
+    (hX : IsKissingConfiguration X) :
+    (X.card : ℝ) ≤ (Real.sqrt 6) ^ n := by
+  rcases hX with ⟨hunit, hsep⟩
+  by_cases hn5 : n ≤ 5
+  · have hcases : n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨ n = 5 := by omega
+    rcases hcases with rfl | rfl | rfl | rfl | rfl
+    · simpa using code_card_le_sqrt6_dim_one X hunit
+    · simpa using code_card_le_sqrt6_sq X hunit hsep
+    · simpa using code_card_le_sqrt6_cube X hunit hsep
+    · simpa using code_card_le_sqrt6_fourth X hunit hsep
+    · simpa using code_card_le_sqrt6_fifth X hunit hsep
+  · have hn6 : 6 ≤ n := by omega
+    obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le' (show 2 ≤ n by omega)
+    exact code_card_le_sqrt6_high (by omega) X hunit hsep
+
+/-- The corresponding integer estimate. -/
+theorem kissingConfiguration_card_le_floor_sqrt6_pow {n : ℕ} (hn : 1 ≤ n)
+    (X : Finset (EuclideanSpace ℝ (Fin n)))
+    (hX : IsKissingConfiguration X) :
+    X.card ≤ ⌊(Real.sqrt 6) ^ n⌋₊ := by
+  exact Nat.le_floor (kissingConfiguration_card_le_sqrt6_pow hn X hX)
+
+end
+
+end Sqrt6KissingBound

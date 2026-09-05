@@ -1,10 +1,12 @@
-import Sqrt6KissingBound.Core
+import Sqrt6KissingBound.KissingNumber
 
 /-!
-# Conditional Lean certificate for the square-root-of-six kissing-number argument
+# The square-root-of-six kissing-number bound
 
-`Core.lean` checks the numerical inequalities, the two-step induction, and the
-deduction of the count bound from cap packing. The geometric theorem identifying
-the cap fraction, the cap-packing inequality, and the sine-integral derivation of
-the recurrence are deliberately represented by explicit data or hypotheses.
+The proof packs congruent bodies into the Euclidean unit ball, computes their
+volumes, and obtains the bound in every positive dimension. An explicit regular
+hexagon proves the optimality of the universal exponential base.
+
+`KissingNumber.lean` defines the maximum kissing number, proves that it is
+realized, and exports the unconditional bound and the equality in dimension two.
 -/

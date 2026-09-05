@@ -1,41 +1,52 @@
 # The universal square-root-of-six bound for kissing numbers
 
-This repository contains a proposed proof that
+This project proves in Lean 4 / Mathlib that
 
 \[
-\tau_n \le (\sqrt 6)^n \qquad (n\ge 1),
+\tau_n \le (\sqrt6)^n \qquad(n\ge1),
 \]
 
-where \(\tau_n\) is the kissing number in Euclidean dimension \(n\), together with a Lean 4 / Mathlib certificate for the proof's algebraic and inductive core.
+and that **√6 is the least universal exponential base**: it is the least positive real number α for which τₙ ≤ αⁿ holds in every positive dimension, with no prefactor.
 
-## Manuscript
+The manuscript and Lean development present the same Euclidean-volume proof. It establishes cone separation, the packing inequalities, the volumes of the explicit bodies, and every dimension case. The kissing number is an attained maximum; an explicit regular hexagon proves τ₂ = 6 and optimality of the base.
 
-- [`manuscript/sqrt6-kissing-bound.pdf`](manuscript/sqrt6-kissing-bound.pdf) is the four-page manuscript.
-- [`manuscript/sqrt6-kissing-bound.tex`](manuscript/sqrt6-kissing-bound.tex) is its LaTeX source.
-- [`.github/workflows/manuscript.yml`](.github/workflows/manuscript.yml) rebuilds the PDF and commits it to the repository whenever the source changes.
+## Read the result
 
-The earlier MathOverflow-formatted draft remains in [`MATHOVERFLOW_ANSWER.md`](MATHOVERFLOW_ANSWER.md).
+- [Manuscript PDF](manuscript/sqrt6-kissing-bound.pdf) and [LaTeX source](manuscript/sqrt6-kissing-bound.tex).
+- [Formal statements and proof map](FORMALIZATION_SCOPE.md).
+- [Verification record](CERTIFICATION_STATUS.md).
+- [MathOverflow answer draft](MATHOVERFLOW_ANSWER.md).
 
-## Lean certificate
-
-- [`FORMALIZATION_SCOPE.md`](FORMALIZATION_SCOPE.md) states exactly what Lean does and does not yet verify.
-- [`Sqrt6KissingBound/Core.lean`](Sqrt6KissingBound/Core.lean) contains the formalized lemmas.
-- [`CERTIFICATION_STATUS.md`](CERTIFICATION_STATUS.md) records the certification details.
+## Verify
 
 The project pins Lean `v4.33.1` and Mathlib commit
 `0df444a360eaa60ab8c11dca51a86af692955474`.
+With Lean's `elan` installer available, run:
 
 ```bash
-lake build
+lake exe cache get
 bash scripts/check.sh
+sha256sum --check SOURCE_SHA256SUMS
 ```
 
-The Lean CI workflow additionally runs an axiom audit and scans the project sources for proof holes.
+The checks build the complete proof, exclude proof holes and project-defined axioms, verify the public theorem contracts, and audit the transitive axiom dependencies of all project declarations. Only `propext`, `Classical.choice`, and `Quot.sound` are permitted.
 
-## Provenance
+The [Lean certificate](.github/workflows/lean.yml) and [manuscript PDF](.github/workflows/manuscript.yml) workflows run on pull requests and `main` with read-only repository permissions. The PDF workflow compiles and uploads the manuscript without changing repository files.
 
-The formal source was first certified on the temporary branch
-`gpt-pro/sqrt6-kissing-certificate` of
-`sebastienpalcoux/Fusion-Categories`, at commit
-`90edce0218112c39a163410d4b7eb66dee5ebc41`. GitHub Actions run
-`33720108355` succeeded. The project now lives in this dedicated repository, whose own Lean and manuscript workflows also pass.
+## Main declarations
+
+All names are in the `Sqrt6KissingBound` namespace.
+
+| Statement | Declaration |
+| --- | --- |
+| Every finite kissing configuration obeys the bound | `kissingConfiguration_card_le_sqrt6_pow` |
+| The kissing number is an attained maximum | `kissingNumber_realized`, `kissingNumber_isGreatest` |
+| The kissing number obeys the bound | `kissingNumber_le_sqrt6_pow` |
+| The planar kissing number equals six | `kissingNumber_two_eq_six` |
+| √6 is the least universal base | `sqrt6_isLeast_universalKissingBase` |
+| All admissible universal bases are characterized | `kissingNumber_universal_base_iff` |
+| The supremum of τₙ¹⁄ⁿ equals √6 | `supremum_kissingNumber_roots_eq_sqrt6` |
+
+## AI provenance
+
+The proof, manuscript, and formalization were developed with OpenAI's GPT-5.6 Pro and further AI assistance in ChatGPT Work, from prompts supplied by Sébastien Palcoux. The manuscript has not undergone independent human mathematical review.

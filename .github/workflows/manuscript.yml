@@ -1,23 +1,24 @@
-name: Build manuscript PDF
+name: Manuscript PDF
 
 "on":
   push:
     branches:
       - main
-    paths:
-      - manuscript/sqrt6-kissing-bound.tex
-      - .github/workflows/manuscript.yml
+  pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: manuscript-pdf-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install TeX
         run: |
           sudo apt-get update
@@ -28,7 +29,6 @@ jobs:
             texlive-latex-base \
             texlive-latex-extra \
             texlive-latex-recommended
-
       - name: Compile manuscript
         working-directory: manuscript
         run: |
@@ -38,21 +38,8 @@ jobs:
             echo 'The manuscript contains unresolved references.' >&2
             exit 1
           fi
-
       - name: Upload manuscript artifact
         uses: actions/upload-artifact@v4
         with:
           name: sqrt6-kissing-bound-manuscript
           path: manuscript/sqrt6-kissing-bound.pdf
-
-      - name: Commit generated PDF
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add manuscript/sqrt6-kissing-bound.pdf
-          if git diff --cached --quiet; then
-            echo 'The committed PDF is already up to date.'
-            exit 0
-          fi
-          git commit -m 'Build manuscript PDF'
-          git push

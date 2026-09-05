@@ -1,26 +1,26 @@
-# Certification status
+# Verification
 
-## Dedicated repository
+The certificate includes every step of the Euclidean-volume proof presented in the manuscript, the existence of an attained kissing number, the value τ₂ = 6, and optimality of the universal base.
 
-- Repository: `sebastienpalcoux/sqrt6-kissing-bound`
-- Lean: `v4.33.1`
-- Mathlib: `0df444a360eaa60ab8c11dca51a86af692955474`
-- Initial dedicated Lean workflow run: `33726121717`
-- Result: **success**
-- `lake build`: successful (`8708` jobs)
-- Axiom audit: successful (`49` declarations; only `propext`, `Classical.choice`, and `Quot.sound`)
-- Source scan: no `sorry`, `admit`, project-defined `axiom`, or `native_decide`
+## Reproduce the checks
 
-The manuscript source is in `manuscript/sqrt6-kissing-bound.tex`. The reproducible PDF workflow run `33731585406` compiled it successfully and committed `manuscript/sqrt6-kissing-bound.pdf` to the repository.
+```bash
+lake exe cache get
+bash scripts/check.sh
+sha256sum --check SOURCE_SHA256SUMS
+```
 
-## Original certification
+`check.sh` builds the root and all its dependencies, rejects proof holes and project-defined axioms, and checks the public conclusions with exactly their dimension and configuration hypotheses. `Axioms.lean` audits all project declarations, including private ones. It accepts only the standard foundational axioms `propext`, `Classical.choice`, and `Quot.sound`.
 
-The same principal Lean sources were first certified at:
+- Lean: `leanprover/lean4:v4.33.1`.
+- Mathlib: `0df444a360eaa60ab8c11dca51a86af692955474`.
+- Dependency revisions: `lake-manifest.json`.
+- Proof-source fingerprints: `SOURCE_SHA256SUMS`.
 
-- Original repository: `sebastienpalcoux/Fusion-Categories`
-- Temporary branch: `gpt-pro/sqrt6-kissing-certificate`
-- Certified commit: `90edce0218112c39a163410d4b7eb66dee5ebc41`
-- GitHub Actions run: `33720108355`
-- Result: **success**
+The read-only GitHub workflows build the Lean certificate and the manuscript PDF on pull requests and `main`. Their check results identify the exact source commit verified.
 
-See [`FORMALIZATION_SCOPE.md`](FORMALIZATION_SCOPE.md) for the exact mathematical scope. The present certificate is conditional and does not yet formalize the complete geometric and analytic bridge to the kissing-number theorem.
+## Checked source set — 5 September 2026
+
+The complete local check passed with 8,728 build jobs and an axiom audit of **274 project declarations**. The root imports all 21 project modules. The audit includes the exact supremum statement for the actual kissing numbers and the characterization of their universal exponential bases.
+
+The six-page manuscript PDF was rebuilt from the included LaTeX source and visually reviewed. Both GitHub workflows check the published source with read-only permissions.
