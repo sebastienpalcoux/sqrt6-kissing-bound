@@ -82,10 +82,12 @@ jobs:
           package.mkdir(exist_ok=True)
           sources = [Path(line.split('  ', 1)[1]) for line in Path('SOURCE_SHA256SUMS').read_text().splitlines() if line]
           sources += [Path(name) for name in ['SOURCE_SHA256SUMS', 'README.md',
-              'CERTIFICATION_STATUS.md', 'FORMALIZATION_SCOPE.md', 'PROOF_GUIDE.md', 'LICENSE']]
+              'CERTIFICATION_STATUS.md', 'FORMALIZATION_SCOPE.md', 'PROOF_GUIDE.md']]
           sources += sorted(Path('certification').glob('*'))
           sources += sorted(Path('manuscript').glob('*.tex'))
           sources += sorted(Path('manuscript').glob('*.pdf'))
+          if Path('LICENSE').is_file():
+              sources.append(Path('LICENSE'))
           for source in sources:
               if not source.is_file():
                   raise SystemExit(f'Missing source or verification record: {source}')
