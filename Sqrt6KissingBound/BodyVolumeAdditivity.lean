@@ -1,5 +1,7 @@
 import Sqrt6KissingBound.VolumePacking
 
+/-! Additivity of real volume for disjoint bounded bodies. -/
+
 namespace Sqrt6KissingBound
 noncomputable section
 open Set Metric MeasureTheory

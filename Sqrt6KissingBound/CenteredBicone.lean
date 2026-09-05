@@ -1,6 +1,5 @@
 import Sqrt6KissingBound.BiconeVolume
 import Sqrt6KissingBound.VolumePacking
-import Sqrt6KissingBound.CapMeasure
 
 /-!
 # Transporting the standard bicone to an arbitrary unit center

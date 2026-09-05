@@ -114,6 +114,11 @@ lemma volumeReal_standardBody3 :
   norm_num
   ring
 
+private lemma sqrt3_lt_26_div_15 : (Real.sqrt 3 : ℝ) < 26 / 15 := by
+  have hnonneg : 0 ≤ Real.sqrt 3 := Real.sqrt_nonneg 3
+  have hsq : (Real.sqrt 3) ^ 2 = 3 := by norm_num
+  nlinarith
+
 lemma code_card_le_fourteen_dim_three
     (X : Finset (EuclideanSpace ℝ (Fin 3)))
     (hunit : ∀ x ∈ X, ‖x‖ = 1)

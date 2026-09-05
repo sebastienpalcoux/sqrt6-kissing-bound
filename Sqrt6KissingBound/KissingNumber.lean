@@ -4,8 +4,8 @@ import Mathlib.Data.Nat.Find
 /-!
 # The kissing number as a maximum
 
-The earlier theorem bounds every finite kissing configuration.  Here we
-package the largest realizable cardinality as an actual natural number.
+The uniform bound on finite kissing configurations ensures that the largest
+realizable cardinality exists. This file defines it as a natural number.
 -/
 
 namespace Sqrt6KissingBound
@@ -74,6 +74,58 @@ theorem kissingNumber_two_eq_six : kissingNumber 2 = 6 := by
   · apply realizableKissingCard_le_kissingNumber (n := 2) (m := 6) (by norm_num)
     exact ⟨regularHexagon, regularHexagon_isKissingConfiguration,
       regularHexagon_card⟩
+
+/-- The dimensional root of the actual kissing number satisfies the universal bound. -/
+lemma kissingNumber_root_le_sqrt6 {n : ℕ} (hn : 1 ≤ n) :
+    (kissingNumber n : ℝ) ^ ((n : ℝ)⁻¹) ≤ Real.sqrt 6 := by
+  rcases kissingNumber_realized n with ⟨X, hX, hcard⟩
+  rw [← hcard]
+  exact kissingConfiguration_root_le_sqrt6 hn X hX
+
+/-- The supremum of the dimensional roots of the kissing numbers is `√6`. -/
+theorem supremum_kissingNumber_roots_eq_sqrt6 :
+    sSup {r : ℝ | ∃ n : ℕ, 1 ≤ n ∧
+      r = (kissingNumber n : ℝ) ^ ((n : ℝ)⁻¹)} = Real.sqrt 6 := by
+  have hmem : Real.sqrt 6 ∈
+      {r : ℝ | ∃ n : ℕ, 1 ≤ n ∧
+        r = (kissingNumber n : ℝ) ^ ((n : ℝ)⁻¹)} := by
+    refine ⟨2, by norm_num, ?_⟩
+    rw [kissingNumber_two_eq_six, Real.sqrt_eq_rpow]
+    norm_num
+  apply le_antisymm
+  · apply csSup_le
+    · exact ⟨Real.sqrt 6, hmem⟩
+    · rintro r ⟨n, hn, rfl⟩
+      exact kissingNumber_root_le_sqrt6 hn
+  · apply le_csSup
+    · refine ⟨Real.sqrt 6, ?_⟩
+      rintro r ⟨n, hn, rfl⟩
+      exact kissingNumber_root_le_sqrt6 hn
+    · exact hmem
+
+/-- Bounding all configurations is equivalent to bounding their realized maxima. -/
+theorem isUniversalKissingBase_iff_kissingNumber (α : ℝ) :
+    IsUniversalKissingBase α ↔
+      0 ≤ α ∧ ∀ n : ℕ, 1 ≤ n → (kissingNumber n : ℝ) ≤ α ^ n := by
+  constructor
+  · intro hα
+    refine ⟨hα.1, ?_⟩
+    intro n hn
+    rcases kissingNumber_realized n with ⟨X, hX, hcard⟩
+    rw [← hcard]
+    exact hα.2 hn X hX
+  · rintro ⟨hα, hbound⟩
+    refine ⟨hα, ?_⟩
+    intro n hn X hX
+    have hcard : (X.card : ℝ) ≤ kissingNumber n := by
+      exact_mod_cast kissingConfiguration_card_le_kissingNumber hn X hX
+    exact hcard.trans (hbound n hn)
+
+/-- `√6` is the least nonnegative base bounding the actual kissing numbers. -/
+theorem kissingNumber_universal_base_iff (α : ℝ) :
+    (0 ≤ α ∧ ∀ n : ℕ, 1 ≤ n → (kissingNumber n : ℝ) ≤ α ^ n) ↔
+      Real.sqrt 6 ≤ α :=
+  (isUniversalKissingBase_iff_kissingNumber α).symm.trans (isUniversalKissingBase_iff α)
 
 end
 

@@ -4,3 +4,10 @@
 *.c
 *.o
 .DS_Store
+
+# LaTeX build intermediates
+manuscript/*.aux
+manuscript/*.fdb_latexmk
+manuscript/*.fls
+manuscript/*.log
+manuscript/*.out

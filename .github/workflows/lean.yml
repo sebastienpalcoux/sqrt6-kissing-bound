@@ -28,4 +28,6 @@ jobs:
           axiom-audit-root: Sqrt6KissingBound
           use-mathlib-cache: true
       - name: Check complete certificate and allowed axioms
-        run: bash scripts/check.sh
+        run: |
+          bash scripts/check.sh
+          sha256sum --check SOURCE_SHA256SUMS

@@ -1,6 +1,8 @@
 import Sqrt6KissingBound.StandardGeometry
 import Sqrt6KissingBound.ProfileVolume
 
+/-! The standard bicone lies inside the cone and the unit ball. -/
+
 namespace Sqrt6KissingBound
 
 noncomputable section

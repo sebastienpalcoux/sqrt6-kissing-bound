@@ -1,5 +1,7 @@
 import Mathlib
 
+/-! Volume-preserving coordinates for Euclidean space. -/
+
 namespace Sqrt6KissingBound
 
 noncomputable section

@@ -1,5 +1,7 @@
 import Mathlib
 
+/-! Exact integrals of powers of linear profiles. -/
+
 namespace Sqrt6KissingBound
 
 noncomputable section

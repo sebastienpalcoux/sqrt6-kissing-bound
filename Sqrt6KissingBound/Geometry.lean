@@ -27,6 +27,14 @@ lemma sqrt3_sq_geom : s3 ^ 2 = 3 := by
 
 lemma sqrt3_pos_geom : 0 < s3 := Real.sqrt_pos.2 (by norm_num)
 
+/-- Linear isometries transport strict cones. -/
+lemma preimage_strictCone_linearIsometryEquiv (A : E ≃ₗᵢ[ℝ] E) {x z : E}
+    (hAx : A x = z) : A ⁻¹' strictCone z = strictCone x := by
+  ext y
+  change (s3 / 2) * ‖A y‖ < inner ℝ z (A y) ↔
+    (s3 / 2) * ‖y‖ < inner ℝ x y
+  rw [A.norm_map, ← hAx, A.inner_map_map]
+
 /-- Two `π/6` cones about unit vectors with inner product at most `1/2` are disjoint. -/
 lemma strictCone_disjoint {x z : E}
     (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) (hxz : inner ℝ x z ≤ (1 : ℝ) / 2) :

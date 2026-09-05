@@ -1,5 +1,7 @@
 import Sqrt6KissingBound.StandardGeometry
 
+/-! The unit sphere in one dimension consists of two points. -/
+
 namespace Sqrt6KissingBound
 noncomputable section
 
