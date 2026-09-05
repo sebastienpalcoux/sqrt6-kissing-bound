@@ -1,9 +1,8 @@
-name: Lean certificate
+name: Lean, Comparator, and NanoDa checks
 
 "on":
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -11,23 +10,72 @@ permissions:
   contents: read
 
 concurrency:
-  group: lean-certificate-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  preflight:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Packaging, canonical ancestry, dependency lock, and source integrity
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/palomar_static_check.py --online
+          sha256sum --check SOURCE_SHA256SUMS
+          bash -n scripts/check.sh scripts/verify-comparator.sh scripts/landrun-wrapper.sh
+
+  lean-check:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
         with:
           build: true
-          test: false
-          lint: false
-          axiom-audit: true
-          axiom-audit-root: Sqrt6KissingBound
-          use-mathlib-cache: true
-      - name: Check complete certificate and allowed axioms
+      - name: Build proof and interface, audit all project axioms
+        run: bash scripts/check.sh
+
+  comparator-and-nanoda:
+    needs: lean-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - name: Install pinned elan
         run: |
-          bash scripts/check.sh
-          sha256sum --check SOURCE_SHA256SUMS
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/elan.tar.gz" \
+            https://github.com/leanprover/elan/releases/download/v4.2.3/elan-x86_64-unknown-linux-gnu.tar.gz
+          echo "df0b2b3a439961ffcbb3985214365ffe40f49bc871df04dff268c7d8e21ca8b2  $RUNNER_TEMP/elan.tar.gz" | sha256sum --check
+          mkdir "$RUNNER_TEMP/elan"
+          tar -xzf "$RUNNER_TEMP/elan.tar.gz" -C "$RUNNER_TEMP/elan"
+          "$RUNNER_TEMP/elan/elan-init" -y --no-modify-path --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: '1.24.0'
+          cache: false
+      - name: Compare independent statements and replay proofs in Lean and NanoDa
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/verify-comparator.sh

@@ -1,4 +1,4 @@
-import Sqrt6KissingBound
+import Solution
 
 -- The unconditional, manuscript-facing conclusions.
 #print axioms Sqrt6KissingBound.kissingConfiguration_card_le_sqrt6_pow
@@ -9,6 +9,10 @@ import Sqrt6KissingBound
 #print axioms Sqrt6KissingBound.supremum_kissing_roots_eq_sqrt6
 #print axioms Sqrt6KissingBound.supremum_kissingNumber_roots_eq_sqrt6
 #print axioms Sqrt6KissingBound.kissingNumber_universal_base_iff
+#print axioms Sqrt6KissingBound.Palomar.kissingNumber_exists
+#print axioms Sqrt6KissingBound.Palomar.planar_kissingNumber
+#print axioms Sqrt6KissingBound.Palomar.kissingNumber_roots
+#print axioms Sqrt6KissingBound.Palomar.kissingNumber_universal_base
 
 -- Pin the public conclusions with exactly the geometric hypotheses required.
 example {n : ℕ} (hn : 1 ≤ n)

@@ -11,3 +11,6 @@ manuscript/*.fdb_latexmk
 manuscript/*.fls
 manuscript/*.log
 manuscript/*.out
+.cache/
+__pycache__/
+*.pyc
