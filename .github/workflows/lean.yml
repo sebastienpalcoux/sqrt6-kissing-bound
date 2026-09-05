@@ -10,6 +10,10 @@ name: Lean certificate
 permissions:
   contents: read
 
+concurrency:
+  group: lean-certificate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,13 +27,5 @@ jobs:
           axiom-audit: true
           axiom-audit-root: Sqrt6KissingBound
           use-mathlib-cache: true
-      - name: Check manuscript-facing declarations
-        run: lake env lean Axioms.lean
-      - name: Scan project sources for proof holes
-        run: |
-          pattern='(^|[[:space:]])(sorry|admit|native_decide)([[:space:]]|$)|^[[:space:]]*axiom[[:space:]]'
-          if grep -R -n -E "$pattern" --include='*.lean' \
-              Sqrt6KissingBound Sqrt6KissingBound.lean Axioms.lean; then
-            echo 'Forbidden proof hole, project-defined axiom, or unsafe evaluation shortcut found.' >&2
-            exit 1
-          fi
+      - name: Check complete certificate and allowed axioms
+        run: bash scripts/check.sh

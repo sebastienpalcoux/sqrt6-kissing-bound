@@ -1,0 +1,40 @@
+import Sqrt6KissingBound.ProfileIntegral
+import Mathlib.MeasureTheory.Measure.Real
+
+/-!
+# Real-valued form of the rotational-profile volume formula
+-/
+
+namespace Sqrt6KissingBound
+
+noncomputable section
+
+open Set Metric MeasureTheory intervalIntegral
+open scoped ENNReal Interval Real
+
+/-- Real volume of the Euclidean unit ball in dimension `d`. -/
+def unitBallVolumeReal (d : ℕ) : ℝ :=
+  (volume : Measure (EuclideanSpace ℝ (Fin d))).real (ball 0 1)
+
+lemma unitBallVolumeReal_pos (d : ℕ) : 0 < unitBallVolumeReal (d + 1) := by
+  exact ENNReal.toReal_pos
+    (measure_ball_pos (volume : Measure (EuclideanSpace ℝ (Fin (d + 1)))) 0
+      zero_lt_one).ne'
+    measure_ball_lt_top.ne
+
+lemma volumeReal_rotationalProfile_Ioo (d : ℕ) {a b : ℝ} (hab : a ≤ b)
+    {g : ℝ → ℝ} (hg : Continuous g)
+    (hg0 : ∀ t ∈ Set.Icc a b, 0 ≤ g t) :
+    (volume : Measure (EuclideanSpace ℝ (Fin (d + 2)))).real
+        (rotationalProfile (d + 1) (Set.Ioo a b) g) =
+      (∫ t in a..b, g t ^ (d + 1)) * unitBallVolumeReal (d + 1) := by
+  rw [Measure.real, volume_rotationalProfile_Ioo d hab hg hg0,
+    ENNReal.toReal_mul]
+  rw [ENNReal.toReal_ofReal]
+  · rfl
+  · exact intervalIntegral.integral_nonneg hab fun t ht =>
+      pow_nonneg (hg0 t ht) _
+
+end
+
+end Sqrt6KissingBound

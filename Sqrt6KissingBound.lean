@@ -1,10 +1,19 @@
 import Sqrt6KissingBound.Core
+import Sqrt6KissingBound.Analysis
+import Sqrt6KissingBound.CapFraction
+import Sqrt6KissingBound.Geometry
+import Sqrt6KissingBound.Packing
+import Sqrt6KissingBound.CapMeasure
+import Sqrt6KissingBound.KissingNumber
 
 /-!
-# Conditional Lean certificate for the square-root-of-six kissing-number argument
+# The square-root-of-six kissing-number bound
 
-`Core.lean` checks the numerical inequalities, the two-step induction, and the
-deduction of the count bound from cap packing. The geometric theorem identifying
-the cap fraction, the cap-packing inequality, and the sine-integral derivation of
-the recurrence are deliberately represented by explicit data or hypotheses.
+`Core.lean` contains the numerical and inductive core. `Analysis.lean` proves the
+one-dimensional estimates, `CapFraction.lean` constructs the actual analytic cap
+data, `Geometry.lean` proves cone separation, `Packing.lean` proves finite
+spherical-cap packing, and `CapMeasure.lean` relates caps to radial sectors. The
+unconditional theorem uses Euclidean-volume packing of explicit bodies. Its
+dimension-specific estimates and the regular-hexagon optimality argument are
+imported through `KissingNumber.lean`.
 -/

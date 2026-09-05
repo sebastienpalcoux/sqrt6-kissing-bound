@@ -1,0 +1,61 @@
+import Sqrt6KissingBound.Core
+
+/-!
+# One-dimensional estimates for the square-root-of-six kissing bound
+
+This file begins the formalization of the sine-integral part of the
+spherical-cap proof.  The exact recurrences and base values are proved here;
+the quantitative chord estimate is developed in a subsequent module.
+-/
+
+namespace Sqrt6KissingBound
+
+noncomputable section
+
+open Set
+open scoped Interval Real
+open intervalIntegral
+
+private abbrev s3 : ℝ := Real.sqrt 3
+
+/-- The numerator in the normalized measure of a spherical cap of angular radius `π / 6`. -/
+def capNumerator (m : ℕ) : ℝ :=
+  ∫ t in (0 : ℝ)..Real.pi / 6, Real.sin t ^ m
+
+/-- The denominator in the normalized measure of a spherical cap. -/
+def capDenominator (m : ℕ) : ℝ :=
+  ∫ t in (0 : ℝ)..Real.pi, Real.sin t ^ m
+
+lemma capNumerator_recurrence (m : ℕ) :
+    capNumerator (m + 2) =
+      ((m + 1 : ℝ) / (m + 2)) * capNumerator m -
+        (((1 : ℝ) / 2) ^ (m + 1) * (s3 / 2)) / (m + 2) := by
+  rw [capNumerator, capNumerator, integral_sin_pow]
+  simp [Real.sin_pi_div_six, Real.cos_pi_div_six]
+  field_simp
+  ring
+
+lemma capDenominator_recurrence (m : ℕ) :
+    capDenominator (m + 2) =
+      ((m + 1 : ℝ) / (m + 2)) * capDenominator m := by
+  rw [capDenominator, capDenominator, integral_sin_pow]
+  simp
+
+lemma capDenominator_pos (m : ℕ) : 0 < capDenominator m := by
+  simpa [capDenominator] using integral_sin_pow_pos m
+
+lemma capNumerator_zero : capNumerator 0 = Real.pi / 6 := by
+  simp [capNumerator]
+
+lemma capDenominator_zero : capDenominator 0 = Real.pi := by
+  simp [capDenominator]
+
+lemma capNumerator_one : capNumerator 1 = 1 - s3 / 2 := by
+  norm_num [capNumerator, integral_sin]
+
+lemma capDenominator_one : capDenominator 1 = 2 := by
+  norm_num [capDenominator, integral_sin]
+
+end
+
+end Sqrt6KissingBound
