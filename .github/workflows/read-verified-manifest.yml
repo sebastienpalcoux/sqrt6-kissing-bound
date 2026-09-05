@@ -1,0 +1,48 @@
+name: Read verified source manifest
+
+"on":
+  push:
+    branches: [gpt-pro/full-lean-certificate]
+    paths: ['.github/workflows/read-verified-manifest.yml']
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        part: [0, 1, 2]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: static-lean-candidates-and-diagnostics
+          run-id: 33933318109
+          github-token: ${{ github.token }}
+          repository: sebastienpalcoux/sqrt6-kissing-bound
+          path: checkpoint
+      - name: Print the exact verified manifest partition
+        env:
+          PART: ${{ matrix.part }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path('checkpoint')
+          status = (root/'static-diagnostics/status.txt').read_text()
+          assert 'FULL_BUILD_AND_AXIOM_AUDIT_PASSED' in status
+          data = json.loads((root/'verified-export/promotion.json').read_text())
+          assert data['validated_staging_commit'] == '449ebb9b62419d9d90eceef444f09a9fdde2e48e'
+          part = int(os.environ['PART'])
+          selected = [entry for i, entry in enumerate(data['tree_elements']) if i % 3 == part]
+          print('VERIFIED_MANIFEST_PART', part)
+          print('VALIDATED_COMMIT', data['validated_staging_commit'])
+          print('PROOF_FILE_COUNT', data['proof_file_count'])
+          print('TOTAL_TREE_ENTRIES', len(data['tree_elements']))
+          print(json.dumps(selected, ensure_ascii=False, indent=2))
+          print('END_VERIFIED_MANIFEST_PART', part)
+          PY
