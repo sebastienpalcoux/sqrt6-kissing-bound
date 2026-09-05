@@ -1,4 +1,4 @@
-import Sqrt6KissingBound.Analysis
+import Sqrt6KissingBound.AnalysisEstimate
 
 /-!
 # The analytic spherical-cap data

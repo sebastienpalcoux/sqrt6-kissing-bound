@@ -1,33 +1,21 @@
 import Sqrt6KissingBound.Packing
 import Mathlib.Geometry.Euclidean.Volume.Measure
 
-/-!
-# Spherical caps as radial sectors
-
-This file relates the cap measure defined by `Measure.toSphere` to the volume of
-the corresponding sector of the unit ball and proves its invariance under
-linear isometries.
--/
-
+/-! Spherical caps as radial sectors; development candidate. -/
 namespace Sqrt6KissingBound
-
 noncomputable section
-
 open Set Metric MeasureTheory NormedSpace
 open scoped Pointwise
 
 private abbrev s3 : ℝ := Real.sqrt 3
-
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [MeasurableSpace E] [BorelSpace E]
 
-/-- The radial sector of the open unit ball subtended by the `π/6` cap centered at `x`. -/
-def capSector (x : E) : Set E :=
-  strictCone x ∩ ball 0 1
+/-- The radial sector of the open unit ball subtended by the cap. -/
+def capSector (x : E) : Set E := strictCone x ∩ ball 0 1
 
 lemma isOpen_capSector (x : E) : IsOpen (capSector x) :=
   (isOpen_strictCone x).inter isOpen_ball
-
 lemma measurableSet_capSector (x : E) : MeasurableSet (capSector x) :=
   (isOpen_capSector x).measurableSet
 
@@ -38,14 +26,14 @@ lemma mem_strictCone_smul_iff {x y : E} {r : ℝ} (hr : 0 < r) :
   rw [norm_smul, Real.norm_eq_abs, abs_of_pos hr, real_inner_smul_right]
   constructor
   · intro h
-    apply (mul_lt_mul_left hr).mp
-    simpa only [mul_assoc] using h
+    by_contra hn
+    have hc : inner ℝ x y ≤ (s3 / 2) * ‖y‖ := le_of_not_gt hn
+    have hp := mul_le_mul_of_nonneg_left hc hr.le
+    nlinarith
   · intro h
-    have := (mul_lt_mul_left hr).mpr h
-    simpa only [mul_assoc] using this
+    have hp := mul_lt_mul_of_pos_left h hr
+    nlinarith
 
-/-- The radial set used in the definition of `Measure.toSphere` is exactly the
-intersection of the cone with the open unit ball. -/
 lemma Ioo_smul_sphericalCap (x : E) :
     Set.Ioo (0 : ℝ) 1 • ((↑) '' sphericalCap x) = capSector x := by
   ext y
@@ -66,8 +54,7 @@ lemma Ioo_smul_sphericalCap (x : E) :
       subst y
       simp [strictCone] at hycone
     have hnorm_pos : 0 < ‖y‖ := norm_pos_iff.mpr hy0
-    have hnorm_lt : ‖y‖ < 1 := by
-      simpa [mem_ball, dist_zero_right] using hyball
+    have hnorm_lt : ‖y‖ < 1 := by simpa [mem_ball, dist_zero_right] using hyball
     let u : sphere (0 : E) 1 :=
       ⟨NormedSpace.normalize y, mem_sphere_zero_iff_norm.mpr (norm_normalize hy0)⟩
     have hucone : u ∈ sphericalCap x := by
@@ -80,14 +67,12 @@ lemma Ioo_smul_sphericalCap (x : E) :
 
 variable [FiniteDimensional ℝ E]
 
-/-- Surface measure of a cap equals the dimension times the volume of its radial sector. -/
 lemma toSphere_sphericalCap (x : E) :
     (volume : Measure E).toSphere (sphericalCap x) =
       Module.finrank ℝ E * volume (capSector x) := by
   rw [Measure.toSphere_apply' (volume : Measure E) (measurableSet_sphericalCap x),
     Ioo_smul_sphericalCap]
 
-/-- Linear isometries transport strict cones. -/
 lemma preimage_strictCone_linearIsometryEquiv (A : E ≃ₗᵢ[ℝ] E) {x z : E}
     (hAx : A x = z) : A ⁻¹' strictCone z = strictCone x := by
   ext y
@@ -95,32 +80,26 @@ lemma preimage_strictCone_linearIsometryEquiv (A : E ≃ₗᵢ[ℝ] E) {x z : E}
     (s3 / 2) * ‖y‖ < inner ℝ x y
   rw [A.norm_map, ← hAx, A.inner_map_map]
 
-/-- Linear isometries transport cap sectors. -/
 lemma preimage_capSector_linearIsometryEquiv (A : E ≃ₗᵢ[ℝ] E) {x z : E}
     (hAx : A x = z) : A ⁻¹' capSector z = capSector x := by
   rw [capSector, capSector, preimage_inter, preimage_strictCone_linearIsometryEquiv A hAx]
   ext y
   simp
 
-/-- The radial-sector volume is independent of the unit center. -/
 lemma volume_capSector_eq_of_norm_eq {x z : E} (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) :
     volume (capSector x) = volume (capSector z) := by
   let A : E ≃ₗᵢ[ℝ] E := Submodule.reflection (ℝ ∙ (x - z))ᗮ
-  have hAx : A x = z := by
-    exact Submodule.reflection_sub (by rw [hx, hz])
+  have hAx : A x = z := by exact Submodule.reflection_sub (by rw [hx, hz])
   calc
     volume (capSector x) = volume (A ⁻¹' capSector z) := by
       rw [preimage_capSector_linearIsometryEquiv A hAx]
     _ = volume (capSector z) :=
       A.measurePreserving.measure_preimage (measurableSet_capSector z).nullMeasurableSet
 
-/-- Spherical caps with unit centers have equal `Measure.toSphere` measure. -/
 lemma toSphere_sphericalCap_eq_of_norm_eq {x z : E} (hx : ‖x‖ = 1) (hz : ‖z‖ = 1) :
     (volume : Measure E).toSphere (sphericalCap x) =
       (volume : Measure E).toSphere (sphericalCap z) := by
-  rw [toSphere_sphericalCap, toSphere_sphericalCap,
-    volume_capSector_eq_of_norm_eq hx hz]
+  rw [toSphere_sphericalCap, toSphere_sphericalCap, volume_capSector_eq_of_norm_eq hx hz]
 
 end
-
 end Sqrt6KissingBound

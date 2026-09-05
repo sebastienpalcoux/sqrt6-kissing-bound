@@ -1,99 +1,39 @@
-# Exact formalization scope
+# Formalization scope and manuscript correspondence
 
-## What is Lean-certified
+## Geometric objects
 
-The Lean project verifies, from its explicitly stated inputs:
+`IsKissingConfiguration X` means that X is a finite subset of real Euclidean n-space, all its members have norm one, and the inner product of distinct members is at most one half. `isKissingConfiguration_iff_norm_dist` proves equivalence with the usual distance condition: distinct unit vectors have distance at least one.
 
-1. all numerical inequalities involving `sqrt 3` and `sqrt 6` used in the proof;
-2. the estimate
-   \[
-   \left(\frac12-\frac{9\sqrt3}{32}\right)(\sqrt6)^5>1;
-   \]
-3. the abstract two-step propagation
-   \[
-   c_n(\sqrt6)^n\ge1,\quad c_{n+2}\ge c_n/6
-   \Longrightarrow c_{n+2}(\sqrt6)^{n+2}\ge1;
-   \]
-4. the even- and odd-dimensional inductions from the supplied base values;
-5. cancellation of a positive cap fraction in
-   \[
-   N c_n\le1,
-   \]
-   yielding \(N\le(\sqrt6)^n\);
-6. the exceptional dimension-three numerical deduction: from the supplied cap-packing inequality with cap fraction \((2-\sqrt3)/4\), one obtains \(N\le14<(\sqrt6)^3\);
-7. the optimality implication
-   \[
-   6\le\alpha^2,\quad \alpha\ge0
-   \Longrightarrow \sqrt6\le\alpha.
-   \]
+`RealizableKissingCard n m` means that such a configuration of cardinality m exists. Although `kissingNumber n` is implemented by a finite greatest-element search using an independently proved ceiling, its realization and maximality are theorems. For every positive n, `kissingNumber_isGreatest` states that it is the greatest element of the set of *all* realizable cardinalities. Thus the certified invariant is not merely a bounded proxy.
 
-The source has no `sorry`, `admit`, project-defined `axiom`, or `native_decide`. The successful axiom audit found only Mathlib's standard foundational axioms `propext`, `Classical.choice`, and `Quot.sound`.
+## Results and exact locations
 
-## What is not yet Lean-certified
+| Mathematical assertion | File | Public theorem |
+| --- | --- | --- |
+| Configuration cardinality is at most `(sqrt(6))^n` for n >= 1 | `KissingBound.lean` | `kissingConfiguration_card_le_sqrt6_pow` |
+| Same assertion from unit-norm and pairwise-distance assumptions | `KissingBound.lean` | `kissingConfiguration_card_le_sqrt6_pow_of_dist` |
+| Integer floor version | `KissingBound.lean` | `kissingConfiguration_card_le_floor_sqrt6_pow` |
+| Kissing number is attained and greatest | `KissingNumber.lean` | `kissingNumber_realized`, `kissingNumber_isGreatest` |
+| `tau_n <= (sqrt(6))^n` | `KissingNumber.lean` | `kissingNumber_le_sqrt6_pow` |
+| `tau_1 = 2` and `tau_2 = 6` | `KissingNumber.lean` | `kissingNumber_one_eq_two`, `kissingNumber_two_eq_six` |
+| `sqrt(6)` is the least universal exponential base | `Optimality.lean` | `sqrt6_isLeast_universalKissingBase` |
+| A nonnegative alpha bounds all kissing numbers by alpha^n iff alpha >= sqrt(6) | `KissingNumber.lean` | `universal_kissingNumber_bound_iff` |
+| Supremum of `tau_n^(1/n)` over positive n is `sqrt(6)` | `Supremum.lean` | `supremum_kissingNumber_roots_eq_sqrt6` |
+| The supremum is attained at n = 2 | `Supremum.lean` | `sqrt6_isGreatest_kissingNumberRoots` |
+| For the actual integral-defined cap fractions, `capFraction n / 6 < capFraction (n+2)` when n >= 2 | `ManuscriptLemmas.lean` | `capFraction_step_strict` |
 
-The current project does **not** define kissing configurations or the kissing number \(\tau_n\). In particular, it does not yet formalize the bridge from geometry and analysis to the abstract inputs used by `Core.lean`.
+All listed files are under `Sqrt6KissingBound/`. `Axioms.lean` checks the exact public signatures and prints 16 transitive axiom reports. `scripts/check_axioms.py` enforces the allowed list and rejects missing results.
 
-### Spherical geometry and measure
+## What was proved rather than assumed
 
-1. A kissing configuration determines points on \(S^{n-1}\) whose pairwise angular distances are at least \(\pi/3\).
-2. The spherical caps of angular radius \(\pi/6\) centered at those points have disjoint interiors.
-3. Boundaries of such caps have surface measure zero, so disjoint interiors imply the packing inequality
-   \[
-   \tau_n c_n\le1.
-   \]
-4. The normalized surface area of such a cap is
-   \[
-   c_n=
-   \frac{\int_0^{\pi/6}\sin^{n-2}t\,dt}
-        {\int_0^\pi\sin^{n-2}t\,dt}.
-   \]
+The complete geometric dependency chain proves disjointness of the relevant open cones; measurability and Fubini formulas for rotational-profile bodies; volume preservation under coordinate isometries and reflections; finite volume additivity; the resulting packing inequality; exact unit-ball volumes and their recurrence; the large-dimensional numerical induction; and separate estimates in dimensions one through five. The regular hexagon is built from explicit coordinates, with cardinality and separation verified in Lean.
 
-### Integral recurrence and lower estimate
+## Relationship with the written proof
 
-With
-\[
-I_m=\int_0^{\pi/6}\sin^m t\,dt,
-\qquad
-J_m=\int_0^\pi\sin^m t\,dt,
-\]
-the following steps in the manuscript remain outside the certificate:
+The principal bounds, optimality, supremum formula, and strict cap-fraction recurrence match the manuscript's mathematical statements. The final geometric proof uses ambient Euclidean volume and explicit inscribed bodies rather than relying on an unformalized spherical-cap area formula. This is an alternative proof of the principal theorem, not a claim that every sentence or intermediate formula in the manuscript's argument was translated into Lean.
 
-1. the integration-by-parts identities
-   \[
-   I_{m+2}=\frac{m+1}{m+2}I_m-
-   \frac{\sqrt3}{(m+2)2^{m+2}},
-   \qquad
-   J_{m+2}=\frac{m+1}{m+2}J_m;
-   \]
-2. the resulting exact recurrence for the actual cap fractions;
-3. the substitution \(u=\sin t\) and the identity
-   \[
-   I_m=\int_0^{1/2}\frac{u^m}{\sqrt{1-u^2}}\,du;
-   \]
-4. the elementary estimate
-   \[
-   \frac1{\sqrt{1-u^2}}\ge 1+\frac{u^2}{2}
-   \qquad(0\le u\le1/2),
-   \]
-   its integration, positivity of \(J_m\), and the deduction
-   \[
-   c_{n+2}>c_n/6;
-   \]
-5. derivation from the integrals of the concrete values
-   \[
-   c_2=\frac16,
-   \qquad
-   c_3=\frac{2-\sqrt3}{4},
-   \qquad
-   c_5=\frac12-\frac{9\sqrt3}{32}.
-   \]
+No exact value of the kissing number in dimension three or four is assumed. The proved estimates `tau_3 <= 14`, `tau_4 <= 36`, and `tau_5 <= 85` suffice for the universal bound.
 
-In Lean, the recurrence inequality and the base values `c_2` and `c_5` are fields of the explicit structure `CapData`; the packing bounds are explicit hypotheses named `hpack`. Thus these are visible assumptions, not hidden or project-defined axioms.
+The earlier conditional `Core.lean` lemmas are retained for comparison, but their hypotheses do not remain as unproved assumptions in the final geometric theorems. Unimported experimental modules have been preserved under `.ci/archive/unimported/`, outside the permanent proof tree.
 
-### Low-dimensional kissing numbers and final assembly
-
-The facts \(\tau_1=2\) and \(\tau_2=6\) are not formalized. Consequently, the present project does not contain a single end-to-end theorem whose conclusion is
-\[
-\forall n\ge1,\quad \tau_n\le(\sqrt6)^n,
-\]
-nor a formal definition and proof of the least universal base. It certifies the numerical, inductive, and cancellation core conditional on the explicitly displayed geometric and analytic inputs above.
+The original manuscript and prior MathOverflow draft are unchanged. This certificate makes no claim of independent human peer review, novelty, or exact values in other dimensions.
