@@ -30,12 +30,16 @@ jobs:
           run-id: 33929059470
           github-token: ${{ github.token }}
           path: .ci/checkpoint
-      - name: Stage only static Lean source files
+      - name: Stage only static proof and audit files
         shell: bash
         run: |
           set -euo pipefail
           cp .ci/checkpoint/Sqrt6KissingBound/*.lean Sqrt6KissingBound/
           cp .ci/candidates/*.lean Sqrt6KissingBound/
+          cp .ci/certification/Sqrt6KissingBound.lean Sqrt6KissingBound.lean
+          cp .ci/certification/Axioms.lean Axioms.lean
+          cp .ci/certification/check.sh scripts/check.sh
+          cp .ci/certification/check_axioms.py scripts/check_axioms.py
       - uses: leanprover/lean-action@v1
         with:
           build: false
@@ -43,19 +47,42 @@ jobs:
           lint: false
           axiom-audit: false
           use-mathlib-cache: true
-      - name: Compile candidates and record the actual build status
+      - name: Clean project build and exact public-theorem audit
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p static-diagnostics
-          if lake build Sqrt6KissingBound.KissingNumber > static-diagnostics/build.log 2>&1; then
+          rm -rf .lake/build
+          if lake build > static-diagnostics/build.log 2>&1; then
             result=0
           else
             result=$?
           fi
-          printf 'CANDIDATE_BUILD_EXIT_STATUS=%s\nNOT_A_CERTIFICATION\n' "$result" | tee static-diagnostics/status.txt
+          printf 'CANDIDATE_BUILD_EXIT_STATUS=%s\n' "$result" | tee static-diagnostics/status.txt
           cat static-diagnostics/build.log
-          printf 'Development-only build exit status: %s. No proof source was published.\n' "$result" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$result" -eq 0 ]; then
+            if bash scripts/check.sh > static-diagnostics/audit.log 2>&1; then
+              printf 'FULL_BUILD_AND_AXIOM_AUDIT_PASSED\n' | tee -a static-diagnostics/status.txt
+            else
+              printf 'AXIOM_OR_SOURCE_AUDIT_FAILED=%s\n' "$?" | tee -a static-diagnostics/status.txt
+            fi
+            cat static-diagnostics/audit.log
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('static-diagnostics/build.log').read_text()
+          for name in sorted(set(re.findall(r'error: (Sqrt6KissingBound/[^:\n]+\.lean):', text))):
+              path = Path(name)
+              lines = path.read_text().splitlines()
+              points = sorted(set(int(n) for n in re.findall(r'error: '+re.escape(name)+r':(\d+):',text)))
+              for point in points[:12]:
+                  print(f'\n--- Failed source context: {name}:{point} ---')
+                  for i in range(max(0,point-6),min(len(lines),point+10)):
+                      print(f'{i+1:4d}: {lines[i]}')
+          PY
+          cat static-diagnostics/status.txt >> "$GITHUB_STEP_SUMMARY"
+          printf 'This workflow publishes no proof changes; inspect the explicit build and audit statuses.\n' >> "$GITHUB_STEP_SUMMARY"
       - name: Retain source and diagnostics without publishing proof changes
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,6 +90,7 @@ jobs:
           name: static-lean-candidates-and-diagnostics
           path: |
             static-diagnostics/
+            certification/
             Sqrt6KissingBound/
             Sqrt6KissingBound.lean
             Axioms.lean
@@ -70,4 +98,5 @@ jobs:
             lake-manifest.json
             lean-toolchain
             scripts/check.sh
+            scripts/check_axioms.py
           retention-days: 7
