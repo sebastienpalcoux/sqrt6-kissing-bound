@@ -1,2 +1,2 @@
-Validation pass 8: complete universal-bound, regular-hexagon, kissing-number, and supremum targets.
-Export the exact verified source closure only after the clean build and 16-theorem axiom audit both pass.
+Validation pass 9: check the attained kissing number after eliminating redundant tactics in the one-dimensional pair proof.
+Require the full clean build and all 16 public-theorem axiom checks before export.

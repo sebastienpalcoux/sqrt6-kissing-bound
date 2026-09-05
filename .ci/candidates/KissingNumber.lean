@@ -1,6 +1,6 @@
 import Sqrt6KissingBound.Optimality
 
-/-! Development candidate: the kissing number as an attained maximum. -/
+/-! The kissing number as an attained maximum. -/
 namespace Sqrt6KissingBound
 noncomputable section
 
@@ -69,8 +69,10 @@ lemma oneDimensionalPair_isKissingConfiguration : IsKissingConfiguration oneDime
     rcases hx with rfl | rfl <;> simp
   · intro x hx z hz hne
     simp only [oneDimensionalPair, Finset.mem_insert, Finset.mem_singleton] at hx hz
-    rcases hx with rfl | rfl <;> rcases hz with rfl | rfl <;>
-      norm_num [inner_neg_left, inner_neg_right, real_inner_self_eq_norm_sq] at hne ⊢
+    rcases hx with rfl | rfl <;> rcases hz with rfl | rfl
+    all_goals first
+      | exact (hne rfl).elim
+      | norm_num [inner_neg_left, inner_neg_right, real_inner_self_eq_norm_sq]
 
 theorem kissingNumber_one_eq_two : kissingNumber 1 = 2 := by
   apply le_antisymm
