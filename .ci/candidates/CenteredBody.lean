@@ -5,7 +5,6 @@ namespace Sqrt6KissingBound
 noncomputable section
 open Set Metric MeasureTheory
 
-/-- Transport a standard body by the reflection carrying its axis to x. -/
 def centeredBody (k : ℕ) (S : Set (EuclideanSpace ℝ (Fin (k + 2))))
     (x : EuclideanSpace ℝ (Fin (k + 2))) : Set (EuclideanSpace ℝ (Fin (k + 2))) :=
   (axisTo k x).symm ⁻¹' S
@@ -22,6 +21,7 @@ lemma volumeReal_centeredBody {k : ℕ}
       (volume : Measure (EuclideanSpace ℝ (Fin (k + 2)))).real S := by
   rw [centeredBody, Measure.real,
     (axisTo k x).symm.measurePreserving.measure_preimage hS.nullMeasurableSet]
+  rfl
 
 lemma centeredBody_subset_cone_ball {k : ℕ}
     {S : Set (EuclideanSpace ℝ (Fin (k + 2)))}

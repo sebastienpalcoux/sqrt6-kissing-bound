@@ -1,7 +1,7 @@
 import Sqrt6KissingBound.CenteredBicone
 import Sqrt6KissingBound.BallVolumes
 
-/-! Development candidate: dimension-uniform consequences of bicone packing. -/
+/-! Dimension-uniform consequences of bicone packing. -/
 namespace Sqrt6KissingBound
 noncomputable section
 open Set Metric MeasureTheory
@@ -24,8 +24,13 @@ lemma bicone_packing_inequality (k : ℕ)
 lemma unitBallVolumeReal_one : unitBallVolumeReal 1 = 2 := by
   rw [unitBallVolumeReal_formula 0]
   have hsp : Real.sqrt Real.pi ≠ 0 := (Real.sqrt_pos.2 Real.pi_pos).ne'
+  have hG : Real.Gamma ((3 : ℝ) / 2) = (1 / 2 : ℝ) * Real.sqrt Real.pi := by
+    rw [show (3 : ℝ) / 2 = (1 / 2 : ℝ) + 1 by norm_num,
+      Real.Gamma_add_one (by norm_num : (1 / 2 : ℝ) ≠ 0), Real.Gamma_one_half_eq]
   norm_num [Real.Gamma_add_one, Real.Gamma_one_half_eq]
   field_simp [hsp]
+  rw [hG]
+  ring
 
 lemma code_card_le_six_dim_two
     (X : Finset (EuclideanSpace ℝ (Fin 2)))
@@ -145,8 +150,11 @@ lemma code_card_le_sqrt6_high {k : ℕ} (hk : 4 ≤ k)
         ((X.card : ℝ) / D) * V = (X.card : ℝ) * ((1 / D) * V) := by ring
         _ ≤ unitBallVolumeReal (k + 2) := hpack
         _ ≤ 1 * V := by simpa using hvol
-    have hratio := (mul_le_mul_right hVpos).mp hsmall
-    exact (div_le_one hDpos).mp hratio
+    have hratio : (X.card : ℝ) / D ≤ 1 := by
+      by_contra hnot
+      have hp := mul_pos (sub_pos.mpr (lt_of_not_ge hnot)) hVpos
+      nlinarith
+    simpa using (div_le_iff₀ hDpos).mp hratio
   have hnum := dimension_mul_two_pow_le_sqrt6_pow (k + 2) (by omega)
   apply hcardD.trans
   simpa only [D, show (k + 2) - 1 = k + 1 by omega, Nat.cast_add, Nat.cast_ofNat] using hnum
