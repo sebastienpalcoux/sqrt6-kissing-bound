@@ -1,2 +1,2 @@
-Validation pass 9: check the attained kissing number after eliminating redundant tactics in the one-dimensional pair proof.
-Require the full clean build and all 16 public-theorem axiom checks before export.
+Validation pass 10: finish the attained supremum formulation.
+Run the full clean build and the enforced 16-theorem axiom audit; export exact verified source files only on success.

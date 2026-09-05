@@ -21,8 +21,7 @@ theorem sqrt6_isGreatest_kissingNumberRoots : IsGreatest kissingNumberRoots (Rea
   constructor
   · refine ⟨2, by norm_num, ?_⟩
     have htwo : (kissingNumber 2 : ℝ) = (Real.sqrt 6) ^ 2 := by
-      rw [kissingNumber_two_eq_six]
-      norm_num
+      norm_num [kissingNumber_two_eq_six]
     rw [htwo]
     exact (Real.pow_rpow_inv_natCast (x := Real.sqrt 6) (n := 2)
       (Real.sqrt_nonneg 6) (by norm_num)).symm
