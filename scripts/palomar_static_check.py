@@ -144,7 +144,8 @@ def main() -> None:
     proof_paths = ["Sqrt6KissingBound.lean", "Solution.lean", "Axioms.lean"] + [
         str(p.relative_to(ROOT)) for p in (ROOT / "Sqrt6KissingBound").rglob("*.lean")]
     for path in proof_paths:
-        source = uncomment(text(path))
+        # Diagnostic strings may say "axiom" without declaring one.
+        source = re.sub(r'"(?:\\.|[^"\\])*"', '""', uncomment(text(path)))
         require(not re.search(r"\b(?:sorry|admit|axiom|native_decide|sorryAx|ofReduceBool)\b", source),
                 f"Forbidden proof hole/axiom/evaluation shortcut: {path}")
         require(not re.search(r"^\s*import\s+.*\bChallenge\b", source, re.M), f"Proof imports Challenge: {path}")
