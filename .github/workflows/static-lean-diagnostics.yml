@@ -83,6 +83,15 @@ jobs:
           PY
           cat static-diagnostics/status.txt >> "$GITHUB_STEP_SUMMARY"
           printf 'This workflow publishes no proof changes; inspect the explicit build and audit statuses.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Export the precise source manifest only after complete verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -qx 'FULL_BUILD_AND_AXIOM_AUDIT_PASSED' static-diagnostics/status.txt; then
+            python3 .ci/certification/export_verified_sources.py
+          else
+            echo 'No verified source manifest exported: the complete audit has not passed.'
+          fi
       - name: Retain source and diagnostics without publishing proof changes
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,6 +100,7 @@ jobs:
           path: |
             static-diagnostics/
             certification/
+            verified-export/
             Sqrt6KissingBound/
             Sqrt6KissingBound.lean
             Axioms.lean

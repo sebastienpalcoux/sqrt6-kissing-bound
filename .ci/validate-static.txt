@@ -1,3 +1,2 @@
-Validation pass 7: static Lean sources only.
-Check the assembled exceptional-dimensional bounds, the full root module, and the 16-theorem axiom audit.
-No certification is claimed unless the clean build and audit both pass.
+Validation pass 8: complete universal-bound, regular-hexagon, kissing-number, and supremum targets.
+Export the exact verified source closure only after the clean build and 16-theorem axiom audit both pass.

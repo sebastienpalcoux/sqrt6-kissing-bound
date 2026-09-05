@@ -1,7 +1,7 @@
 import Sqrt6KissingBound.KissingBound
 import Sqrt6KissingBound.StandardGeometry
 
-/-! Development candidate: sharpness of the universal exponential base. -/
+/-! Sharpness of the universal exponential base. -/
 namespace Sqrt6KissingBound
 noncomputable section
 set_option maxHeartbeats 800000
@@ -13,19 +13,19 @@ private lemma s3_sq_opt : s3 ^ 2 = 3 := by norm_num [s3]
 def planePoint (x y : ℝ) : EuclideanSpace ℝ (Fin 2) :=
   standardCoordinates 1 (x, ![y])
 
+lemma planePoint_inner (x y u v : ℝ) :
+    inner ℝ (planePoint x y) (planePoint u v) = x * u + y * v := by
+  simp [planePoint, standardCoordinates, PiLp.inner_apply]
+  ring
+
 lemma planePoint_norm_sq (x y : ℝ) : ‖planePoint x y‖ ^ 2 = x ^ 2 + y ^ 2 := by
-  rw [planePoint, norm_sq_standardCoordinates]
-  rw [← real_inner_self_eq_norm_sq]
-  simp [PiLp.inner_apply]
+  rw [← real_inner_self_eq_norm_sq, planePoint_inner]
+  ring
 
 lemma planePoint_norm_eq_one {x y : ℝ} (hxy : x ^ 2 + y ^ 2 = 1) :
     ‖planePoint x y‖ = 1 := by
   have hn : 0 ≤ ‖planePoint x y‖ := norm_nonneg _
   nlinarith [planePoint_norm_sq x y]
-
-lemma planePoint_inner (x y u v : ℝ) :
-    inner ℝ (planePoint x y) (planePoint u v) = x * u + y * v := by
-  simp [planePoint, standardCoordinates, PiLp.inner_apply]
 
 def hexPoint : Fin 6 → EuclideanSpace ℝ (Fin 2) :=
   ![planePoint 1 0,
