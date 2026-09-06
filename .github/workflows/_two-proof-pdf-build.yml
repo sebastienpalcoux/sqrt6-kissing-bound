@@ -1,0 +1,151 @@
+name: Prepare two-proof manuscript (temporary)
+
+"on":
+  push:
+    branches: [manuscript/two-proofs-2026-09-06]
+    paths:
+      - manuscript/sqrt6-kissing-bound.tex
+      - .github/workflows/_two-proof-pdf-build.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install TeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends latexmk lmodern texlive-fonts-recommended texlive-latex-base texlive-latex-extra texlive-latex-recommended poppler-utils
+      - name: Compile the locally reviewed manuscript
+        working-directory: manuscript
+        run: |
+          latexmk -pdf -interaction=nonstopmode -halt-on-error sqrt6-kissing-bound.tex
+          test -s sqrt6-kissing-bound.pdf
+          if grep -E 'Warning|Overfull|Underfull' sqrt6-kissing-bound.log; then
+            echo 'Resolve manuscript warnings before publication.' >&2
+            exit 1
+          fi
+          pdfinfo sqrt6-kissing-bound.pdf
+      - name: Align documentation and source fingerprints
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          
+          def replace(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              assert text.count(old) == 1, (path, old)
+              p.write_text(text.replace(old, new))
+          
+          replace('README.md',
+          '''The manuscript and substantive Lean development present the same
+          Euclidean-volume proof: cone separation, disjoint packing, the volumes of the
+          explicit bodies, and every dimension case.''',
+          '''The manuscript presents two proofs. The first is a shorter spherical-cap
+          argument, with a simplified recurrence for cap areas; it is not formalized in
+          this project. The second is a condensed exposition of the Euclidean-volume
+          construction used by the complete Lean certificate: cone separation, disjoint
+          packing, explicit body volumes, and every dimension case. Neither the formal
+          theorem nor the volume proof assumes any step of the cap argument.''')
+          replace('README.md',
+          '''The registration preserves that exact snapshot. Subsequent disclosure
+          and documentation edits do not change the registered version.''',
+          '''The registration preserves that exact snapshot. The later two-proof manuscript
+          and documentation revision does not change the registered version or any Lean
+          source, theorem statement, Comparator interface, or dependency pin.''')
+          
+          replace('FORMALIZATION_SCOPE.md',
+          '''The manuscript and Lean development use the same Euclidean-volume argument. The proof's geometric and analytic dependencies are proved in the project or supplied by the pinned Mathlib library; the final theorem has no additional packing or volume hypotheses.''',
+          '''The manuscript contains two proofs. Its second proof follows the Euclidean-volume construction used in the registered Lean development. That proof's geometric and analytic dependencies are proved in the project or supplied by the pinned Mathlib library; the final theorem has no additional packing or volume hypotheses. The first, shorter spherical-cap proof is not included in this certificate.
+          
+          ## Two proofs and their scope
+          
+          Section 2 gives the cap proof, with the simplified inequality
+          c_(n+2) >= n c_n / (4(n+1)) >= c_n/6. Its cap-area formula and integral recurrence
+          have not been formalized in this project. The remaining work is to connect
+          those familiar geometric and analytic steps to the formal definitions and
+          supply checked lemmas; this is not an obstruction in Lean.
+          
+          Section 3 gives the volume proof, independently of those cap identities.
+          Its shorter exposition uses a one-line cone-separation argument, a convexity
+          explanation of the same bicone, and the recurrence
+          A_(n+2) = 4(n+1) A_n/n for A_n = n 2^(n-1) V_n/V_(n-1).
+          The Lean files are unchanged and retain the original intermediate estimates.
+          The theorem, attained maxima, and optimal universal base remain certified
+          end to end by that volume route. The proof map below describes the actual
+          Lean development, not a separate formalization of every rewritten prose step.''')
+          
+          replace('CERTIFICATION_STATUS.md',
+          '''the manuscript, the existence of attained kissing numbers, the value tau_2 = 6,
+          and optimality of the universal base. The Palomar interface adds four proved
+          adapters but changes no substantive mathematical proof module.''',
+          '''Section 3 of the manuscript, the existence of attained kissing numbers, the
+          value tau_2 = 6, and optimality of the universal base. The shorter cap proof in
+          Section 2 is not part of the certificate: its cap-area formula and integral
+          recurrence have not been formalized here. The volume route does not assume
+          those steps. The Palomar interface adds four proved adapters but changes no
+          substantive mathematical proof module.''')
+          replace('CERTIFICATION_STATUS.md',
+          '''The current disclosure and manuscript revision postdates the registered
+          snapshot. It updates the AI attribution and registration account; the Lean
+          source, Comparator configuration, and dependency pins remain those registered.''',
+          '''The current two-proof manuscript revision postdates the registered snapshot.
+          It adds and simplifies the unformalized cap proof, condenses the exposition of
+          the certified volume construction, and clarifies the distinction. The Lean
+          source, Comparator configuration, and dependency pins remain those registered.''')
+          
+          replace('PALOMAR_SUBMISSION.md',
+          '''the committed `lean-toolchain`, Lakefile, and manifest listed above. The later
+          disclosure and registration revision leaves the mathematical argument and Lean
+          source unchanged; the archived Palomar version retains the submitted snapshot.''',
+          '''the committed `lean-toolchain`, Lakefile, and manifest listed above. The later
+          two-proof manuscript revision adds an unformalized cap argument and simplifies
+          the exposition of the certified volume construction. The Lean source,
+          Comparator interface, and dependency pins are unchanged; the archived Palomar
+          version retains its submitted manuscript and source snapshot.''')
+          
+          p = Path('formalization.yaml')
+          data = json.loads(p.read_text())
+          data['sources'][0]['note'] += ' The current manuscript also presents a shorter spherical-cap proof; that additional proof is not covered by this certificate.'
+          data['status']['scope'] += ' The current manuscript has two proofs. Its second proof follows this certified volume construction; the first proof\'s cap-area formula and integral recurrence have not been formalized in this project.'
+          data['fidelity']['divergences'] += ' The revised manuscript shortens the exposition of cone separation, bicone containment, and the high-dimensional volume estimates; the Lean sources retain the original intermediate lemmas. The separate spherical-cap proof is not part of the certificate.'
+          for section in ('status', 'review'):
+              data[section]['notes'] = data[section]['notes'].replace('later disclosure and documentation revision', 'later two-proof manuscript and documentation revision')
+          p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
+          
+          p = Path('SOURCE_SHA256SUMS')
+          entries = []
+          for line in p.read_text().splitlines():
+              _, name = line.split('  ', 1)
+              entries.append(f'{hashlib.sha256(Path(name).read_bytes()).hexdigest()}  {name}')
+          p.write_text('\n'.join(entries) + '\n')
+          PY
+          sha256sum --check SOURCE_SHA256SUMS
+          python3 scripts/palomar_static_check.py
+          git diff --check
+      - name: Commit only manuscript output and documentation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manuscript/sqrt6-kissing-bound.pdf README.md FORMALIZATION_SCOPE.md CERTIFICATION_STATUS.md PALOMAR_SUBMISSION.md formalization.yaml SOURCE_SHA256SUMS
+          git commit -m 'Build two-proof manuscript and clarify formalization scope'
+          git push origin HEAD:manuscript/two-proofs-2026-09-06
+      - name: Upload reviewed manuscript bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: two-proof-manuscript
+          path: |
+            manuscript/sqrt6-kissing-bound.pdf
+            manuscript/sqrt6-kissing-bound.tex
+            README.md
+            FORMALIZATION_SCOPE.md
+            CERTIFICATION_STATUS.md
+            PALOMAR_SUBMISSION.md
+            formalization.yaml
+            SOURCE_SHA256SUMS

@@ -12,7 +12,6 @@
   pdfauthor={Sebastien Palcoux}
 }
 \usepackage{xurl}
-\usepackage{enumitem}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
@@ -25,320 +24,248 @@
 
 \title{A Universal Square-Root-of-Six Bound for Kissing Numbers}
 \author{S\'ebastien Palcoux}
-\date{September 5, 2026}
+\date{September 6, 2026}
 
 \begin{document}
-
 \maketitle
 
 \begin{abstract}
-Let $\tau_n$ denote the kissing number in Euclidean dimension $n$. We prove that
+Let $\tau_n$ denote the kissing number in Euclidean dimension $n$. We give two elementary proofs that
 \[
-\tau_n\leq (\sqrt{6})^n
-\qquad(n\geq 1).
+\tau_n\leq (\sqrt6)^n\qquad(n\geq1).
 \]
-The proof packs explicit bodies of revolution inside the unit ball. An inscribed bicone gives the estimate in dimension two and every dimension at least five; slightly larger bodies suffice in dimensions three and four. The body volumes are obtained by one-dimensional integration. Since $\tau_2=6$, the base $\sqrt{6}$ is optimal for a bound of this form valid in every dimension. The argument, including its geometric, analytic, and numerical steps, is formalized in Lean~4/Mathlib.
+The first uses spherical-cap areas and a short two-step recurrence. The second packs explicit bodies of revolution inside the unit ball and is the route used by an end-to-end Lean~4/Mathlib certificate registered in Palomar. Since $\tau_2=6$, the base $\sqrt6$ is optimal for a bound of this form valid in every dimension. The cap proof is not part of the formal certificate.
 \end{abstract}
 
 \begin{center}
 \begin{minipage}{0.88\textwidth}
 \small
 \textbf{AI provenance and verification status.}
-The mathematical argument, manuscript, and Lean~4/Mathlib formalization were generated with OpenAI's GPT-6 Astra, from prompts supplied by the author. The formalization was registered in Palomar on September~5, 2026, as \href{https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1}{\nolinkurl{PALOMAR-2026-09-05-000002}, version~1}, following successful mechanical verification and an automated review that identified no problems. Registration is not human peer review or a novelty certificate. The manuscript has not undergone independent human mathematical review.
+The mathematical arguments, manuscript, and Lean~4/Mathlib formalization were generated with OpenAI's GPT-6 Astra, from prompts supplied by the author. The volume-based formalization was registered in Palomar on September~5, 2026, as \href{https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1}{\nolinkurl{PALOMAR-2026-09-05-000002}, version~1}, following successful mechanical verification and an automated review that identified no problems. This later revision adds the unformalized cap proof and simplifies the exposition; the Lean sources are unchanged. Registration is not human peer review or a novelty certificate. The manuscript has not undergone independent human mathematical review.
 \end{minipage}
 \end{center}
 
-\section{Statement of the bound}
+\section{Statement and a common geometric observation}
 
 A \emph{kissing configuration} in $\R^n$ is a finite set $X$ satisfying
 \begin{equation}\label{eq:configuration}
- \|x\|=1\quad(x\in X),
- \qquad
+ \|x\|=1\quad(x\in X),\qquad
  \langle x,z\rangle\leq\frac12\quad(x,z\in X,\ x\ne z).
 \end{equation}
-Multiplying its vectors by two gives the centers of nonoverlapping unit balls touching the unit ball at the origin. We write $\tau_n$ for the largest cardinality of a kissing configuration in $\R^n$. The finite bound proved below also establishes the existence of this maximum.
+Multiplying its vectors by two gives the centers of nonoverlapping unit balls touching the unit ball at the origin. We write $\tau_n$ for the largest cardinality of a kissing configuration in $\R^n$. The bounds below also establish the existence of this maximum.
 
 \begin{theorem}\label{thm:main}
 For every integer $n\geq1$,
 \[
-\tau_n\leq (\sqrt{6})^n.
+\tau_n\leq(\sqrt6)^n.
 \]
 \end{theorem}
 
 \begin{corollary}\label{cor:base}
-The least real number $\alpha>0$ such that
+The least real number $\alpha>0$ such that $\tau_n\leq\alpha^n$ for every $n\geq1$ is $\sqrt6$. Equivalently,
 \[
-\tau_n\leq\alpha^n
-\qquad\text{for every }n\geq1
-\]
-is $\sqrt{6}$. Equivalently,
-\[
-\sup_{n\geq1}\tau_n^{1/n}=\sqrt{6}.
+\sup_{n\geq1}\tau_n^{1/n}=\sqrt6.
 \]
 \end{corollary}
 
-The point is the optimal base in a bound that holds in every dimension with no additional prefactor. No claim of asymptotic optimality is intended.
+The point is the optimal base in a bound valid in every dimension with no additional prefactor. No claim of asymptotic optimality is intended.
 
-\section{Proof}
-
-Throughout, put $s=\sqrt3$ and $a=s/2$. Let $B_n$ be the open unit ball in $\R^n$, and write $V_n=\vol(B_n)$ for its Lebesgue volume.
-
-\subsection{Disjoint cones and a volume comparison}
-
-For a unit vector $x$, define the open cone
+Throughout, put $s=\sqrt3$ and $a=s/2$. For a unit vector $x$, let
 \[
  C_x=\{y\in\R^n:\langle x,y\rangle>a\|y\|\}.
 \]
-Thus $C_x$ has axis $x$ and half-angle $\pi/6$.
+This is the open cone of half-angle $\pi/6$ about $x$; its intersection with the unit sphere is the corresponding open spherical cap.
 
-\begin{lemma}\label{lem:packing}
-Let $X$ be a kissing configuration in $\R^n$, where $n\geq2$, and let $e$ be a fixed unit vector. If $K$ is a measurable subset of $C_e\cap B_n$ with volume $q$, then
-\begin{equation}\label{eq:packing}
- |X|q\leq V_n.
+\begin{lemma}\label{lem:separation}
+For distinct members $x,z$ of a kissing configuration, $C_x\cap C_z=\varnothing$.
+\end{lemma}
+
+\begin{proof}
+A vector in the intersection could be normalized to a unit vector $u$ satisfying
+\[
+ s<\langle x+z,u\rangle\leq\|x+z\|
+ =\sqrt{2+2\langle x,z\rangle}\leq\sqrt3=s,
+\]
+a contradiction.
+\end{proof}
+
+Both proofs use this observation, but otherwise establish the bound independently. In dimension one, every unit vector is $1$ or $-1$, so $|X|\leq2<\sqrt6$; henceforth we consider $n\geq2$.
+
+\section{First proof: a spherical-cap recurrence}\label{sec:cap}
+
+Let $c_n$ be the fraction of the area of $S^{n-1}$ occupied by a cap of angular radius $\pi/6$. Polar coordinates about its center give
+\begin{equation}\label{eq:capfraction}
+ c_n=\frac{I_{n-2}}{J_{n-2}},\qquad
+ I_m=\int_0^{\pi/6}\sin^m t\,dt,\qquad
+ J_m=\int_0^\pi\sin^m t\,dt.
+\end{equation}
+Indeed, the surface element is a constant multiple of $\sin^{n-2}t\,dt$, and the constant cancels. We use open caps, so Lemma~\ref{lem:separation} gives, for every kissing configuration $X\subset\R^n$,
+\begin{equation}\label{eq:cappacking}
+ |X|c_n\leq1.
+\end{equation}
+
+\begin{lemma}\label{lem:caprecurrence}
+For every integer $n\geq2$,
+\begin{equation}\label{eq:caprecurrence}
+ c_{n+2}\geq\frac{n}{4(n+1)}c_n\geq\frac{c_n}{6}.
 \end{equation}
 \end{lemma}
 
 \begin{proof}
-We first check that $C_x\cap C_z=\varnothing$ for distinct $x,z\in X$. Otherwise, normalizing a vector in the intersection gives a unit vector $u$ with
+Write $m=n-2$. Integration by parts gives
+$J_{m+2}=(m+1)J_m/(m+2)$. On substituting $u=\sin t$, we have
 \[
- b=\langle x,u\rangle>a,
- \qquad c=\langle z,u\rangle>a.
+ I_m=\int_0^{1/2}\frac{u^m}{\sqrt{1-u^2}}\,du.
 \]
-Write $x=bu+p$ and $z=cu+r$, where $p,r\perp u$. Then
+A second integration by parts, with the boundary term
+$u^{m+1}(1-4u^2)/\sqrt{1-u^2}$ vanishing at both endpoints, yields
 \[
- \|p\|^2=1-b^2<\frac14,
- \qquad \|r\|^2=1-c^2<\frac14.
+ 4(m+3)I_{m+2}-(m+1)I_m
+ =\int_0^{1/2}\frac{u^{m+2}(1-4u^2)}{(1-u^2)^{3/2}}\,du\geq0.
 \]
-Cauchy--Schwarz now gives
+Consequently
 \[
- \langle x,z\rangle=bc+\langle p,r\rangle
- \geq bc-\|p\|\|r\|>\frac34-\frac14=\frac12,
+ \frac{c_{n+2}}{c_n}
+ =\frac{m+2}{m+1}\frac{I_{m+2}}{I_m}
+ \geq\frac{m+2}{4(m+3)}
+ =\frac{n}{4(n+1)}\geq\frac16.
 \]
-contrary to \eqref{eq:configuration}.
-
-For each $x\in X$, choose an orthogonal transformation sending $e$ to $x$. Its image $K_x$ of $K$ lies in $C_x\cap B_n$ and has volume $q$. These measurable images are pairwise disjoint, so finite additivity and inclusion in $B_n$ give \eqref{eq:packing}.
 \end{proof}
 
-We construct the bodies in orthogonal coordinates $(t,v)\in\R\times\R^{n-1}$, with $e=(1,0)$. In these coordinates,
-\begin{equation}\label{eq:coordinateconditions}
- (t,v)\in C_e
- \quad\Longleftrightarrow\quad t>0\ \text{and}\ 3\|v\|^2<t^2,
- \qquad
- (t,v)\in B_n
- \quad\Longleftrightarrow\quad t^2+\|v\|^2<1.
+\begin{proof}[First proof of Theorem~\ref{thm:main}]
+Direct integration gives
+\[
+ c_2=\frac16,\qquad c_3=\frac{2-s}{4}>\frac1{15},
+\]
+where $s<26/15$ follows by squaring. The recurrence therefore gives
+\[
+ c_n\geq6^{-n/2}\qquad(n\geq2\text{ even}).
+\]
+For the odd dimensions, its stronger form at $n=3$ gives
+\[
+ c_5\geq\frac3{16}c_3>\frac1{80}>6^{-5/2},
+\]
+since $80^2<36^2\cdot6$. Further applications of the recurrence give
+$c_n>6^{-n/2}$ for every odd $n\geq5$. Equation~\eqref{eq:cappacking} proves the required bound in these dimensions. In dimension three it gives $|X|<15$, hence
+\[
+ |X|\leq14<6\sqrt6=(\sqrt6)^3.
+\]
+Together with the dimension-one observation, this bounds every configuration. Its realizable cardinalities form a nonempty finite set of nonnegative integers, so their maximum $\tau_n$ exists and satisfies the same bound.
+\end{proof}
+
+\section{Second proof: explicit Euclidean volumes}\label{sec:volume}
+
+This is a condensed presentation of the construction used in the registered Lean certificate. It does not use the cap-area formula or the recurrence of Section~\ref{sec:cap}.
+
+Let $B_n$ be the open unit ball and $V_n=\vol(B_n)$. Fix $e=(1,0)$ in orthogonal coordinates $(t,v)\in\R\times\R^{n-1}$. Rotating any measurable body $K\subset C_e\cap B_n$ toward the points of $X$ gives disjoint bodies of equal volume by Lemma~\ref{lem:separation}. Thus
+\begin{equation}\label{eq:volpacking}
+ |X|\vol(K)\leq V_n.
 \end{equation}
-For a continuous nonnegative function $g$ on $[b,c]$, Fubini's theorem and scaling of Lebesgue measure give
+For a continuous nonnegative profile $g$ on $[b,c]$, Fubini's theorem gives
 \begin{equation}\label{eq:profilevolume}
  \vol\{(t,v):b<t<c,\ \|v\|<g(t)\}
  =V_{n-1}\int_b^c g(t)^{n-1}\,dt.
 \end{equation}
-Indeed, the section at $t$ is an $(n-1)$-dimensional ball of radius $g(t)$. Every body used below is a finite union of such measurable sets, with disjoint intervals for the first coordinate.
+The coordinate conditions for containment are
+\begin{equation}\label{eq:coordinates}
+ (t,v)\in C_e\iff t>0\text{ and }3\|v\|^2<t^2,
+ \qquad (t,v)\in B_n\iff t^2+\|v\|^2<1.
+\end{equation}
 
-\subsection{The bicone bound}
+\subsection{A bicone and the dimensions \texorpdfstring{$n\geq5$}{n >= 5}}
 
-For $n\geq2$, consider
+Consider the union $K_n=L_n\cup U_n$, where
 \begin{align*}
  L_n&=\{(t,v):0<t<a,\ \|v\|<t/s\},\\
  U_n&=\{(t,v):a<t<1,\ \|v\|<(2+s)(1-t)\}.
 \end{align*}
-Their union $K_n=L_n\cup U_n$ is a bicone, with the common section at $t=a$ omitted. Both profiles have radius $1/2$ at that section.
+It is a bicone of total height one and common base radius $1/2$, with the base section omitted. More precisely, each point is a strict convex combination of a point of the disk
+\[
+ D=\{(a,v):\|v\|<1/2\}
+\]
+with either $0$ or $e$. The disk lies in $C_e\cap B_n$, whereas $0,e$ satisfy the weak inequalities defining their closures. The triangle inequality therefore gives $K_n\subset C_e\cap B_n$.
 
-\begin{lemma}\label{lem:bicone}
-The body $K_n$ lies in $C_e\cap B_n$ and has volume
-\begin{equation}\label{eq:biconevolume}
- \vol(K_n)=\frac{V_{n-1}}{n2^{n-1}}.
+By \eqref{eq:profilevolume}, the two cones have volumes
+$aV_{n-1}/(n2^{n-1})$ and $(1-a)V_{n-1}/(n2^{n-1})$. Hence
+\begin{equation}\label{eq:bicone}
+ \vol(K_n)=\frac{V_{n-1}}{n2^{n-1}},\qquad
+ |X|\leq A_n:=n2^{n-1}\frac{V_n}{V_{n-1}}.
 \end{equation}
-Consequently every kissing configuration $X\subset\R^n$ satisfies
-\begin{equation}\label{eq:biconebound}
- |X|\leq n2^{n-1}\frac{V_n}{V_{n-1}}.
-\end{equation}
-\end{lemma}
-
-\begin{proof}
-For $(t,v)\in L_n$, one has $3\|v\|^2<t^2$ and
-\[
- t^2+\|v\|^2<\frac43t^2<\frac43a^2=1.
-\]
-For the upper profile $h(t)=(2+s)(1-t)$, the identities
-\[
- sh(a)=a,
- \qquad (2+s)^2(1-a)=1+a
-\]
-show, for $a<t<1$, that
-\[
- sh(t)<t,
- \qquad h(t)^2<1-t^2.
-\]
-Here the first inequality compares a decreasing affine function with $t$, and the second follows by multiplying
-$(2+s)^2(1-t)<1+t$ by $1-t>0$.
-Thus \eqref{eq:coordinateconditions} puts both pieces inside $C_e\cap B_n$.
-
-The two integrals in \eqref{eq:profilevolume} are
-\begin{align*}
- \int_0^a(t/s)^{n-1}\,dt&=\frac{s}{n2^n},\\
- \int_a^1\bigl((2+s)(1-t)\bigr)^{n-1}\,dt
- &=\frac{2-s}{n2^n}.
-\end{align*}
-For the second equality, use $(2+s)(1-a)=1/2$. Adding the integrals proves \eqref{eq:biconevolume}; Lemma~\ref{lem:packing} then proves \eqref{eq:biconebound}.
-\end{proof}
-
-We use the standard unit-ball volume formula and its recurrence:
+The standard ball-volume formula gives
 \begin{equation}\label{eq:ballrecurrence}
- V_d=\frac{\pi^{d/2}}{\Gamma(d/2+1)},
- \qquad
- V_{d+2}=\frac{2\pi}{d+2}V_d
- \quad(d\geq1).
+ V_d=\frac{\pi^{d/2}}{\Gamma(d/2+1)},\qquad
+ V_{d+2}=\frac{2\pi}{d+2}V_d,
 \end{equation}
-The recurrence follows directly from $\Gamma(z+1)=z\Gamma(z)$. In particular,
-\begin{equation}\label{eq:smallvolumes}
-\begin{gathered}
- V_1=2,\qquad V_2=\pi,\qquad V_3=\frac{4\pi}{3},
- \qquad V_4=\frac{\pi^2}{2},\\
- V_5=\frac{8\pi^2}{15},\qquad
- V_6=\frac{\pi^3}{6},\qquad
- V_7=\frac{16\pi^3}{105}.
-\end{gathered}
+and consequently
+\begin{equation}\label{eq:Anrecurrence}
+ A_{n+2}=\frac{4(n+1)}{n}A_n\leq6A_n\qquad(n\geq2).
 \end{equation}
-The estimates for $\pi$ needed here are implied by $0<\pi<22/7$.
-
-\begin{lemma}\label{lem:high}
-For every integer $n\geq6$,
+The initial estimates
 \[
- V_n\leq V_{n-1},
- \qquad n2^{n-1}\leq(\sqrt6)^n.
+ A_5=\frac{256}{3}<36\sqrt6=(\sqrt6)^5,\qquad
+ A_6=60\pi<216=(\sqrt6)^6
 \]
-\end{lemma}
-
-\begin{proof}
-The first inequality holds at $n=6$, since
-$V_6/V_5=5\pi/16<1$, and at $n=7$, since
-$V_7/V_6=32/35<1$. If it holds two dimensions earlier, then \eqref{eq:ballrecurrence} gives
-\[
- V_n=\frac{2\pi}{n}V_{n-2}
- \leq\frac{2\pi}{n}V_{n-3}
- \leq\frac{2\pi}{n-1}V_{n-3}=V_{n-1}.
-\]
-This proves the first assertion by induction separately on even and odd dimensions.
-
-For the second assertion, the initial cases are
-\[
- 6\cdot2^5=192<216=(\sqrt6)^6,
- \qquad
- 7\cdot2^6=448<216\sqrt6=(\sqrt6)^7;
-\]
-the latter inequality follows by squaring $56/27<\sqrt6$. If the assertion holds at $n-2$ and $n\geq8$, then $4n\leq6(n-2)$ gives
-\[
- n2^{n-1}=4n2^{n-3}
- \leq6(n-2)2^{n-3}
- \leq6(\sqrt6)^{n-2}=(\sqrt6)^n.
-\]
-\end{proof}
-
-Together, Lemmas~\ref{lem:bicone} and~\ref{lem:high} prove the required cardinality bound for every $n\geq6$. The bicone also suffices in dimensions two and five. Indeed, \eqref{eq:biconebound} and \eqref{eq:smallvolumes} give
-\begin{equation}\label{eq:twofive}
- n=2:\quad |X|\leq2\pi<7,
- \qquad
- n=5:\quad |X|\leq\frac{256}{3}<86.
-\end{equation}
-Since $|X|$ is an integer, these bounds imply respectively
-$|X|\leq6=(\sqrt6)^2$ and
-$|X|\leq85<36\sqrt6=(\sqrt6)^5$.
-The last strict inequality follows from $85^2<36^2\cdot6$.
+follow by squaring the first comparison and using $\pi<22/7$ for the second. Induction on each parity proves $|X|<(\sqrt6)^n$ for all $n\geq5$. In dimension two, the same bicone gives $|X|\leq A_2=2\pi<7$, so integrality gives $|X|\leq6$.
 
 \subsection{Dimension three}
 
-In dimension three, retain $L_3$ and replace the upper part of the bicone by
+Retain $L_3$ and replace the upper cone by
 \[
  W_3=\{(t,v):a<t<1,\ \|v\|<\sqrt{1-t^2}\}.
 \]
-This body is in $B_3$ by construction. Moreover, $t>a$ implies
-$3(1-t^2)<t^2$, so \eqref{eq:coordinateconditions} places $W_3$ in $C_e$ as well.
-By \eqref{eq:profilevolume},
+It lies in the ball by construction, and in the cone because $t>a$ implies $3(1-t^2)<t^2$. Since $V_2=\pi$, formula~\eqref{eq:profilevolume} gives
 \begin{align*}
  \vol(L_3\cup W_3)
- &=V_2\left(\frac{s}{24}+\int_a^1(1-t^2)\,dt\right)\\
- &=\pi\left(\frac{s}{24}+\frac23-\frac{3s}{8}\right)
- =\frac{(2-s)\pi}{3}.
+ &=\pi\left(\frac{s}{24}+\int_a^1(1-t^2)\,dt\right)
+ =\frac{(2-s)\pi}{3}
+ >\frac{4\pi}{45}=\frac{V_3}{15}.
 \end{align*}
-Since $s<26/15$, as follows by squaring, this volume is strictly larger than $4\pi/45=V_3/15$. Lemma~\ref{lem:packing} therefore yields $|X|<15$, hence
-\begin{equation}\label{eq:three}
- |X|\leq14<6\sqrt6=(\sqrt6)^3.
-\end{equation}
-Here the final comparison follows from $14^2<36\cdot6$.
+Here $V_3=4\pi/3$, and the strict inequality uses $s<26/15$. Thus \eqref{eq:volpacking} yields $|X|<15$, hence $|X|\leq14<6\sqrt6$.
 
 \subsection{Dimension four}
 
-For dimension four, a polynomial upper profile makes the volume calculation elementary. Set
+A polynomial profile avoids a trigonometric volume integral. Retain $L_4$ and put
 \[
- p(t)=(1-t)(14t+2-6s),
- \qquad
+ p(t)=(1-t)(14t+2-6s),\qquad
  W_4=\{(t,v):a<t<1,\ \|v\|<p(t)\}.
 \]
-We shall prove that $L_4\cup W_4$ lies in $C_e\cap B_4$ and has volume greater than $V_4/37$.
-
-First, $p(a)=1/2$, $p(1)=0$, and $p(t)\geq0$ on $[a,1]$, since
-$14t+2-6s\geq s+2>0$. To check containment in the ball, define
-\[
- Q(t)=196t^2-(140+70s)t-48+74s.
-\]
-A direct factorization using $s^2=3$ gives
-\begin{equation}\label{eq:polynomialcontainment}
- 1-t^2-p(t)^2=(1-t)(t-a)Q(t).
+For $a\leq t\leq1$ we have $p(t)\geq0$, since $14t+2-6s\geq s+2>0$. Writing $u=t-a$, a factorization gives
+\begin{equation}\label{eq:fourcontainment}
+ 1-t^2-p(t)^2
+ =(1-t)(t-a)\bigl(4s-6+(126s-140)u+196u^2\bigr)\geq0.
 \end{equation}
-For $t\geq a$, the identity
-\[
- Q(t)=4s-6+(t-a)\bigl(196(t+a)-140-70s\bigr)
-\]
-shows that $Q(t)>0$: indeed $s>3/2$, and the expression in parentheses is at least $126s-140>0$. Thus
-\[
- p(t)^2\leq1-t^2\qquad(a\leq t\leq1).
-\]
-Every point of $W_4$ therefore lies in $B_4$. As in dimension three, $t>a$ then implies $3\|v\|^2<t^2$, so $W_4\subset C_e$.
+Indeed, $u\geq0$ and the constant and linear coefficients in the last factor are positive because $s>3/2$. This puts $W_4$ in the ball; as in dimension three, $t>a$ then puts it in the cone.
 
-It remains to compute its volume. Expanding $p(t)^3$ and integrating its monomials gives
-\begin{equation}\label{eq:fourintegral}
- \int_a^1p(t)^3\,dt=\frac{33169-19150s}{40}.
-\end{equation}
-For an explicit evaluation, put $\delta=1-a$ and $A=16-6s$. The substitution $u=1-t$ gives $p(t)=u(A-14u)$, and the left side of \eqref{eq:fourintegral} equals
-\[
- \frac{A^3\delta^4}{4}-\frac{42A^2\delta^5}{5}
-       +98A\delta^6-392\delta^7.
-\]
-Substituting $\delta=1-s/2$ and reducing powers with $s^2=3$ yields \eqref{eq:fourintegral}. Adding the lower part, whose profile integral is $s/64$, gives
+For completeness, its volume requires only the following polynomial integral. Set $\delta=1-a$ and $b=16-6s$. Substituting $u=1-t$ gives
+\begin{align*}
+ \int_a^1p(t)^3\,dt
+ &=\int_0^\delta u^3(b-14u)^3\,du\\
+ &=\frac{b^3\delta^4}{4}-\frac{42b^2\delta^5}{5}
+       +98b\delta^6-392\delta^7
+ =\frac{33169-19150s}{40}.
+\end{align*}
+Adding the lower cone, whose profile integral is $s/64$, yields
 \begin{equation}\label{eq:fourvolume}
- \vol(L_4\cup W_4)=T V_3,
- \qquad
+ \vol(L_4\cup W_4)=T V_3,\qquad
  T=\frac{265352-153195s}{320}.
 \end{equation}
-
-All that is needed is a rational lower estimate for $T$. The inequality
-$s<1351/780$ follows from $1351^2-3\cdot780^2=1$. Consequently
+The rational bound $s<1351/780$ follows from $1351^2-3\cdot780^2=1$. Therefore
 \[
  T>\frac{541}{16640}>\frac{33}{1036}
-   =\frac{3}{296}\frac{22}{7}>\frac{3\pi}{296}.
+ =\frac{3}{296}\frac{22}{7}>\frac{3\pi}{296}.
 \]
-Using \eqref{eq:smallvolumes}, we obtain
+Since $V_4=\pi^2/2$, this proves
 \[
- \vol(L_4\cup W_4)>
- \frac{3\pi}{296}\frac{4\pi}{3}
+ \vol(L_4\cup W_4)>\frac{3\pi}{296}\frac{4\pi}{3}
  =\frac{\pi^2}{74}=\frac{V_4}{37}.
 \]
-Lemma~\ref{lem:packing} now yields $|X|<37$. Integrality gives
-\begin{equation}\label{eq:four}
- |X|\leq36=(\sqrt6)^4.
-\end{equation}
+Equation~\eqref{eq:volpacking} now gives $|X|<37$, hence $|X|\leq36=(\sqrt6)^4$.
 
-\subsection{Completion and optimality}
-
-\begin{proof}[Proof of Theorem~\ref{thm:main}]
-Let $X$ be any kissing configuration in $\R^n$. For $n=1$, every unit vector is $1$ or $-1$, so $|X|\leq2<\sqrt6$. Dimensions two and five are covered by \eqref{eq:twofive}, dimensions three and four by \eqref{eq:three} and \eqref{eq:four}, and every $n\geq6$ by Lemmas~\ref{lem:bicone} and~\ref{lem:high}. Thus $|X|\leq(\sqrt6)^n$ in every positive dimension.
-
-The realizable cardinalities form a nonempty subset of
-\[
- \{0,\ldots,\lfloor(\sqrt6)^n\rfloor\}.
-\]
-This finite set of cardinalities has a largest element, realized by a configuration. This element is $\tau_n$, and it satisfies the same bound.
+\begin{proof}[Completion of the second proof of Theorem~\ref{thm:main}]
+The volume estimates cover every $n\geq2$, and the dimension-one observation covers $n=1$. Thus every kissing configuration satisfies the claimed bound, independently of the first proof. As before, the finite nonempty set of realizable cardinalities has an attained maximum, which is $\tau_n$.
 \end{proof}
+
+\section{Optimality of the universal base}
 
 \begin{proof}[Proof of Corollary~\ref{cor:base}]
 The six points
@@ -347,50 +274,53 @@ The six points
  (-\tfrac12,\tfrac{s}{2}),\quad (-1,0),\quad
  (-\tfrac12,-\tfrac{s}{2}),\quad (\tfrac12,-\tfrac{s}{2})
 \]
-are distinct unit vectors, and the inner product of any two distinct members is at most $1/2$. They form a kissing configuration. Theorem~\ref{thm:main} gives the reverse bound, so $\tau_2=6$.
+are distinct unit vectors whose pairwise inner products are at most $1/2$. They form a kissing configuration, and Theorem~\ref{thm:main} gives the reverse bound, so $\tau_2=6$.
 
-The base $\sqrt6$ works by Theorem~\ref{thm:main}. Any positive universal base $\alpha$ must satisfy $6=\tau_2\leq\alpha^2$, hence $\alpha\geq\sqrt6$. Likewise each $\tau_n^{1/n}\leq\sqrt6$, with equality at $n=2$, which proves the supremum statement.
+The base $\sqrt6$ works by the theorem. Conversely, any positive universal base $\alpha$ must satisfy $6=\tau_2\leq\alpha^2$, hence $\alpha\geq\sqrt6$. Likewise, $\tau_n^{1/n}\leq\sqrt6$ in every dimension, with equality at $n=2$, proving the supremum statement.
 \end{proof}
 
-\section{Lean certification and Palomar registration}\label{sec:lean}
+\section{Formalization status and Palomar registration}\label{sec:lean}
 
-The proof in Section~2 is formalized in the accompanying repository:
+\paragraph{Why the shorter proof is not yet formalized.}
+The cap proof uses a familiar formula for spherical area and a few integral identities. To check this route, these steps must be connected to the precise geometric definitions and supplied as verified lemmas; that work has not been completed in this project. This is unfinished formalization work, not an obstruction in Lean. The volume proof avoids that dependency and already gives a complete certificate for the theorem and its optimality.
+
+\paragraph{What the certificate establishes.}
+The accompanying repository is
 \begin{center}
 \url{https://github.com/sebastienpalcoux/sqrt6-kissing-bound}.
 \end{center}
-The certificate checks cone separation, measurable disjoint packing, body-volume integrals, ball-volume estimates, and every dimension case. It also proves that the kissing number is an attained maximum and verifies the six-point configuration used for optimality. Standard analysis comes from proved Mathlib theorems.
+Its certificate follows the Euclidean-volume route of Section~\ref{sec:volume}: cone separation, measurable disjoint packing, the explicit body-volume integrals, and every dimension case. It also proves that the kissing number is an attained maximum and verifies the six-point configuration used for optimality. Standard analysis comes from proved Mathlib theorems. The present exposition shortens the separation argument and combines the high-dimensional estimates into \eqref{eq:Anrecurrence}; the Lean sources retain their original intermediate lemmas. The certificate does not check the cap-area formula or Lemma~\ref{lem:caprecurrence}.
 
 The eight principal declarations selected by \texttt{comparator.json} were registered as
 \begin{center}
 \href{https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1}{\texttt{PALOMAR-2026-09-05-000002}, version~1}.
 \end{center}
-They express the universal bound, the existence of attained kissing numbers, the planar value six, and the equivalent optimality statements. The registered repository commit is
+They express the universal bound, attained kissing numbers, the planar value six, and the equivalent optimality statements. The registered repository commit is
 \begin{center}
 \small\texttt{cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9}.
 \end{center}
-Comparator checked the correspondence between the independently stated Challenge and its Solution, and both Lean's kernel and the independent NanoDa checker verified the exported proofs. Palomar's automated editorial review identified no problems with the statements, definitions, presentation, literature account, or research interest. These checks do not constitute independent human review or establish novelty.
+Comparator checked the correspondence between the independently stated Challenge and its Solution. Lean's kernel and the independent NanoDa checker verified the exported proofs, and Palomar's automated editorial review identified no problems. These checks do not constitute independent human review or establish novelty.
 
 The registered development pins Lean~4.33.0 and Mathlib revision
 \begin{center}
 \small\texttt{db584cd6d46c92f209a44c0f1c829460d327499d}.
 \end{center}
-The registration preserves that exact source snapshot. This later revision updates the disclosure and registration information; the mathematical argument and Lean source are unchanged.
+Palomar preserves that exact source snapshot, including its original manuscript. This later two-proof revision does not change the registered version, Lean sources, Comparator interface, or dependency pins.
 
-After obtaining the dependencies with \texttt{lake exe cache get}, the commands
+After obtaining the dependencies with \texttt{lake exe cache get}, run
 \begin{center}
 \begin{tabular}{l}
 \texttt{bash scripts/check.sh}\\
 \texttt{bash scripts/verify-comparator.sh}
 \end{tabular}
 \end{center}
-respectively build the certificate and audit its axioms, and repeat the Comparator and NanoDa checks. Only Lean's standard foundational axioms \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound} are allowed in the proof development. The isolated Challenge contains eight deliberate statement placeholders, whose replacements are verified by Comparator; the Solution and substantive proofs contain no admitted results or additional axioms.
+These commands build the certificate and audit its axioms, then repeat the Comparator and NanoDa checks. Only Lean's standard foundational axioms \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound} are allowed. The isolated Challenge contains eight deliberate statement placeholders, whose replacements are verified by Comparator; the Solution and substantive proofs contain no admitted results or additional axioms.
 
 \section*{Acknowledgment}
 This note was prompted by the MathOverflow question ``Upper bound of the kissing number in $n$ dimensions'' and by Henry Cohn's answer explaining how effective spherical-code bounds bear on the problem.
 
 \begingroup\small
 \begin{thebibliography}{9}
-
 \bibitem{MO-question}
 S.~Palcoux,
 \emph{Upper bound of the kissing number in $n$ dimensions},
@@ -402,7 +332,6 @@ H.~Cohn,
 \emph{Answer to ``Upper bound of the kissing number in $n$ dimensions''},
 MathOverflow answer 282685 (2017),
 \url{https://mathoverflow.net/a/282685/}.
-
 \end{thebibliography}
 \endgroup
 
