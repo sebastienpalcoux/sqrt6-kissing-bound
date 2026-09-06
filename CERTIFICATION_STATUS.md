@@ -1,9 +1,12 @@
 # Verification
 
 The substantive certificate contains the Euclidean-volume proof presented in
-the manuscript, the existence of attained kissing numbers, the value tau_2 = 6,
-and optimality of the universal base. The Palomar interface adds four proved
-adapters but changes no substantive mathematical proof module.
+Section 3 of the manuscript, the existence of attained kissing numbers, the
+value tau_2 = 6, and optimality of the universal base. The shorter cap proof in
+Section 2 is not part of the certificate: its cap-area formula and integral
+recurrence have not been formalized here. The volume route does not assume
+those steps. The Palomar interface adds four proved adapters but changes no
+substantive mathematical proof module.
 
 ## Environment and checks
 
@@ -51,8 +54,9 @@ The automated editorial review identified no problems. The submitter then
 authorized permanent registration, and the public record and source-preservation
 receipt are available at the entry above.
 
-The current disclosure and manuscript revision postdates the registered
-snapshot. It updates the AI attribution and registration account; the Lean
+The current two-proof manuscript revision postdates the registered snapshot.
+It adds and simplifies the unformalized cap proof, condenses the exposition of
+the certified volume construction, and clarifies the distinction. The Lean
 source, Comparator configuration, and dependency pins remain those registered.
 Palomar version 1 preserves its original metadata and manuscript. Registration
 does not constitute human peer review or a novelty certificate. No independent

@@ -11,9 +11,12 @@ The kissing number is an attained maximum, an explicit planar hexagon gives
 \(\tau_2=6\), and \(\sup_{n\ge1}\tau_n^{1/n}=\sqrt6\). This is not a claim
 of asymptotic optimality.
 
-The manuscript and substantive Lean development present the same
-Euclidean-volume proof: cone separation, disjoint packing, the volumes of the
-explicit bodies, and every dimension case.
+The manuscript presents two proofs. The first is a shorter spherical-cap
+argument, with a simplified recurrence for cap areas; it is not formalized in
+this project. The second is a condensed exposition of the Euclidean-volume
+construction used by the complete Lean certificate: cone separation, disjoint
+packing, explicit body volumes, and every dimension case. Neither the formal
+theorem nor the volume proof assumes any step of the cap argument.
 
 ## Read the result
 
@@ -44,8 +47,9 @@ status. The repository is licensed under [Apache-2.0](LICENSE).
 Palomar registered all eight selected declarations on 5 September 2026 at
 repository commit `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`. Comparator, Lean's
 kernel, and NanoDa passed; the automated editorial review identified no
-problems. The registration preserves that exact snapshot. Subsequent disclosure
-and documentation edits do not change the registered version.
+problems. The registration preserves that exact snapshot. The later two-proof manuscript
+and documentation revision does not change the registered version or any Lean
+source, theorem statement, Comparator interface, or dependency pin.
 
 ## Verify
 
