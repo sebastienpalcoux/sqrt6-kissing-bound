@@ -1,6 +1,23 @@
 # Formal statements and proof map
 
-The manuscript and Lean development use the same Euclidean-volume argument. The proof's geometric and analytic dependencies are proved in the project or supplied by the pinned Mathlib library; the final theorem has no additional packing or volume hypotheses.
+The manuscript contains two proofs. Its second proof follows the Euclidean-volume construction used in the registered Lean development. That proof's geometric and analytic dependencies are proved in the project or supplied by the pinned Mathlib library; the final theorem has no additional packing or volume hypotheses. The first, shorter spherical-cap proof is not included in this certificate.
+
+## Two proofs and their scope
+
+Section 2 gives the cap proof, with the simplified inequality
+c_(n+2) >= n c_n / (4(n+1)) >= c_n/6. Its cap-area formula and integral recurrence
+have not been formalized in this project. The remaining work is to connect
+those familiar geometric and analytic steps to the formal definitions and
+supply checked lemmas; this is not an obstruction in Lean.
+
+Section 3 gives the volume proof, independently of those cap identities.
+Its shorter exposition uses a one-line cone-separation argument, a convexity
+explanation of the same bicone, and the recurrence
+A_(n+2) = 4(n+1) A_n/n for A_n = n 2^(n-1) V_n/V_(n-1).
+The Lean files are unchanged and retain the original intermediate estimates.
+The theorem, attained maxima, and optimal universal base remain certified
+end to end by that volume route. The proof map below describes the actual
+Lean development, not a separate formalization of every rewritten prose step.
 
 ## Statements
 

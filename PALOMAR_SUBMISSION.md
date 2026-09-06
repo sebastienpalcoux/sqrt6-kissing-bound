@@ -102,8 +102,10 @@ Lean build output and verifier caches are ignored, not committed.
 
 The manuscript's reproducibility paragraph records the registered environment:
 the committed `lean-toolchain`, Lakefile, and manifest listed above. The later
-disclosure and registration revision leaves the mathematical argument and Lean
-source unchanged; the archived Palomar version retains the submitted snapshot.
+two-proof manuscript revision adds an unformalized cap argument and simplifies
+the exposition of the certified volume construction. The Lean source,
+Comparator interface, and dependency pins are unchanged; the archived Palomar
+version retains its submitted manuscript and source snapshot.
 
 ## Submission and registration are distinct
 
