@@ -1,10 +1,17 @@
-**AI disclosure.** This proof was generated with OpenAI's GPT-6 Astra, from my prompts. The argument below is fully formalized in Lean 4/Mathlib ([certificate and manuscript](https://github.com/sebastienpalcoux/sqrt6-kissing-bound)) and registered as [PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1), after successful Comparator, Lean, and NanoDa checks and an automated review that identified no problems. Registration is not human peer review or a novelty certificate; independent human mathematical review remains pending.
+**AI disclosure.** OpenAI's GPT-6 Astra generated the volume proof from my prompts. GPT-6.2 Astra assisted with the November manuscript revision. The volume proof is formalized in Lean 4/Mathlib and registered after successful Comparator, Lean, and NanoDa checks and automated editorial review. Independent human mathematical review remains pending. [Manuscript and certificate](https://github.com/sebastienpalcoux/sqrt6-kissing-bound) · [Palomar registration, PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry?id=PALOMAR-2026-09-05-000002&version=1)
 
 Yes. With the natural correction
 \[
 \alpha_*:=\sup_{n\ge1}\tau_n^{1/n}
 \]
 to the parenthetical formula in the question, one has \(\alpha_*=\sqrt6\).
+
+The revised manuscript writes out a deduction from published estimates. The
+cap-area estimate of Böröczky and Wintsche gives
+\(\tau_n\le 2^{n-1}\sqrt{2\pi n}<6^{n/2}\) for \(n\ge6\). The low-dimensional
+bounds in Bachoc and Vallentin's Table 5.1 cover dimensions 3 through 5, and
+\(\tau_1=2\) and \(\tau_2=6\) complete the calculation. The independent
+volume proof below derives all the needed estimates directly. [Böröczky–Wintsche, Corollary 3.2(i)](https://doi.org/10.1007/978-3-642-55566-4_10) · [Bachoc–Vallentin, Table 5.1](https://doi.org/10.1090/S0894-0347-07-00589-9)
 
 **Theorem.** For every integer \(n\ge1\),
 \[

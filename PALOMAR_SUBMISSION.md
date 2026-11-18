@@ -3,7 +3,7 @@
 ## Registered version
 
 This result was registered on 5 September 2026 as
-[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1),
+[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry?id=PALOMAR-2026-09-05-000002&version=1),
 at repository commit `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`.
 Palomar's mechanical verification passed and its automated editorial review
 identified no problems. The submitter authorized publication and the permanent
@@ -100,12 +100,12 @@ The Landrun wrapper retains sandbox restrictions and supplies exactly one
 command delimiter. The standard Apache-2.0 root license matches the metadata.
 Lean build output and verifier caches are ignored, not committed.
 
-The manuscript's reproducibility paragraph records the registered environment:
-the committed `lean-toolchain`, Lakefile, and manifest listed above. The later
-two-proof manuscript revision adds an unformalized cap argument and simplifies
-the exposition of the certified volume construction. The Lean source,
-Comparator interface, and dependency pins are unchanged; the archived Palomar
-version retains its submitted manuscript and source snapshot.
+Section 5 of the November manuscript links to the registered sources and
+verification run. The manuscript gives the literature deduction and cap
+argument in Sections 1 and 2, and presents the volume construction used by the
+registered certificate in Section 3. The
+[proof map](FORMALIZATION_SCOPE.md) identifies the claims covered by the
+certificate and records where the current exposition uses shorter estimates.
 
 ## Submission and registration are distinct
 

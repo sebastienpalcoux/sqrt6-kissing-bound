@@ -28,11 +28,11 @@
         "Sébastien Palcoux"
       ],
       "type": "paper",
-      "location": "manuscript/sqrt6-kissing-bound.tex and manuscript/sqrt6-kissing-bound.pdf in the submitted repository snapshot",
+      "location": "manuscript/sqrt6-kissing-bound.tex and manuscript/sqrt6-kissing-bound.pdf",
       "relationship": "formalizes",
       "license": "Apache-2.0",
       "author_endorsement": "participated",
-      "note": "The accompanying AI-generated manuscript is the mathematical source being formalized. The manuscript and substantive Lean development are in this same repository, not an external thin wrapper. AI contributions are recorded below. Independent human mathematical review and a novelty assessment have not been completed. The current manuscript also presents a shorter spherical-cap proof; that additional proof is not covered by this certificate."
+      "note": "Section 3 of the November 2026 manuscript presents the Euclidean-volume construction used by the Lean development. Sections 1 and 2 give the deduction from published estimates and an independent spherical-cap proof. Section 4 derives the unique equality dimension from the cap argument."
     },
     {
       "title": "Upper bound of the kissing number in n dimensions",
@@ -55,11 +55,35 @@
       "relationship": "background",
       "author_endorsement": "not-contacted",
       "note": "Context on spherical-code bounds. No endorsement of this manuscript is claimed and no result from this answer is introduced as a formal axiom."
+    },
+    {
+      "title": "Covering the sphere by equal spherical balls",
+      "authors": [
+        "Károly Böröczky Jr.",
+        "Gergely Wintsche"
+      ],
+      "type": "paper",
+      "id": "https://doi.org/10.1007/978-3-642-55566-4_10",
+      "relationship": "background",
+      "author_endorsement": "not-contacted",
+      "note": "Corollary 3.2(i) supplies the classical cap-area estimate used in Section 1 of the manuscript."
+    },
+    {
+      "title": "New upper bounds for kissing numbers from semidefinite programming",
+      "authors": [
+        "Christine Bachoc",
+        "Frank Vallentin"
+      ],
+      "type": "paper",
+      "id": "https://doi.org/10.1090/S0894-0347-07-00589-9",
+      "relationship": "background",
+      "author_endorsement": "not-contacted",
+      "note": "Table 5.1 supplies the bounds for dimensions three through five used in the literature deduction."
     }
   ],
   "related_formalizations": [],
   "status": {
-    "scope": "The full project contains the Euclidean-volume proof and its geometric, analytic, numerical, and optimality steps. Comparator selects the eight principal claims listed in comparator.json, not a separate comparison of every intermediate lemma. Four targets are existing substantive theorems. Four proved adapters expose genuine maximum cardinalities without the implementation-specific bounded-search definition. The Challenge definitions do not build in any claimed upper bound. The proof code is checked transitively, but Lean does not certify the prose or independently audit informal-to-formal alignment. The current manuscript has two proofs. Its second proof follows this certified volume construction; the first proof's cap-area formula and integral recurrence have not been formalized in this project.",
+    "scope": "The full project contains the Euclidean-volume proof and its geometric, analytic, numerical, and optimality steps. Comparator selects the eight principal claims listed in comparator.json, not a separate comparison of every intermediate lemma. Four targets are existing substantive theorems. Four proved adapters expose genuine maximum cardinalities without the implementation-specific bounded-search definition. The Challenge definitions do not build in any claimed upper bound. The proof code is checked transitively, but Lean does not certify the prose or independently audit informal-to-formal alignment. The manuscript presents the certified volume construction in Section 3. The cap recurrence and the corollary on the unique equality dimension are informal results.",
     "sorry_count": 0,
     "sorry_in_definitions": 0,
     "axioms": [
@@ -67,7 +91,7 @@
       "Classical.choice",
       "Quot.sound"
     ],
-    "notes": "The zero-hole counts refer to Solution and the substantive proof development. Challenge has eight deliberate statement placeholders, which are not imported into the proof and whose replacements Comparator checks. Palomar registered the eight selected declarations as PALOMAR-2026-09-05-000002 version 1 at repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9. This later two-proof manuscript and documentation revision does not replace that immutable snapshot."
+    "notes": "The zero-hole counts refer to Solution and the substantive proof development. Challenge has eight deliberate statement placeholders, which are not imported into the proof and whose replacements Comparator checks. Palomar registered the eight selected declarations as PALOMAR-2026-09-05-000002 version 1 at repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9. Palomar preserves the registered September source snapshot. The accompanying manuscript is dated 18 November 2026."
   },
   "automation": {
     "methods": [
@@ -77,18 +101,27 @@
           "GPT-6 Astra"
         ],
         "framework": "ChatGPT",
-        "tool_setup": "AI-generated mathematical argument, manuscript, Lean formalization, and Palomar packaging, including the Challenge/Solution interface and verification configuration.",
+        "tool_setup": "Original mathematical argument, manuscript, Lean formalization, and Palomar packaging, including the Challenge/Solution interface and verification configuration.",
         "prompting_notes": "Sébastien Palcoux supplied the mathematical prompts and maintains the repository. GPT-6 Astra is credited in the AI disclosure; Sébastien Palcoux is the listed human author and responsible maintainer."
+      },
+      {
+        "method": "agent",
+        "models": [
+          "GPT-6.2 Astra"
+        ],
+        "framework": "ChatGPT",
+        "tool_setup": "November 2026 manuscript revision, including literature context, the strict cap recurrence, and the shorter estimate for the four-dimensional body.",
+        "prompting_notes": "Sébastien Palcoux requested a manuscript revision coherent with the registered certificate."
       }
     ],
     "notes": "The mathematical proof is substantive AI-generated work, not human-written mathematics merely typeset by an assistant. Mechanical checks and AI inspection are distinguished from human peer review. Cost, complete prompt logs, and exact total wall time were not recorded."
   },
   "fidelity": {
-    "divergences": "The manuscript defines tau_n as the greatest realizable cardinality. The implementation constructs that number by a bounded search and separately proves its IsGreatest property. The Palomar interface instead states existence of an attained maximum and formulates the number-level consequences for any function of genuine maxima. Solution proves these adapters from the implementation, so there is no extra geometric assumption, cutoff, or weakening of the quantifiers. Universal bases are stated as nonnegative; the theorem characterizes them as alpha >= sqrt(6), hence also gives the manuscript formulation for positive bases. The revised manuscript shortens the exposition of cone separation, bicone containment, and the high-dimensional volume estimates; the Lean sources retain the original intermediate lemmas. The separate spherical-cap proof is not part of the certificate."
+    "divergences": "The manuscript defines tau_n as the greatest realizable cardinality. The implementation constructs that number by a bounded search and separately proves its IsGreatest property. The Palomar interface instead states existence of an attained maximum and formulates the number-level consequences for any function of genuine maxima. Solution proves these adapters from the implementation, so there is no extra geometric assumption, cutoff, or weakening of the quantifiers. Universal bases are stated as nonnegative; the theorem characterizes them as alpha >= sqrt(6), hence also gives the manuscript formulation for positive bases. The manuscript uses a lower estimate for the volume of the same four-dimensional body whose exact volume the certificate computes. The cap-area proof and its unique-equality corollary are informal."
   },
   "review": {
     "status": "agent-reviewed",
     "reviewers": [],
-    "notes": "Palomar mechanically verified and automatically reviewed repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9 and registered it as PALOMAR-2026-09-05-000002 version 1 on 5 September 2026. The automated editorial review identified no problems. Its record is https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1. This later two-proof manuscript and documentation revision is not a new Palomar registration. No independent human mathematical review or independent human audit of statement alignment is recorded."
+    "notes": "Palomar mechanically verified and automatically reviewed repository commit cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9 and registered it as PALOMAR-2026-09-05-000002 version 1 on 5 September 2026. The automated editorial review identified no problems. Its record is https://palomar-registry.org/entry?id=PALOMAR-2026-09-05-000002&version=1. The verification and review refer to that exact registered snapshot. No independent human mathematical review or independent human audit of statement alignment is recorded."
   }
 }

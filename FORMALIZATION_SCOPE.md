@@ -1,23 +1,23 @@
 # Formal statements and proof map
 
-The manuscript contains two proofs. Its second proof follows the Euclidean-volume construction used in the registered Lean development. That proof's geometric and analytic dependencies are proved in the project or supplied by the pinned Mathlib library; the final theorem has no additional packing or volume hypotheses. The first, shorter spherical-cap proof is not included in this certificate.
+Section 3 of the manuscript presents the Euclidean-volume construction used
+in the registered Lean development. The project proves the geometric and
+analytic steps using the pinned Mathlib library. The final theorem applies to
+every finite kissing configuration in positive dimension.
 
 ## Two proofs and their scope
 
-Section 2 gives the cap proof, with the simplified inequality
-c_(n+2) >= n c_n / (4(n+1)) >= c_n/6. Its cap-area formula and integral recurrence
-have not been formalized in this project. The remaining work is to connect
-those familiar geometric and analytic steps to the formal definitions and
-supply checked lemmas; this is not an obstruction in Lean.
+Section 1 gives a deduction from published estimates. Section 2 supplies a
+self-contained cap proof, using $c_{n+2}>\frac{n}{4(n+1)}c_n\ge c_n/6$ for
+the normalized area $c_n$ of a cap of radius $\pi/6$. The strict recurrence
+gives the unique equality dimension in Section 4. These are informal arguments.
 
-Section 3 gives the volume proof, independently of those cap identities.
-Its shorter exposition uses a one-line cone-separation argument, a convexity
-explanation of the same bicone, and the recurrence
-A_(n+2) = 4(n+1) A_n/n for A_n = n 2^(n-1) V_n/V_(n-1).
-The Lean files are unchanged and retain the original intermediate estimates.
-The theorem, attained maxima, and optimal universal base remain certified
-end to end by that volume route. The proof map below describes the actual
-Lean development, not a separate formalization of every rewritten prose step.
+Section 3 proves the bound by packing Euclidean bodies of known volume. The
+manuscript combines its higher-dimensional estimates into a recurrence for
+the bicone bound and uses a short lower estimate for the four-dimensional
+body. Lean evaluates the volume of that same four-dimensional body exactly
+and uses the intermediate bounds listed below. The certificate proves the
+universal bound, attainment, the planar value, and optimality of the base.
 
 ## Statements
 

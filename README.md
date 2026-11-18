@@ -1,27 +1,43 @@
 # The universal square-root-of-six bound for kissing numbers
 
-This project proves in Lean 4 / Mathlib that
+The Euclidean kissing number $\tau_n$ is an attained maximum, and the
+Lean 4 / Mathlib development proves
 
-\[
-\tau_n \le (\sqrt6)^n \qquad(n\ge1),
-\]
+$$
+\tau_n\le 6^{n/2}\qquad(n\ge 1),\qquad \tau_2=6.
+$$
 
-and that **sqrt(6) is the least universal exponential base** with no prefactor.
-The kissing number is an attained maximum, an explicit planar hexagon gives
-\(\tau_2=6\), and \(\sup_{n\ge1}\tau_n^{1/n}=\sqrt6\). This is not a claim
-of asymptotic optimality.
+Consequently, $\sqrt6$ is the least base $\alpha$ for which $\tau_n\le\alpha^n$
+in every positive dimension.
 
-The manuscript presents two proofs. The first is a shorter spherical-cap
-argument, with a simplified recurrence for cap areas; it is not formalized in
-this project. The second is a condensed exposition of the Euclidean-volume
-construction used by the complete Lean certificate: cone separation, disjoint
-packing, explicit body volumes, and every dimension case. Neither the formal
-theorem nor the volume proof assumes any step of the cap argument.
+## Published estimates and the proofs in the manuscript
+
+Section 1 deduces the sharp bound from results available before the 2017
+MathOverflow question. The cap-area estimate of Böröczky and Wintsche gives
+$\tau_n\le 2^{n-1}\sqrt{2\pi n}<6^{n/2}$ for $n\ge6$ by packing disjoint caps
+of radius $\pi/6$. Bachoc and Vallentin's Table 5.1 supplies the upper bounds
+12, 24, and 45 in dimensions 3, 4, and 5. The values 2 and 6 in dimensions 1
+and 2 complete the deduction, with equality only in dimension 2. The
+introduction also explains the motivating subfactor problem and credits
+Henry Cohn's prediction of the optimal base.
+[Böröczky–Wintsche, Corollary 3.2(i)](https://doi.org/10.1007/978-3-642-55566-4_10) ·
+[Bachoc–Vallentin, Table 5.1](https://doi.org/10.1090/S0894-0347-07-00589-9) ·
+[Cohn's 2017 answer](https://mathoverflow.net/a/282685/)
+
+The manuscript gives two self-contained elementary proofs that derive their
+own low-dimensional estimates:
+
+- **Spherical caps.** A recurrence for cap areas proves the bound and shows
+  that dimension two is the unique equality case. This is an informal proof.
+- **Euclidean volumes.** Explicit bodies pack into disjoint sectors of the
+  unit ball. The revised paper explains the choice of the four-dimensional
+  profile and gives a short lower bound for its volume. Lean checks the volume
+  construction and exact integrals through to the sharp universal bound.
 
 ## Read the result
 
-- [Manuscript PDF](manuscript/sqrt6-kissing-bound.pdf) and [LaTeX source](manuscript/sqrt6-kissing-bound.tex).
-- [Palomar registration: PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1).
+- [Manuscript PDF](manuscript/sqrt6-kissing-bound.pdf) and [LaTeX source](manuscript/sqrt6-kissing-bound.tex), dated 18 November 2026.
+- [Palomar registration, PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry?id=PALOMAR-2026-09-05-000002&version=1).
 - [Formal statements and proof map](FORMALIZATION_SCOPE.md).
 - [Verification and its limits](CERTIFICATION_STATUS.md).
 - [Palomar submission instructions and statement map](PALOMAR_SUBMISSION.md).
@@ -47,9 +63,9 @@ status. The repository is licensed under [Apache-2.0](LICENSE).
 Palomar registered all eight selected declarations on 5 September 2026 at
 repository commit `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`. Comparator, Lean's
 kernel, and NanoDa passed; the automated editorial review identified no
-problems. The registration preserves that exact snapshot. The later two-proof manuscript
-and documentation revision does not change the registered version or any Lean
-source, theorem statement, Comparator interface, or dependency pin.
+problems. Palomar preserves the exact registered snapshot. The November
+manuscript describes the same volume construction and identifies the scope of
+the certificate in Section 5.
 
 ## Verify
 
@@ -80,9 +96,10 @@ these GitHub checks.
 
 ## AI provenance and review
 
-The proof, manuscript, formalization, and Palomar packaging were developed with
-OpenAI's GPT-6 Astra, from prompts supplied by Sébastien Palcoux, who is the
-listed author and responsible maintainer. No independent human mathematical review or human
-audit of the informal-to-formal alignment is recorded. Palomar registration
-includes mechanical verification and an automated editorial review; it is not
-human peer review or a novelty certificate.
+OpenAI's GPT-6 Astra developed the original argument, manuscript, formalization,
+and Palomar packaging from prompts supplied by Sébastien Palcoux, the author
+and responsible maintainer. GPT-6.2 Astra assisted with the November manuscript
+revision. Section 5 of the manuscript links to the dated provenance correction
+for the archived metadata. Palomar registration records mechanical verification
+and automated editorial review. Independent human mathematical review has yet
+to be recorded.

@@ -1,12 +1,12 @@
 # Verification
 
-The substantive certificate contains the Euclidean-volume proof presented in
-Section 3 of the manuscript, the existence of attained kissing numbers, the
-value tau_2 = 6, and optimality of the universal base. The shorter cap proof in
-Section 2 is not part of the certificate: its cap-area formula and integral
-recurrence have not been formalized here. The volume route does not assume
-those steps. The Palomar interface adds four proved adapters but changes no
-substantive mathematical proof module.
+The certificate uses the Euclidean-volume construction presented in Section 3
+of the manuscript and proves attainment of the kissing numbers, the planar
+value $\tau_2=6$, and optimality of the universal base. The manuscript gives
+the cap recurrence and the unique equality case as informal results. The
+Palomar interface includes four proved adapters to express the claims in
+terms of genuine greatest cardinalities. See the
+[formal statements and proof map](FORMALIZATION_SCOPE.md).
 
 ## Environment and checks
 
@@ -44,7 +44,7 @@ is not a successful independent check.
 
 ## Completed Palomar registration
 
-[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry.html?id=PALOMAR-2026-09-05-000002&version=1)
+[PALOMAR-2026-09-05-000002, version 1](https://palomar-registry.org/entry?id=PALOMAR-2026-09-05-000002&version=1)
 was registered on 5 September 2026 for repository commit
 `cc87870ad897f0fe15e3cdffd3d7acd15f0c1ba9`, using the root `comparator.json`.
 All eight selected declarations passed Comparator, Lean kernel checking, and
@@ -54,10 +54,8 @@ The automated editorial review identified no problems. The submitter then
 authorized permanent registration, and the public record and source-preservation
 receipt are available at the entry above.
 
-The current two-proof manuscript revision postdates the registered snapshot.
-It adds and simplifies the unformalized cap proof, condenses the exposition of
-the certified volume construction, and clarifies the distinction. The Lean
-source, Comparator configuration, and dependency pins remain those registered.
-Palomar version 1 preserves its original metadata and manuscript. Registration
-does not constitute human peer review or a novelty certificate. No independent
-human mathematical review is recorded.
+The November manuscript adds the deduction from the literature, proves strict
+inequality outside dimension two in the cap argument, and simplifies the
+volume estimate in dimension four. Palomar version 1 preserves the September
+source snapshot with its original metadata and manuscript. Independent human
+mathematical review has yet to be recorded.
